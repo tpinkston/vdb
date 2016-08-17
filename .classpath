@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="src" path="enums/src" output="/enums/classes"/>
-    <classpathentry kind="lib" path="enums/lib/poi-3.13-20150929.jar"/>
-    <classpathentry kind="lib" path="enums/lib/poi-ooxml-3.13-20150929.jar"/>
-    <classpathentry kind="lib" path="enums/lib/poi-ooxml-schemas-3.13-20150929.jar"/>
-    <classpathentry kind="lib" path="enums/lib/xmlbeans-2.4.0.jar"/>
-</classpath>
