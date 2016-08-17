@@ -1,0 +1,21 @@
+Usage:
+
+  vdb enums [OPTIONS]
+
+Options:
+
+  -h --help                 Print this info
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+
+  All enumerations get printed to stdout in the following form (CSV):
+  
+    'ENUM_NAME,ORDINAL_VALUE,ORDINAL_NAME'
+  
+Examples:
+
+  Shows just the PDU_FAMILY enumeration values: 
+  
+    $ vdb enums | grep PDU_FAMILY
+  

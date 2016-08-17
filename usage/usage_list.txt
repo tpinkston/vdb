@@ -1,0 +1,34 @@
+Usage:
+
+  vdb list [OPTIONS] FILE
+
+Options:
+
+  -c --color-off            Do not use colored output
+  -a --address=ADDR         List only PDUs with specified IP address
+  -e --exercise=E           List only PDUs on exercise number E
+  -t --pdu-type=T1,...      List only PDUs with PDU type T (numeric)
+  -f --pdu-family=F1,...    List only PDUs with PDU family F (numeric)
+  -i --ids=I1,...           List only PDUs with specified entity ID(s)
+  -p --pdu-range=RANGE      List only PDUs in specified range (indexes)
+  -h --help                 Print this info
+  -d --dump                 Print PDU hex dump (overrides -s and -x)
+  -x --extract              Print PDU data extraction (overrides -s)
+  -s --summarize            Print short PDU summary
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+  
+Examples:
+
+  List only PDUs in the 'WARFARE' family (2) with exercise '4' captured in 
+  file 'capture.vdb': 
+  
+    $ vdb list capture.vdb --exercise=4 --pdu-family=2
+    $ vdb list -e 4 -f 2 capture.vdb
+
+  List all PDUs referencing entity IDs with site '1' and application '66' 
+  captured in file 'capture.vdb':
+  
+    $ vdb list capture.vdb --ids=1.66.*
+    $ vdb list -i '1.66.*' capture.vdb

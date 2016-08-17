@@ -1,0 +1,32 @@
+// -----------------------------------------------
+// This file is script-generated...
+// -----------------------------------------------
+
+#ifndef LF_COMPLIANCE_H
+#define LF_COMPLIANCE_H
+
+namespace vdb
+{
+    typedef enum
+    {
+        LF_COMPLIANCE_OTHER = 0,
+        LF_COMPLIANCE_DETAINED = 1,
+        LF_COMPLIANCE_SURRENDER = 2,
+        LF_COMPLIANCE_USING_FISTS = 3,
+        LF_COMPLIANCE_VERBAL_ABUSE_LEVEL_1 = 4,
+        LF_COMPLIANCE_VERBAL_ABUSE_LEVEL_2 = 5,
+        LF_COMPLIANCE_VERBAL_ABUSE_LEVEL_3 = 6,
+        LF_COMPLIANCE_PASSIVE_RESISTANCE_LEVEL_1 = 7,
+        LF_COMPLIANCE_PASSIVE_RESISTANCE_LEVEL_2 = 8,
+        LF_COMPLIANCE_PASSIVE_RESISTANCE_LEVEL_3 = 9,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_1 = 10,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_2 = 11,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_3 = 12,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_4 = 13,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_5 = 14,
+        LF_COMPLIANCE_USING_NON_LETHAL_WEAPON_6 = 15,
+        LF_COMPLIANCE_END
+    } lf_compliance_e;
+}
+
+#endif

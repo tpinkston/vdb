@@ -1,0 +1,205 @@
+// ============================================================================
+// VDB (VDIS Debugger)
+// Tony Pinkston (git@github.com:tpinkston/vdb.git)
+//
+// VDB is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or (at your option) any later 
+// version.
+//
+// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
+// details (http://www.gnu.org/licenses).
+// ============================================================================
+
+#ifndef VDB_FILE_TYPES_H
+#define VDB_FILE_TYPES_H
+
+#include "vdb_common.h"
+#include "vdb_object.h"
+
+namespace vdb
+{
+    class file_header_comment_t;
+    class file_header_record_t;
+
+    // ------------------------------------------------------------------------
+    // Class defining parameters for the file header that starts all files
+    // written and read by this program.
+    //
+    class file_header_t : public record_t
+    {
+      public:
+
+        file_header_t(void);
+        virtual ~file_header_t(void);
+
+        std::ostream &print_comment(
+            const std::string &prefix,
+            uint32_t index,
+            std::ostream &stream
+        ) const;
+
+        bool invalid_title(void) const;
+
+        virtual void print(const std::string &prefix, std::ostream &) const;
+
+        virtual void clear(void);
+
+        virtual uint32_t length(void) const;
+        virtual uint32_t comments_length(void) const;
+
+        virtual void read(byte_stream &stream);
+        virtual void write(byte_stream &stream) const;
+
+        uint8_t
+            title[10];
+        uint16_t
+            major_version,
+            minor_version;
+        uint16_t
+            status; // bit flags
+        uint64_t
+            time_created;
+        uint32_t
+            padding;
+        std::vector<file_header_record_t>
+            records;
+        std::vector<file_header_comment_t>
+            comments;
+
+      protected:
+
+        static const uint32_t
+            BASE_RECORD_SIZE;
+    };
+
+    // ------------------------------------------------------------------------
+    class file_header_comment_t : public record_t
+    {
+      public:
+
+        file_header_comment_t(void);
+        file_header_comment_t(const file_header_comment_t &copy);
+        virtual ~file_header_comment_t(void);
+
+        virtual void print(const std::string &prefix, std::ostream &) const;
+
+        virtual void clear(void);
+
+        virtual uint32_t length(void) const;
+
+        virtual void read(byte_stream &stream);
+        virtual void write(byte_stream &stream) const;
+
+        uint64_t
+            time;
+        std::string
+            value;
+
+      protected:
+
+        static const uint32_t
+            BASE_RECORD_SIZE,
+            BOUNDARY_SIZE;
+    };
+
+    // ------------------------------------------------------------------------
+    class file_header_record_t : public record_t
+    {
+      public:
+
+        file_header_record_t(void);
+        file_header_record_t(const file_header_record_t &copy);
+        virtual ~file_header_record_t(void);
+
+        virtual void print(const std::string &prefix, std::ostream &) const;
+
+        virtual void clear(void);
+
+        virtual uint32_t length(void) const { return RECORD_SIZE; }
+
+        virtual void read(byte_stream &stream);
+        virtual void write(byte_stream &stream) const;
+
+        uint32_t
+            type,
+            status; // bit flags
+        uint64_t
+            data;
+
+      protected:
+
+        static const uint32_t
+            RECORD_SIZE;
+    };
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_t::file_header_t(void) :
+    title({ 'v', 'd', 'b', 'c', 'a', 'p', 't', 'u', 'r', 'e' }),
+    major_version(0),
+    minor_version(0),
+    status(0),
+    time_created(0),
+    padding(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_t::~file_header_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_comment_t::file_header_comment_t(void) : time(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_comment_t::file_header_comment_t(
+    const file_header_comment_t &copy
+) :
+    time(copy.time),
+    value(copy.value)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_comment_t::~file_header_comment_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_record_t::file_header_record_t(void) :
+    type(0),
+    status(0),
+    data(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_record_t::file_header_record_t(
+    const file_header_record_t &copy
+) :
+    type(copy.type),
+    status(copy.status),
+    data(copy.data)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+inline vdb::file_header_record_t::~file_header_record_t(void)
+{
+    clear();
+}
+
+#endif

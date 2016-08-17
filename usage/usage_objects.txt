@@ -1,0 +1,29 @@
+Usage:
+
+  vdb objects [OPTIONS]
+
+Options:
+
+  -h --help                 Print this info
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+
+  All object types get printed to stdout in the following form (CSV):
+  
+    'OBJECT_TYPE_TUPLE,OBJECT_GEOMETRY,OBJECT_TYPE_NAME'
+
+  Where 'OBJECT_TYPE_TUPLE' is 'A.B.C.D' and:
+
+    A = DOMAIN
+    B = OBJECT_KIND
+    C = (category)
+    D = (subcategory)
+  
+Examples:
+
+  Shows just the object type values with 'POINT' geometry: 
+  
+    $ vdb enums | grep ',POINT,'
+
+    

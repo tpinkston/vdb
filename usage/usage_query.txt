@@ -1,0 +1,35 @@
+Usage:
+
+  vdb query [OPTIONS] FILE
+
+Options:
+
+  -c --color-off            Do not use colored output
+  -e --exercise=E           Use only PDUs on exercise number E
+     --collisions           Print collision info for all entities
+     --emissions            Print emission (radar/IFF) info for all entities
+     --fires                Print fire/detonation info for all entities
+     --lasers               Print designator info for all entities
+     --radios               Print radio info for all entities
+     --objects              Print object state (point, linear, areal) info
+  -A --all                  Print all info (--collisions,--emissions,--fires,
+                            --lasers,--radios,--objects)
+  -h --help                 Print this info
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+
+Examples:
+
+  Queries capture file 'capture.vdb' showing results only for PDUs on
+  exercise 3: 
+  
+    $ vdb query capture.vdb --exercise=3
+    $ vdb query -e 3 capture.vdb
+
+  Queries capture file 'capture.vdb' showing results for everything
+  in verbose mode (showing info for PDUs sent from every source host 
+  individually): 
+  
+    $ vdb query capture.vdb --verbose
+    $ vdb query -v capture.vdb

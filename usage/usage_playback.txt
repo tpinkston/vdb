@@ -1,0 +1,40 @@
+Usage:
+
+  vdb playback [OPTIONS] PORT FILE
+
+Options:
+
+  -6 --ipv6                 Use IPv6
+  -a --address=ADDR         Use IP address
+  -n --iface=IFACE          Use network interface, e.g. 'eth0'
+  -c --color-off            Do not use colored output
+  -e --exercise=E           Plays only PDUs on exercise number E
+  -t --pdu-type=T1,...      Plays only PDUs with PDU type T (numeric)
+  -f --pdu-family=F1,...    Plays only PDUs with PDU family F (numeric)
+  -i --ids=I1,...           Plays only PDUs with specified entity ID(s)
+  -p --pdu-range=RANGE      Plays only PDUs in specified range (indexes)
+  -h --help                 Print this info
+  -d --dump                 Print PDU hex dump (overrides -s and -x)
+  -x --extract              Print PDU data extraction (overrides -s)
+  -q --quiet                Print as little as possible
+  -s --summarize            Print short PDU summary
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+  
+Examples:
+
+  Plays back PDUs with exercise '2' captured in file 'capture.vdb' on port 
+  5000 and IP address 10.54.1.255:
+  
+    $ vdb playback 5000 capture.vdb --exercise=2
+    $ vdb playback -e 2 5000 capture.vdb
+
+  Plays back just 3 specific PDUs captured in file 'capture.vdb' on port 5000:
+  
+    $ vdb playback 5000 capture.vdb --pdu-range=21,22,23
+    $ vdb playback -p 21,22,23 5000 capture.vdb
+  
+    $ vdb playback 5000 capture.vdb --pdu-range=21-23
+    $ vdb playback -p 21-23 5000 capture.vdb
+  

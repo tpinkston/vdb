@@ -1,0 +1,35 @@
+Usage:
+
+  vdb entities [OPTIONS]
+
+Options:
+
+  -h --help                 Print this info
+  -v --verbose              Print as much as possible (debugging)
+  -w --warnings             Show warnings (suppressed by default)
+  -E --errors-off           Do not show any error messages
+
+  All entity types get printed to stdout in the following form (CSV):
+  
+    'ENTITY_TYPE_TUPLE,ENTITY_TYPE_NAME'
+
+  Where 'ENTITY_TYPE_TUPLE' is 'A.B.C.D.E.F.G' and:
+
+    A = ENT_KIND
+    B = ENT_DOMAIN
+    C = COUNTRY
+    D = (category)
+    E = (subcategory)
+    F = (specific)
+    G = (extra)
+  
+Examples:
+
+  Shows just the M1A1 entity type values: 
+  
+    $ vdb enums | grep M1A1
+
+  Shows just the munition (kind = 2) entity type values: 
+  
+    $ vdb enums | grep '^2\.'
+    
