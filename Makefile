@@ -17,7 +17,7 @@ endif
 
 all: data usage version
 ifeq ("$(wildcard ${BUILD_PATH}/Makefile)", "")
-	@$(MAKE) -f $(THIS_FILE) builder
+	@$(MAKE) --no-print-directory -f $(THIS_FILE) builder
 endif
 	@echo
 	@echo "all:"
