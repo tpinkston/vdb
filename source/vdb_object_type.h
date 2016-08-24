@@ -16,7 +16,6 @@
 #ifndef VDB_OBJECT_TYPE_H
 #define VDB_OBJECT_TYPE_H
 
-#include "vdb_command.h"
 #include "vdb_enums.h"
 #include "vdb_object.h"
 
@@ -73,14 +72,11 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class object_type_data : public command
+    class object_type_data
     {
       public:
 
-        object_type_data(void);
-        virtual ~object_type_data(void);
-
-        virtual int run(void);
+        static void print(std::ostream &stream);
 
         static void load(void);
 
@@ -104,8 +100,6 @@ namespace vdb
         static object_geometry_e get_geometry(uint32_t value);
 
       private:
-
-        static void print(std::ostream &stream);
 
         static void add_all(void);
 
@@ -152,26 +146,6 @@ inline void vdb::object_type_t::set_value(uint32_t value)
         kind,
         category,
         subcategory);
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::object_type_data::object_type_data(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::object_type_data::~object_type_data(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline int vdb::object_type_data::run(void)
-{
-    print(std::cout);
-
-    return 0;
 }
 
 #endif

@@ -14,6 +14,8 @@
 // ============================================================================
 
 #include "vdb_enums.h"
+#include "vdb_file_readers.h"
+#include "vdb_filter.h"
 #include "vdb_ids.h"
 #include "vdb_list.h"
 #include "vdb_logger.h"
@@ -24,25 +26,15 @@
 #include "vdb_print.h"
 #include "vdb_string.h"
 
-// ----------------------------------------------------------------------------
-vdb::list::list(void) :
-    address_ptr(0),
-    pdus_listed(0),
-    pdus_filtered_out(0)
-{
-
-}
+uint32_t
+    vdb::list::pdus_listed = 0,
+    vdb::list::pdus_filtered_out = 0;
 
 // ----------------------------------------------------------------------------
-vdb::list::~list(void)
+int vdb::list::list_pdus(void)
 {
-
-}
-
-// ----------------------------------------------------------------------------
-int vdb::list::run(void)
-{
-    int result = 0;
+    int
+        result = 0;
 
     // File argument required
     //
@@ -62,25 +54,41 @@ int vdb::list::run(void)
     }
     else
     {
+        const std::string
+            filename = *options::get_command_argument(0);
+
         LOG_EXTRA_VERBOSE("Starting list...");
 
-        filename = *options::get_command_argument(0);
-        address_ptr = options::string(OPT_NET_ADDRESS);
+        file_reader_t
+            *reader_ptr = new standard_reader_t(filename);
 
-        if (read_content())
+        if (not reader_ptr->good())
         {
-            parse_content();
-
+            result = 1;
+        }
+        else if (not reader_ptr->read_header())
+        {
+            result = 1;
+        }
+        else if (not reader_ptr->parse(process_pdu_data))
+        {
+            result = 1;
+        }
+        else
+        {
             LOG_VERBOSE("PDUs listed: %d...", pdus_listed);
             LOG_VERBOSE("PDUs filtered out: %d...", pdus_filtered_out);
         }
+
+        delete reader_ptr;
+        reader_ptr = 0;
     }
 
     return result;
 }
 
 // ----------------------------------------------------------------------------
-void vdb::list::process_pdu_data(const pdu_data_t &data)
+bool vdb::list::process_pdu_data(const pdu_data_t &data)
 {
     bool
         processed = false,
@@ -88,14 +96,14 @@ void vdb::list::process_pdu_data(const pdu_data_t &data)
 
     if (options::pdu_index_in_range(data.get_index(), past_end))
     {
-        if (passes_data_filters(data))
+        if (filter::filter_by_header(data))
         {
             const pdu_t
                 *pdu_ptr = data.generate_pdu();
 
             if (pdu_ptr)
             {
-                if (passes_pdu_filters(*pdu_ptr))
+                if (filter::filter_by_content(*pdu_ptr))
                 {
                     print::print_pdu(data, *pdu_ptr, std::cout);
                     processed = true;
@@ -139,36 +147,5 @@ void vdb::list::process_pdu_data(const pdu_data_t &data)
         pdus_filtered_out += 1;
     }
 
-    if (past_end)
-    {
-        // Puts index at the end of the buffer to terminate any
-        // more processing.
-        //
-        stream.reset_index(stream.get_length());
-    }
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::list::passes_data_filters(const pdu_data_t &data)
-{
-    bool pass = true;
-
-    if (not file_handler::passes_data_filters(data))
-    {
-        pass = false;
-    }
-
-    if (pass and address_ptr)
-    {
-        const std::string
-            source = data.get_source();
-
-        if (not contains_ignore_case(source, *address_ptr))
-        {
-            LOG_VERBOSE("Filtered out PDU with source %s...", source.c_str());
-            pass = false;
-        }
-    }
-
-    return pass;
+    return not past_end;
 }

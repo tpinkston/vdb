@@ -15,26 +15,23 @@
 
 #include "vdb_comments.h"
 #include "vdb_common.h"
+#include "vdb_file_readers.h"
+#include "vdb_logger.h"
 #include "vdb_options.h"
 #include "vdb_string.h"
 #include "vdb_time.h"
 
-// ----------------------------------------------------------------------------
-vdb::comment::comment(void)
+namespace
 {
-
+    const uint32_t
+        COPY_BUFFER_LENGTH = 0x1000;
 }
 
 // ----------------------------------------------------------------------------
-vdb::comment::~comment(void)
+int vdb::comments::add(void)
 {
-
-}
-
-// ----------------------------------------------------------------------------
-int vdb::comment::run(void)
-{
-    int result = 1;
+    int
+        result = 1;
 
     // File argument (1st) required, comment text argument (2nd) optional
     //
@@ -50,76 +47,104 @@ int vdb::comment::run(void)
     }
     else
     {
-        // If comment is provided then use it, otherwise extract comment
-        // from STDIN.
-        //
-        std::string
-            comment_text;
+        const std::string
+            filename = *options::get_command_argument(0);
+        file_header_comment_t
+            comment;
+
+        comment.time = time::get_system();
 
         if (options::get_command_argument(1))
         {
-            comment_text = *options::get_command_argument(1);
+            // Comment to add provided in command line argument
+            //
+            comment.value = *options::get_command_argument(1);
         }
         else
         {
+            // Extract comment to add from STDIN
+            //
             const uint32_t
-                comment_size = 0x100;
+                text_size = 0x100;
             char
-                comment[comment_size];
+                text[text_size];
 
-            std::memset(comment, 0, comment_size);
-            std::cin.read(comment, comment_size);
-            comment_text = comment;
+            std::memset(text, 0, text_size);
+            std::cin.read(text, text_size);
+            comment.value = text;
+            comment.value = trim(comment.value);
             std::cout << std::endl << std::endl;
         }
 
-        filename = *options::get_command_argument(0);
+        comment.value = trim(comment.value);
 
-        if (read_content())
+        if (comment.value.empty())
         {
-            // Create new comment.
-            //
-            file_header_comment_t
-                new_comment;
+            comment.value = "NULL";
+        }
 
-            new_comment.time = time::get_system();
-            new_comment.value = comment_text;
+        standard_reader_t
+            reader(filename);
 
-            header.comments.push_back(new_comment);
-
+        if (reader.good() and reader.read_header())
+        {
             const uint32_t
-                new_length = (stream.get_length() + new_comment.length());
+                comment_length = comment.length(),
+                new_length = (reader.stream.get_length() + comment_length);
             file_stream
-                new_stream(new_length);
-
-            header.write(new_stream);
-
-            // Original stream's index should be at the first PDU index if
-            // there is one (right after the header).
-            //
+                &input = reader.stream;
+            file_stream
+                output(new_length);
             uint32_t
-                i = stream.get_index();
+                copy_buffer_length = COPY_BUFFER_LENGTH;
+            uint8_t
+                copy_buffer[copy_buffer_length];
 
-            while((i < stream.get_length()) and not new_stream.error())
+            // Add the comment to the header and write header to output buffer
+            //
+            reader.header.comments.push_back(comment);
+            reader.header.write(output);
+
+            uint32_t
+                remainder = input.get_length_remaining();
+
+            LOG_VERBOSE(
+                "Input buffer is at %d/%d",
+                input.get_index(),
+                input.get_length());
+            LOG_VERBOSE(
+                "Output buffer is at %d/%d",
+                output.get_index(),
+                output.get_length());
+
+            while((remainder > 0) and not output.error())
             {
-                new_stream.write(stream[i]);
-                ++i;
+                if (copy_buffer_length > remainder)
+                {
+                    copy_buffer_length = remainder;
+                }
+
+                input.read(copy_buffer, copy_buffer_length);
+                output.write(copy_buffer, copy_buffer_length);
+
+                remainder -= copy_buffer_length;
+
+                LOG_VERBOSE("Bytes remaining is %d", remainder);
             }
 
-            if (not new_stream.error())
+            if (not output.error())
             {
                 // Overwrite the file with new stream.
                 //
-                new_stream.write_file(filename);
+                output.write_file(filename);
+                result = output.error() ? 1 : 0;
 
-                std::cout << "Comment (" << comment_text.length()
+                std::cout << "Comment (" << comment.value.length()
                           << " bytes) added to file '" << filename
                           << "'" << std::endl
                           << "Total number of comments is now "
-                          << header.comments.size() << std::endl;
+                          << reader.header.comments.size() << std::endl;
             }
-
-            result = 0;
         }
     }
 
@@ -127,21 +152,10 @@ int vdb::comment::run(void)
 }
 
 // ----------------------------------------------------------------------------
-vdb::uncomment::uncomment(void)
+int vdb::comments::remove(void)
 {
-
-}
-
-// ----------------------------------------------------------------------------
-vdb::uncomment::~uncomment(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-int vdb::uncomment::run(void)
-{
-    int result = 1;
+    int
+        result = 1;
 
     // File argument (1st) required, comment number argument (2nd) optional
     //
@@ -157,11 +171,15 @@ int vdb::uncomment::run(void)
     }
     else
     {
-        filename = *options::get_command_argument(0);
+        const std::string
+            filename = *options::get_command_argument(0);
 
-        if (read_content())
+        standard_reader_t
+            reader(filename);
+
+        if (reader.good() and reader.read_header())
         {
-            if (header.comments.size() == 0)
+            if (reader.header.comments.size() == 0)
             {
                 std::cout << options::get_terminal_command()
                           << " uncomment: no comments in file '"
@@ -171,42 +189,52 @@ int vdb::uncomment::run(void)
             {
                 // Not comment number specified...
                 //
-                remove_all_comments();
-                result = 0;
+                result = remove_all_comments(reader);
             }
             else
             {
                 // User provided a number for the comment to remove.
                 // Numbers start at 1 so it must be decremented to an index.
                 //
-                std::string
+                const std::string
                     value(*options::get_command_argument(1));
                 int32_t
                     number = 0;
 
-                string_to_int32(value, number);
-
-                // Number to index.
-                //
-                number--;
-
-                if (number < 1)
+                if (not string_to_int32(value, number))
                 {
-                    std::cerr << options::get_terminal_command()
+                    std::cout << options::get_terminal_command()
                               << " uncomment: invalid comment number '"
                               << value << "'" << std::endl;
                 }
-                else if ((unsigned)number >= header.comments.size())
-                {
-                    std::cerr << options::get_terminal_command()
-                              << " uncomment: comment number out of range: "
-                              << (number + 1) << ", range is 1.."
-                              << header.comments.size() << std::endl;
-                }
                 else
                 {
-                    remove_comment(number);
-                    result = 0;
+                    if (number < 1)
+                    {
+                        std::cerr << options::get_terminal_command()
+                                  << " uncomment: invalid comment number '"
+                                  << value << "'" << std::endl;
+                    }
+                    else
+                    {
+                        const int32_t
+                            current_count = reader.header.comments.size();
+
+                        if (number <= current_count)
+                        {
+                            // Convert number to index
+                            //
+                            result = remove_comment(reader, (number - 1));
+                        }
+                        else
+                        {
+                            std::cerr << options::get_terminal_command()
+                                      << " uncomment: comment number "
+                                      << "out of range: " << number
+                                      << ", range is 1.." << current_count
+                                      << std::endl;
+                        }
+                    }
                 }
             }
         }
@@ -216,74 +244,154 @@ int vdb::uncomment::run(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::uncomment::remove_comment(int32_t index)
+int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 {
-    header.print_comment(std::string(), index, std::cout);
+    file_stream
+        &input = reader.stream;
+    int
+        result = 0;
 
+    // Print comment and get user confirmation
+    //
+    reader.header.print_comment(std::string(), index, std::cout);
     std::cout << "Delete this comment (y/n)? ";
 
-    if (user_confirmation())
-    {
-        const uint32_t
-            comment_length = header.comments[index].length(),
-            new_length = (stream.get_length() - comment_length);
-        file_stream
-            new_stream(new_length);
-
-        header.comments.erase(header.comments.begin() + index);
-        header.write(new_stream);
-
-        uint32_t
-            i = stream.get_index();
-
-        while((i < stream.get_length()) and not new_stream.error())
-        {
-            new_stream.write(stream[i]);
-            ++i;
-        }
-
-        if (not new_stream.error())
-        {
-            // Overwrite the file with new stream.
-            //
-            new_stream.write_file(filename);
-
-            std::cout << "Comment #" << (index + 1) << " removed." << std::endl;
-        }
-    }
-    else
+    if (not user_confirmation())
     {
         std::cout << "No comments removed." << std::endl;
     }
+    else
+    {
+        const uint32_t
+            comment_length = reader.header.comments[index].length(),
+            new_length = (input.get_length() - comment_length);
+        file_stream
+            output(new_length);
+
+        LOG_VERBOSE(
+            "Input buffer is at %d/%d",
+            input.get_index(),
+            input.get_length());
+        LOG_VERBOSE(
+            "Output buffer is at %d/%d",
+            output.get_index(),
+            output.get_length());
+        LOG_VERBOSE(
+            "Size of all comments before removal is %d...",
+            reader.header.comments_length());
+
+        reader.header.comments.erase(reader.header.comments.begin() + index);
+
+        LOG_VERBOSE(
+            "Size of all comments after removal is %d...",
+            reader.header.comments_length());
+
+        reader.header.write(output);
+
+        uint32_t
+            copy_buffer_length = COPY_BUFFER_LENGTH;
+        uint8_t
+            copy_buffer[copy_buffer_length];
+        uint32_t
+            remainder = input.get_length_remaining();
+
+        LOG_VERBOSE(
+            "Input buffer is at %d/%d",
+            input.get_index(),
+            input.get_length());
+        LOG_VERBOSE(
+            "Output buffer is at %d/%d",
+            output.get_index(),
+            output.get_length());
+
+        while((remainder > 0) and not output.error())
+        {
+            if (copy_buffer_length > remainder)
+            {
+                copy_buffer_length = remainder;
+            }
+
+            input.read(copy_buffer, copy_buffer_length);
+            output.write(copy_buffer, copy_buffer_length);
+
+            remainder -= copy_buffer_length;
+
+            LOG_VERBOSE("Bytes remaining is %d", remainder);
+        }
+
+        if (input.error() or output.error())
+        {
+            result = 1;
+        }
+        else
+        {
+            // Overwrite the file with new stream.
+            //
+            output.write_file(reader.get_filename());
+
+            std::cout << "Comment #" << (index + 1)
+                      << " removed." << std::endl;
+        }
+    }
+
+    return result;
 }
 
 // ----------------------------------------------------------------------------
-void vdb::uncomment::remove_all_comments(void)
+int vdb::comments::remove_all_comments(standard_reader_t &reader)
 {
-    std::cout << "Delete all comments in '" << filename << "'? ";
+    file_stream
+        &input = reader.stream;
+    int
+        result = 0;
+
+    std::cout << "Delete all comments in '" << reader.get_filename() << "'? ";
 
     if (user_confirmation())
     {
         const uint32_t
-            new_length = stream.get_length() - header.comments_length();
+            new_length =
+                input.get_length() -
+                reader.header.comments_length();
         file_stream
-            new_stream(new_length);
+            output(new_length);
 
-        header.comments.clear();
-        header.write(new_stream);
+        reader.header.comments.clear();
+        reader.header.write(output);
 
-        // Original stream's index should be at the first PDU index if
-        // there is one.
-        //
-        for(uint32_t i = stream.get_index(); i < stream.get_length(); ++i)
+        uint32_t
+            copy_buffer_length = COPY_BUFFER_LENGTH;
+        uint8_t
+            copy_buffer[copy_buffer_length];
+        uint32_t
+            remainder = input.get_length_remaining();
+
+        while((remainder > 0) and not output.error())
         {
-            new_stream.write(stream[i]);
+            if (copy_buffer_length > remainder)
+            {
+                copy_buffer_length = remainder;
+            }
+
+            input.read(copy_buffer, copy_buffer_length);
+            output.write(copy_buffer, copy_buffer_length);
+
+            remainder -= copy_buffer_length;
         }
 
-        // Overwrite the file with new stream.
-        //
-        new_stream.write_file(filename);
+        if (input.error() or output.error())
+        {
+            result = 1;
+        }
+        else
+        {
+            // Overwrite the file with new stream.
+            //
+            output.write_file(reader.get_filename());
 
-        std::cout << "All comments removed." << std::endl;
-    }
+            std::cout << "All comments removed." << std::endl;
+        }
+     }
+
+    return result;
 }

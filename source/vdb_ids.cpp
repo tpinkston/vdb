@@ -13,9 +13,9 @@
 // details (http://www.gnu.org/licenses).
 // ============================================================================
 
-#include "vdb_ids.h"
-
 #include "vdb_byte_stream.h"
+#include "vdb_ids.h"
+#include "vdb_logger.h"
 #include "vdb_marking.h"
 #include "vdb_options.h"
 

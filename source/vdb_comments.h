@@ -16,37 +16,25 @@
 #ifndef VDB_COMMENTS_H
 #define VDB_COMMENTS_H
 
-#include "vdb_command.h"
-#include "vdb_file_handler.h"
+#include "vdb_common.h"
 
 namespace vdb
 {
+    class standard_reader_t;
+
     // ------------------------------------------------------------------------
-    class comment : public file_handler, public command
+    class comments
     {
       public:
 
-        comment(void);
-        virtual ~comment(void);
+        static int add(void);
+        static int remove(void);
 
-        virtual int run(void);
-    };
+      private:
 
-    // ------------------------------------------------------------------------
-    class uncomment : public file_handler, public command
-    {
-      public:
+        static int remove_comment(standard_reader_t &reader, int32_t number);
 
-        uncomment(void);
-        virtual ~uncomment(void);
-
-        virtual int run(void);
-
-      protected:
-
-        virtual void remove_comment(int32_t number);
-
-        virtual void remove_all_comments(void);
+        static int remove_all_comments(standard_reader_t &reader);
     };
 }
 

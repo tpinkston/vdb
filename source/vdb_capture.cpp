@@ -14,6 +14,9 @@
 // ============================================================================
 
 #include "vdb_capture.h"
+#include "vdb_file_stream.h"
+#include "vdb_file_types.h"
+#include "vdb_filter.h"
 #include "vdb_logger.h"
 #include "vdb_network.h"
 #include "vdb_options.h"
@@ -21,42 +24,27 @@
 #include "vdb_pdu.h"
 #include "vdb_print.h"
 #include "vdb_string.h"
+#include "vdb_version.h"
 
-namespace
-{
-    vdb::capture
-        *instance_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
-vdb::capture::capture(void) :
-    socket_ptr(0),
-    port(0),
-    bytes_received(0),
-    bytes_accepted(0),
-    pdus_received(0),
-    pdus_accepted(0),
-    capturing(true)
-{
-    if (instance_ptr)
-    {
-        LOG_ERROR("Already instantiated!");
-        exit(2);
-    }
-
-    instance_ptr = this;
-}
+FILE
+    *vdb::capture::file_ptr = 0;
+vdb::capture_socket_t
+    *vdb::capture::socket_ptr = 0;
+int32_t
+    vdb::capture::port = 0;
+uint32_t
+    vdb::capture::bytes_received = 0,
+    vdb::capture::bytes_accepted = 0,
+    vdb::capture::pdus_received = 0,
+    vdb::capture::pdus_accepted = 0;
+bool
+    vdb::capture::capturing = false;
 
 // ----------------------------------------------------------------------------
-vdb::capture::~capture(void)
+int vdb::capture::capture_pdus(void)
 {
-    instance_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
-int vdb::capture::run(void)
-{
-    int result = 0;
+    int
+        result = 0;
 
     // Port argument (1st) required, file argument (2nd) optional
     //
@@ -84,6 +72,11 @@ int vdb::capture::run(void)
     }
     else
     {
+        std::string
+            filename;
+
+        capturing = true;
+
         // Was filename provided?  If so check overwrite and open it for
         // output.
         //
@@ -105,7 +98,7 @@ int vdb::capture::run(void)
 
             if (capturing)
             {
-                capturing = open_output_file();
+                capturing = open_output_file(filename);
             }
         }
 
@@ -116,7 +109,7 @@ int vdb::capture::run(void)
             start();
             print_stats(std::cout);
             close_socket();
-            close_output_file();
+            close_output_file(filename);
         }
     }
 
@@ -147,6 +140,103 @@ void vdb::capture::close_socket(void)
     //
     delete socket_ptr;
     socket_ptr = 0;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::capture::open_output_file(const std::string &filename)
+{
+    file_header_t
+        header;
+    file_stream
+        stream;
+    bool
+        success = false;
+
+    // First save header to the output capture file.
+    //
+    header.major_version = VDB_VERSION_MAJOR;
+    header.minor_version = VDB_VERSION_MINOR;
+    header.time_created = time::get_system();
+
+    stream.set_length(header.length());
+    stream.write(header);
+    stream.write_file(filename);
+
+    // Reopen the file for manually writing PDU data, appending to the header
+    // just written ('a' for append, 'b' for binary).
+    //
+    file_ptr = fopen(filename.c_str(), "ab");
+
+    if (file_ptr)
+    {
+        std::cout << "Opened output file: " << filename << std::endl;
+        success = true;
+    }
+    else
+    {
+        perror("fopen");
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::capture::close_output_file(const std::string &filename)
+{
+    bool
+        success = false;
+
+    if (file_ptr)
+    {
+        if (fclose(file_ptr) == 0)
+        {
+            std::cout << "Closed output file: " << filename << std::endl;
+            success = true;
+        }
+        else
+        {
+            perror("fclose");
+        }
+
+        file_ptr = 0;
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::capture::write_pdu_data(const pdu_data_t &data)
+{
+    if (file_ptr)
+    {
+        const uint32_t
+            size = data.length();
+        byte_stream
+            stream;
+
+        stream.set_length(size);
+
+        LOG_VERBOSE("Writing %d bytes to file...", size);
+
+        data.write(stream);
+
+        if (stream.success())
+        {
+            uint32_t bytes_written = fwrite(
+                stream.get_buffer(),
+                1,
+                stream.get_length(),
+                file_ptr);
+
+            if (bytes_written != size)
+            {
+                LOG_ERROR(
+                    "File write failed (%d out of %d bytes)",
+                    size,
+                    stream.get_length());
+            }
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -185,13 +275,13 @@ void vdb::capture::start(void)
             bytes_received += (uint64_t)data.get_pdu_length();
             pdus_received += 1U;
 
-            if (passes_data_filters(data))
+            if (filter::filter_by_header(data))
             {
                 pdu_ptr = data.generate_pdu();
 
                 if (pdu_ptr)
                 {
-                    if (passes_pdu_filters(*pdu_ptr))
+                    if (filter::filter_by_content(*pdu_ptr))
                     {
                         data.set_index(index_counter++);
 
@@ -231,8 +321,5 @@ void vdb::capture::print_stats(std::ostream &stream)
 // ----------------------------------------------------------------------------
 void vdb::capture::signal_handler(int value)
 {
-    if (instance_ptr)
-    {
-        instance_ptr->capturing = false;
-    }
+    capturing = false;
 }

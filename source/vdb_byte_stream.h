@@ -48,7 +48,7 @@ namespace vdb
 
         status_e status(void) const { return stream_status; }
 
-        // Returns true if status is SUCCESS_READY.
+        // Returns true if status is EMPTY.
         //
         bool empty(void) const { return (stream_status == EMPTY); }
 

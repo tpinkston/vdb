@@ -16,13 +16,12 @@
 #ifndef VDB_QUERY_H
 #define VDB_QUERY_H
 
-#include "vdb_command.h"
 #include "vdb_common.h"
+#include "vdb_entity_type.h"
 #include "vdb_enums.h"
-#include "vdb_file_handler.h"
 #include "vdb_ids.h"
 #include "vdb_marking.h"
-#include "vdb_entity_type.h"
+#include "vdb_options.h"
 #include "vdb_warfare_pdus.h"
 
 namespace vdb
@@ -31,6 +30,7 @@ namespace vdb
     class collision_pdu_t;
     class designator_pdu_t;
     class em_emission_pdu_t;
+    class file_reader_t;
     class transmitter_pdu_t;
     class signal_pdu_t;
     class receiver_pdu_t;
@@ -181,55 +181,55 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class query : public file_handler, public command
+    class query
     {
       public:
 
-        query(void);
-        virtual ~query(void);
-
-        virtual int run(void);
+        static int query_pdus(void);
 
         static bool print(option_e);
 
       protected:
 
-        virtual void process_pdu_data(const pdu_data_t &);
+        static bool process_pdu_data(const pdu_data_t &);
 
-        virtual void process_pdu(
+        static void process_pdu(
             const pdu_data_t &,
             const pdu_t &,
             source_data_node_t &
         );
 
-        virtual void process(const entity_state_pdu_t &);
-        virtual void process(const pdu_data_t &, const fire_pdu_t &);
-        virtual void process(const pdu_data_t &, const detonation_pdu_t &);
-        virtual void process(const collision_pdu_t &);
-        virtual void process(const designator_pdu_t &);
-        virtual void process(const point_object_state_pdu_t &);
-        virtual void process(const linear_object_state_pdu_t &);
-        virtual void process(const areal_object_state_pdu_t &);
+        static void process(const entity_state_pdu_t &);
+        static void process(const pdu_data_t &, const fire_pdu_t &);
+        static void process(const pdu_data_t &, const detonation_pdu_t &);
+        static void process(const collision_pdu_t &);
+        static void process(const designator_pdu_t &);
+        static void process(const point_object_state_pdu_t &);
+        static void process(const linear_object_state_pdu_t &);
+        static void process(const areal_object_state_pdu_t &);
 
-        virtual void print_results(std::ostream &);
+        static void print_results(std::ostream &);
 
-        virtual void print_results(
+        static void print_results(
             const source_data_node_t &,
             std::ostream &
         );
 
-        std::string
+        static file_reader_t
+            *reader_ptr;
+        static std::string
+            filename,
             current_source;
-        uint64_t
+        static uint64_t
             first_pdu_time,
             last_pdu_time;
-        source_data_node_t
+        static source_data_node_t
             all_sources;
-        std::map<std::string, source_data_node_t>
+        static std::map<std::string, source_data_node_t>
             source_data;
-        std::map<id_t, entity_data_node_t>
+        static std::map<id_t, entity_data_node_t>
             entity_data;
-        std::map<id_t, object_data_node_t>
+        static std::map<id_t, object_data_node_t>
             object_data;
     };
 }

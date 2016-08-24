@@ -225,11 +225,7 @@ uint32_t vdb::file_header_comment_t::length(void) const
         size = BASE_RECORD_SIZE;
 
     size += value.length();
-
-    while((size % BOUNDARY_SIZE) > 0)
-    {
-        size++;
-    }
+    size += get_padding_length(size, BOUNDARY_SIZE);
 
     return size;
 }

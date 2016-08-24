@@ -16,6 +16,9 @@
 #include "vdb_logger.h"
 #include "vdb_test.h"
 
+uint32_t
+    vdb::test::failure_counter = 0;
+
 // ----------------------------------------------------------------------------
 int vdb::test::run(void)
 {

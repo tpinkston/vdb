@@ -27,7 +27,8 @@ namespace vdb
     std::string to_uppercase(const std::string &string);
 
     // ------------------------------------------------------------------------
-    // Removes leading and trailing whitespace characters (space and tab)
+    // Removes leading and trailing whitespace characters (spaces, tabs
+    // and carriage return characters).
 
     std::string trim(const char *buffer);
     std::string trim(const std::string &string);

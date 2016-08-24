@@ -18,8 +18,8 @@
 #include "vdb_entity_info_pdus.h"
 #include "vdb_enums.h"
 #include "vdb_environment_pdus.h"
+#include "vdb_file_readers.h"
 #include "vdb_logger.h"
-#include "vdb_options.h"
 #include "vdb_pdu.h"
 #include "vdb_pdu_data.h"
 #include "vdb_query.h"
@@ -43,6 +43,23 @@ namespace
         counters[value] += 1;
     }
 }
+
+vdb::file_reader_t
+    *vdb::query::reader_ptr = 0;
+std::string
+    vdb::query::filename,
+    vdb::query::current_source;
+uint64_t
+    vdb::query::first_pdu_time = 0,
+    vdb::query::last_pdu_time = 0;
+vdb::source_data_node_t
+    vdb::query::all_sources;
+std::map<std::string, vdb::source_data_node_t>
+    vdb::query::source_data;
+std::map<vdb::id_t, vdb::entity_data_node_t>
+    vdb::query::entity_data;
+std::map<vdb::id_t, vdb::object_data_node_t>
+    vdb::query::object_data;
 
 // ----------------------------------------------------------------------------
 bool vdb::designator_node_t::matches(const designator_pdu_t &pdu) const
@@ -277,23 +294,10 @@ void vdb::source_data_node_t::print(std::ostream &stream) const
 }
 
 // ----------------------------------------------------------------------------
-vdb::query::query(void) :
-    first_pdu_time(0),
-    last_pdu_time(0)
+int vdb::query::query_pdus(void)
 {
-
-}
-
-// ----------------------------------------------------------------------------
-vdb::query::~query(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-int vdb::query::run(void)
-{
-    int result = 0;
+    int
+        result = 0;
 
     // File argument required
     //
@@ -316,12 +320,27 @@ int vdb::query::run(void)
         LOG_EXTRA_VERBOSE("Starting query...");
 
         filename = *options::get_command_argument(0);
+        reader_ptr = new standard_reader_t(filename);
 
-        if (read_content())
+        if (not reader_ptr->good())
         {
-            parse_content();
+            result = 1;
+        }
+        else if (not reader_ptr->read_header())
+        {
+            result = 1;
+        }
+        else if (not reader_ptr->parse(process_pdu_data))
+        {
+            result = 1;
+        }
+        else
+        {
             print_results(std::cout);
         }
+
+        delete reader_ptr;
+        reader_ptr = 0;
     }
 
     return result;
@@ -349,7 +368,7 @@ bool vdb::query::print(option_e o)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process_pdu_data(const pdu_data_t &data)
+bool vdb::query::process_pdu_data(const pdu_data_t &data)
 {
     const pdu_t
         *pdu_ptr = data.generate_pdu();
@@ -399,6 +418,8 @@ void vdb::query::process_pdu_data(const pdu_data_t &data)
         delete pdu_ptr;
         pdu_ptr = 0;
     }
+
+    return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -611,7 +632,9 @@ void vdb::query::print_results(std::ostream &stream)
         stream << "[" << strerror(errno) << "]" << std::endl;
     }
 
-    header.print(std::string(), stream);
+    static_cast<standard_reader_t*>(reader_ptr)->header.print(
+        std::string(),
+        stream);
 
     if (first_pdu_time > 0)
     {

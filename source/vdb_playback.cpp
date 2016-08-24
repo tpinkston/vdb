@@ -14,6 +14,8 @@
 // ============================================================================
 
 #include "vdb_common.h"
+#include "vdb_file_readers.h"
+#include "vdb_filter.h"
 #include "vdb_logger.h"
 #include "vdb_network.h"
 #include "vdb_options.h"
@@ -23,40 +25,22 @@
 #include "vdb_print.h"
 #include "vdb_string.h"
 
-namespace
-{
-    vdb::playback
-        *instance_ptr = 0;
-}
+vdb::playback_socket_t
+    *vdb::playback::socket_ptr;
+int32_t
+    vdb::playback::port = 0;
+uint32_t
+    vdb::playback::bytes_sent = 0,
+    vdb::playback::pdus_sent = 0;
+uint64_t
+    vdb::playback::capture_start_time = 0,
+    vdb::playback::playback_start_time = 0;
+bool
+    vdb::playback::started = false,
+    vdb::playback::playing_back = false;
 
 // ----------------------------------------------------------------------------
-vdb::playback::playback(void) :
-    socket_ptr(0),
-    port(0),
-    bytes_sent(0),
-    pdus_sent(0),
-    capture_start_time(0),
-    playback_start_time(0),
-    started(false),
-    playing_back(true)
-{
-    if (instance_ptr)
-    {
-        LOG_ERROR("Already instantiated!");
-        exit(2);
-    }
-
-    instance_ptr = this;
-}
-
-// ----------------------------------------------------------------------------
-vdb::playback::~playback(void)
-{
-    instance_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
-int vdb::playback::run(void)
+int vdb::playback::playback_pdus(void)
 {
     int result = 0;
 
@@ -93,16 +77,43 @@ int vdb::playback::run(void)
     }
     else
     {
+        const std::string
+            filename = *options::get_command_argument(0);
+
         LOG_EXTRA_VERBOSE("Starting playback...");
 
-        filename = *options::get_command_argument(1);
+        file_reader_t
+            *reader_ptr = new standard_reader_t(filename);
 
-        open_socket();
-        register_signal();
-        read_content();
-        parse_content();
-        print_stats(std::cout);
-        close_socket();
+        if (not reader_ptr->good())
+        {
+            result = 1;
+        }
+        else if (not reader_ptr->read_header())
+        {
+            result = 1;
+        }
+        else
+        {
+            open_socket();
+            register_signal();
+
+            playing_back = true;
+
+            if (not reader_ptr->parse(process_pdu_data))
+            {
+                result = 1;
+            }
+            else
+            {
+                print_stats(std::cout);
+            }
+
+            close_socket();
+        }
+
+        delete reader_ptr;
+        reader_ptr = 0;
     }
 
     return result;
@@ -135,23 +146,23 @@ void vdb::playback::close_socket(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::process_pdu_data(const pdu_data_t &pdu_data)
+bool vdb::playback::process_pdu_data(const pdu_data_t &data)
 {
     bool
         past_end = false;
 
-    if (options::pdu_index_in_range(pdu_data.get_index(), past_end))
+    if (options::pdu_index_in_range(data.get_index(), past_end))
     {
-        if (passes_data_filters(pdu_data))
+        if (filter::filter_by_header(data))
         {
             const pdu_t
-                *pdu_ptr = pdu_data.generate_pdu();
+                *pdu_ptr = data.generate_pdu();
 
             if (pdu_ptr)
             {
-                if (passes_pdu_filters(*pdu_ptr))
+                if (filter::filter_by_content(*pdu_ptr))
                 {
-                    send_pdu(pdu_data, *pdu_ptr);
+                    send_pdu(data, *pdu_ptr);
                 }
 
                 delete pdu_ptr;
@@ -160,13 +171,7 @@ void vdb::playback::process_pdu_data(const pdu_data_t &pdu_data)
         }
     }
 
-    if (past_end or not playing_back)
-    {
-        // Puts index at the end of the buffer to terminate any
-        // more processing.
-        //
-        stream.reset_index(stream.get_length());
-    }
+    return (playing_back and not past_end);
 }
 
 // ----------------------------------------------------------------------------
@@ -182,16 +187,15 @@ void vdb::playback::send_pdu(const pdu_data_t &pdu_data, const pdu_t &pdu)
     else
     {
         const uint64_t
-            capture_time_elapsed = (pdu_data.get_time() - capture_start_time),
-            playback_time_elapsed = (time::get_system() - playback_start_time);
+            capture_elapsed = (pdu_data.get_time() - capture_start_time),
+            playback_elapsed = (time::get_system() - playback_start_time);
         int32_t
-            delay_time = (int32_t)(capture_time_elapsed - playback_time_elapsed);
+            delay_time = (int32_t)(capture_elapsed - playback_elapsed);
 
         LOG_EXTRA_VERBOSE(
             "Time elapsed: capture = %d, playback = %d...",
-            capture_time_elapsed,
-            playback_time_elapsed);
-        LOG_VERBOSE("Delay time is %d...", delay_time);
+            capture_elapsed,
+            playback_elapsed);
 
         if (delay_time > 0)
         {
@@ -236,8 +240,5 @@ void vdb::playback::print_stats(std::ostream &stream)
 // ----------------------------------------------------------------------------
 void vdb::playback::signal_handler(int value)
 {
-    if (instance_ptr)
-    {
-        instance_ptr->playing_back = false;
-    }
+    playing_back = false;
 }

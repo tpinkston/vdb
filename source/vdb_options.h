@@ -16,7 +16,6 @@
 #ifndef VDB_OPTIONS_H
 #define VDB_OPTIONS_H
 
-#include "vdb_command.h"
 #include "vdb_common.h"
 #include "vdb_enums.h"
 
@@ -30,6 +29,23 @@ namespace vdb
 {
     class id_t;
     class pdu_t;
+
+    // ------------------------------------------------------------------------
+    typedef enum
+    {
+        USER_COMMAND_NONE,
+        USER_COMMAND_CAPTURE,
+        USER_COMMAND_PLAYBACK,
+        USER_COMMAND_LIST,
+        USER_COMMAND_QUERY,
+        USER_COMMAND_COMMENT,
+        USER_COMMAND_UNCOMMENT,
+        USER_COMMAND_ENUMS,
+        USER_COMMAND_ENTITIES,
+        USER_COMMAND_OBJECTS,
+        USER_COMMAND_TEST
+
+    } user_command_e;
 
     // ------------------------------------------------------------------------
     typedef enum

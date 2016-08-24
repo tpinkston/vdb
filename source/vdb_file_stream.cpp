@@ -42,12 +42,14 @@ vdb::file_stream::~file_stream(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::file_stream::read_file(const std::string &filename)
+bool vdb::file_stream::read_file(const std::string &filename)
 {
     std::ifstream
         stream;
     std::streamsize
         bytes_read = 0;
+    bool
+        success = false;
 
     reset();
 
@@ -59,54 +61,63 @@ void vdb::file_stream::read_file(const std::string &filename)
     {
         std::cerr << options::get_terminal_command()
                   << ": failed to open file: " << filename << std::endl;
-        exit(-1);
     }
-
-    // Go to EOF to get the length.
-    //
-    stream.seekg(0, std::ios::end);
-
-    buffer_length = stream.tellg();
-
-    if (stream.fail())
+    else
     {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to read file: " << filename << std::endl;
-        exit(1);
+        // Go to EOF to get the length.
+        //
+        stream.seekg(0, std::ios::end);
+
+        buffer_length = stream.tellg();
+
+        if (stream.fail())
+        {
+            std::cerr << options::get_terminal_command()
+                      << ": failed to read file: " << filename << std::endl;
+        }
+        else
+        {
+            buffer = new uint8_t[buffer_length];
+
+            LOG_VERBOSE("Allocated buffer with %d bytes...", buffer_length);
+
+            // Go back to the beginning and read the entire file.
+            //
+            stream.seekg(0, std::ios::beg);
+            stream.read((char *)buffer, buffer_length);
+
+            if (stream.fail())
+            {
+                std::cerr << options::get_terminal_command()
+                          << ": failed to read file: " << filename
+                          << std::endl;
+            }
+            else
+            {
+                bytes_read = stream.gcount();
+
+                if (bytes_read != buffer_length)
+                {
+                    std::cerr << options::get_terminal_command()
+                              << ": failed to read (" << bytes_read
+                              << " of " << buffer_length
+                              << " bytes) from file: "
+                              << filename << std::endl;
+                }
+                else
+                {
+                    stream.close();
+
+                    LOG_VERBOSE("Bytes read from file is %d...", bytes_read);
+
+                    reset_index(0);
+                    success = true;
+                }
+            }
+        }
     }
 
-    buffer = new uint8_t[buffer_length];
-
-    LOG_VERBOSE("Allocated buffer with %d bytes...", buffer_length);
-
-    // Go back to the beginning and read the entire file.
-    //
-    stream.seekg(0, std::ios::beg);
-    stream.read((char *)buffer, buffer_length);
-
-    if (stream.fail())
-    {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to read file: " << filename << std::endl;
-        exit(1);
-    }
-
-    bytes_read = stream.gcount();
-
-    if (bytes_read != buffer_length)
-    {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to read (" << bytes_read
-                  << " of " << buffer_length << " bytes) from file: "
-                  << filename << std::endl;
-        exit(1);
-    }
-
-    stream.close();
-
-    LOG_VERBOSE("Bytes read from file is %d...", bytes_read);
-
-    reset_index(0);
+    return success;
 }
 
 // ----------------------------------------------------------------------------

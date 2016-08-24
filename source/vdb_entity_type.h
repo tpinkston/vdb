@@ -16,7 +16,6 @@
 #ifndef VDB_ENTITY_TYPE_H
 #define VDB_ENTITY_TYPE_H
 
-#include "vdb_command.h"
 #include "vdb_enums.h"
 #include "vdb_object.h"
 
@@ -105,16 +104,13 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class entity_type_data : public command
+    class entity_type_data
     {
       public:
 
-        entity_type_data(void);
-        virtual ~entity_type_data(void);
-
-        virtual int run(void);
-
         static void load(void);
+
+        static void print(std::ostream &stream);
 
         static void convert_to_value(
             const uint8_t kind,
@@ -145,8 +141,6 @@ namespace vdb
         static bool get_description(uint64_t value, std::string &description);
 
       private:
-
-        static void print(std::ostream &stream);
 
         static void add_all(void);
 
@@ -320,26 +314,6 @@ inline void vdb::entity_type_t::set_extra(uint8_t value)
     extra = value;
     name.clear();
     description.clear();
-}
-
-// ----------------------------------------------------------------------------
-inline int vdb::entity_type_data::run(void)
-{
-    print(std::cout);
-
-    return 0;
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::entity_type_data::entity_type_data(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::entity_type_data::~entity_type_data(void)
-{
-
 }
 
 #endif

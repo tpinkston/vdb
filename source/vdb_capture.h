@@ -16,46 +16,49 @@
 #ifndef VDB_CAPTURE_H
 #define VDB_CAPTURE_H
 
-#include "vdb_command.h"
-#include "vdb_file_handler.h"
+#include "vdb_common.h"
 
 namespace vdb
 {
     class capture_socket_t;
     class pdu_data_t;
 
-    class capture : public file_handler, public command
+    class capture
     {
       public:
 
-        capture(void);
-        virtual ~capture(void);
+        static int capture_pdus(void);
 
-        virtual int run(void);
+      private:
 
-      protected:
+        static void open_socket(void);
+        static void close_socket(void);
 
-        void open_socket(void);
-        void close_socket(void);
+        static bool open_output_file(const std::string &filename);
+        static bool close_output_file(const std::string &filename);
 
-        void register_signal(void);
+        static void write_pdu_data(const pdu_data_t &data);
 
-        void start(void);
+        static void register_signal(void);
 
-        void print_stats(std::ostream &stream);
+        static void start(void);
+
+        static void print_stats(std::ostream &stream);
 
         static void signal_handler(int value);
 
-        capture_socket_t
+        static FILE
+            *file_ptr;
+        static capture_socket_t
             *socket_ptr;
-        int32_t
+        static int32_t
             port;
-        uint32_t
+        static uint32_t
             bytes_received,
             bytes_accepted,
             pdus_received,
             pdus_accepted;
-        bool
+        static bool
             capturing;
     };
 }

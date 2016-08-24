@@ -15,6 +15,24 @@
 
 #include "vdb_string.h"
 
+namespace
+{
+    // ------------------------------------------------------------------------
+    bool is_whitespace(char ch)
+    {
+        switch(ch)
+        {
+            case ' ':
+            case '\t':
+            case '\r':
+            case '\n':
+                return true;
+        }
+
+        return false;
+    }
+}
+
 // ----------------------------------------------------------------------------
 std::string vdb::to_lowercase(const std::string &string)
 {
@@ -61,7 +79,7 @@ std::string vdb::trim(const std::string &string)
 
     // Strip off leading whitespace.
     //
-    while(not trimmed.empty() and ((trimmed[i] == ' ') or (trimmed[i] == '\t')))
+    while(not trimmed.empty() and is_whitespace(trimmed[i]))
     {
         trimmed.erase(0, 1);
     }
@@ -70,7 +88,7 @@ std::string vdb::trim(const std::string &string)
 
     // Strip off trailing whitespace.
     //
-    while(not trimmed.empty() and ((trimmed[i] == ' ') or (trimmed[i] == '\t')))
+    while(not trimmed.empty() and is_whitespace(trimmed[i]))
     {
         trimmed.erase(i, 1);
 

@@ -40,6 +40,30 @@ namespace vdb
 }
 
 // ----------------------------------------------------------------------------
+void vdb::enumerations::print(std::ostream &stream)
+{
+    enum_definitions_t::const_iterator
+        definitions_itor = definitions.begin();
+
+    while(definitions_itor != definitions.end())
+    {
+        enum_entries_t::const_iterator
+            entries_itor = definitions_itor->second.begin();
+
+        while(entries_itor != definitions_itor->second.end())
+        {
+            stream << definitions_itor->first << ","
+                   << entries_itor->first << ","
+                   << entries_itor->second << std::endl;
+
+            ++entries_itor;
+        }
+
+        ++definitions_itor;
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdb::enumerations::load(void)
 {
     if (not loaded)
@@ -110,30 +134,6 @@ std::string vdb::enumerations::get_name(
     }
 
     return (enumeration + "_" + generic_to_string(value));
-}
-
-// ----------------------------------------------------------------------------
-void vdb::enumerations::print(std::ostream &stream)
-{
-    enum_definitions_t::const_iterator
-        definitions_itor = definitions.begin();
-
-    while(definitions_itor != definitions.end())
-    {
-        enum_entries_t::const_iterator
-            entries_itor = definitions_itor->second.begin();
-
-        while(entries_itor != definitions_itor->second.end())
-        {
-            stream << definitions_itor->first << ","
-                   << entries_itor->first << ","
-                   << entries_itor->second << std::endl;
-
-            ++entries_itor;
-        }
-
-        ++definitions_itor;
-    }
 }
 
 // ----------------------------------------------------------------------------

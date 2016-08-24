@@ -30,7 +30,7 @@ namespace vdb
         file_stream(const file_stream &copy);
         virtual ~file_stream(void);
 
-        virtual void read_file(const std::string &filename);
+        virtual bool read_file(const std::string &filename);
         virtual void write_file(const std::string &filename);
     };
 }

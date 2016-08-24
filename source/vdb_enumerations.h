@@ -16,19 +16,15 @@
 #ifndef VDB_ENUMERATIONS_H
 #define VDB_ENUMERATIONS_H
 
-#include "vdb_command.h"
 #include "vdb_common.h"
 
 namespace vdb
 {
-    class enumerations : public command
+    class enumerations
     {
       public:
 
-        enumerations(void);
-        virtual ~enumerations(void);
-
-        virtual int run(void);
+        static void print(std::ostream &stream);
 
         static void load(void);
 
@@ -61,8 +57,6 @@ namespace vdb
 
       private:
 
-        static void print(std::ostream &stream);
-
         static void add_all(void);
 
         static void add(
@@ -76,26 +70,6 @@ namespace vdb
         static bool
             loaded;
     };
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::enumerations::enumerations(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::enumerations::~enumerations(void)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline int vdb::enumerations::run(void)
-{
-    print(std::cout);
-
-    return 0;
 }
 
 #endif

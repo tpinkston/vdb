@@ -16,49 +16,43 @@
 #ifndef VDB_PLAYBACK_H
 #define VDB_PLAYBACK_H
 
-#include "vdb_command.h"
-#include "vdb_file_handler.h"
-
 namespace vdb
 {
     class pdu_t;
     class playback_socket_t;
 
-    class playback : public file_handler, public command
+    class playback
     {
       public:
 
-        playback(void);
-        virtual ~playback(void);
+        static int playback_pdus(void);
 
-        virtual int run(void);
+      private:
 
-      protected:
+        static void open_socket(void);
+        static void close_socket(void);
 
-        void open_socket(void);
-        void close_socket(void);
+        static bool process_pdu_data(const pdu_data_t &data);
 
-        virtual void process_pdu_data(const pdu_data_t &pdu_data);
+        static void send_pdu(const pdu_data_t &pdu_data, const pdu_t &pdu);
 
-        virtual void send_pdu(const pdu_data_t &pdu_data, const pdu_t &pdu);
+        static void register_signal(void);
 
-        void register_signal(void);
-
-        void print_stats(std::ostream &stream);
+        static void print_stats(std::ostream &stream);
 
         static void signal_handler(int value);
 
-        playback_socket_t
+        static playback_socket_t
             *socket_ptr;
-        int32_t
+        static int32_t
             port;
-        uint32_t
+        static uint32_t
             bytes_sent,
             pdus_sent;
-        uint64_t
+        static uint64_t
             capture_start_time,
             playback_start_time;
-        bool
+        static bool
             started,
             playing_back;
     };

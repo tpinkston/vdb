@@ -15,6 +15,7 @@
 
 #include "vdb_byte_stream.h"
 #include "vdb_hexadecimal.h"
+#include "vdb_logger.h"
 #include "vdb_services.h"
 #include "vdb_standard_variable_record.h"
 #include "vdb_string.h"

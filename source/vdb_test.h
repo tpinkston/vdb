@@ -16,7 +16,6 @@
 #ifndef TEST_H
 #define TEST_H
 
-#include "vdb_command.h"
 #include "vdb_common.h"
 #include "vdb_color.h"
 
@@ -26,35 +25,20 @@
 namespace vdb
 {
     // ------------------------------------------------------------------------
-    class test : public command
+    class test
     {
       public:
 
-        test(void);
-        virtual ~test(void);
-
-        virtual int run(void);
-
-        void test_common(void);
-        void test_vdis_types(void);
+        static int run(void);
 
       protected:
 
-        uint32_t
+        static void test_common(void);
+        static void test_vdis_types(void);
+
+        static uint32_t
             failure_counter;
     };
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::test::test(void) : failure_counter(0)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-inline vdb::test::~test(void)
-{
-
 }
 
 // ----------------------------------------------------------------------------

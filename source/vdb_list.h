@@ -16,29 +16,21 @@
 #ifndef VDB_LIST_H
 #define VDB_LIST_H
 
-#include "vdb_command.h"
-#include "vdb_file_handler.h"
-
 namespace vdb
 {
-    class list : public file_handler, public command
+    class pdu_data_t;
+
+    class list
     {
       public:
 
-        list(void);
-        virtual ~list(void);
-
-        virtual int run(void);
+        static int list_pdus(void);
 
       protected:
 
-        virtual void process_pdu_data(const pdu_data_t &data);
+        static bool process_pdu_data(const pdu_data_t &data);
 
-        virtual bool passes_data_filters(const pdu_data_t &data);
-
-        const std::string
-            *address_ptr;
-        uint32_t
+        static uint32_t
             pdus_listed,
             pdus_filtered_out;
     };

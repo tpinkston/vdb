@@ -14,7 +14,6 @@
 // ============================================================================
 
 #include "vdb_capture.h"
-#include "vdb_command.h"
 #include "vdb_comments.h"
 #include "vdb_entity_type.h"
 #include "vdb_enumerations.h"
@@ -44,8 +43,6 @@ void print_usage_objects(void);
 // ----------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    vdb::command
-        *command_ptr = 0;
     int
         result = 0;
 
@@ -75,34 +72,34 @@ int main(int argc, char *argv[])
             switch(vdb::options::get_command())
             {
                 case vdb::USER_COMMAND_CAPTURE:
-                    command_ptr = new vdb::capture();
+                    result = vdb::capture::capture_pdus();
                     break;
                 case vdb::USER_COMMAND_PLAYBACK:
-                    command_ptr = new vdb::playback();
+                    result = vdb::playback::playback_pdus();
                     break;
                 case vdb::USER_COMMAND_LIST:
-                    command_ptr = new vdb::list();
+                    result = vdb::list::list_pdus();
                     break;
                 case vdb::USER_COMMAND_QUERY:
-                    command_ptr = new vdb::query();
+                    result = vdb::query::query_pdus();
                     break;
                 case vdb::USER_COMMAND_COMMENT:
-                    command_ptr = new vdb::comment();
+                    result = vdb::comments::add();
                     break;
                 case vdb::USER_COMMAND_UNCOMMENT:
-                    command_ptr = new vdb::uncomment();
+                    result = vdb::comments::remove();
                     break;
                 case vdb::USER_COMMAND_ENUMS:
-                    command_ptr = new vdb::enumerations();
+                    vdb::enumerations::print(std::cout);
                     break;
                 case vdb::USER_COMMAND_ENTITIES:
-                    command_ptr = new vdb::entity_type_data();
+                    vdb::entity_type_data::print(std::cout);
                     break;
                 case vdb::USER_COMMAND_OBJECTS:
-                    command_ptr = new vdb::object_type_data();
+                    vdb::object_type_data::print(std::cout);
                     break;
                 case vdb::USER_COMMAND_TEST:
-                    command_ptr = new vdb::test();
+                    vdb::test::run();
                     break;
                 default:
                     if (not vdb::options::flag(vdb::OPT_VERSION))
@@ -113,15 +110,6 @@ int main(int argc, char *argv[])
                         result = 1;
                     }
                     break;
-            }
-
-            if (command_ptr)
-            {
-                LOG_VERBOSE("Running command...");
-                result = command_ptr->run();
-
-                delete command_ptr;
-                command_ptr = 0;
             }
         }
     }
