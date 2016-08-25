@@ -9,6 +9,7 @@ SET(VDB_SOURCE_PATH ../source)
 SET(CMAKE_BUILD_TYPE Debug)
 SET(CMAKE_CXX_FLAGS "-g -std=c++0x -Wall")
 SET(EXECUTABLE_OUTPUT_PATH ../)
+SET(PCAP_PATH libpcap-1.7.4)
 
 CONFIGURE_FILE(
     ${VDB_SOURCE_PATH}/vdb_version.h.in
@@ -16,11 +17,20 @@ CONFIGURE_FILE(
 )
  
 INCLUDE_DIRECTORIES(
+    ${PCAP_PATH}
     ${VDB_SOURCE_PATH}
     ${VDB_SOURCE_PATH}/enumerations
+)
+
+# This is needed to suppress the "relative path" warning for the 
+# LINK_DIRECTORIES command...
+CMAKE_POLICY(SET CMP0015 NEW)
+
+LINK_DIRECTORIES(
+    ${PCAP_PATH}
 )
 
 FILE(GLOB VDB_SOURCES ${VDB_SOURCE_PATH}/*.cpp)
 
 ADD_EXECUTABLE(${VDB_NAME} ${VDB_SOURCES})
-
+TARGET_LINK_LIBRARIES(${VDB_NAME} pcap)

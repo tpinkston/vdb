@@ -36,24 +36,32 @@ vdb::file_reader_t::~file_reader_t(void)
 // ----------------------------------------------------------------------------
 bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
 {
-    const uint64_t
-        start_time = time::get_system();
-    pdu_data_t
-        data;
-    bool
-        parsing = true;
-
-    LOG_VERBOSE("Parsing file content...");
-
-    while(parsing and good() and next_entry(data))
+    if (callback)
     {
-        parsing = callback(data);
+        const uint64_t
+            start_time = time::get_system();
+        pdu_data_t
+            data;
+        bool
+            parsing = true;
+
+        LOG_VERBOSE("Parsing file content...");
+
+        while(parsing and good() and next_entry(data))
+        {
+            parsing = callback(data);
+        }
+
+        const uint64_t
+            parse_time = (time::get_system() - start_time);
+
+        LOG_VERBOSE("Parsing completed in %d milliseconds...", parse_time);
     }
-
-    const uint64_t
-        parse_time = (time::get_system() - start_time);
-
-    LOG_VERBOSE("Parsing completed in %d milliseconds...", parse_time);
+    else
+    {
+        LOG_ERROR("Parsing callback function is null!");
+        error_condition = true;
+    }
 
     return good();
 }
