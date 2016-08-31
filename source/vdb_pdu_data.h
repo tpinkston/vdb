@@ -19,7 +19,6 @@
 #include "vdb_common.h"
 #include "vdb_network.h"
 #include "vdb_object.h"
-#include "vdb_pcap.h"
 
 namespace vdb
 {

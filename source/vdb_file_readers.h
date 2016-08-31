@@ -19,7 +19,7 @@
 #include "vdb_common.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
-#include "vdb_pcap.h"
+#include "vdb_network.h"
 
 namespace vdb
 {

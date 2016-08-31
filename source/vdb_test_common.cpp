@@ -18,7 +18,6 @@
 #include "vdb_byte_stream.h"
 #include "vdb_hexadecimal.h"
 #include "vdb_logger.h"
-#include "vdb_pcap.h"
 #include "vdb_string.h"
 #include "vdb_test.h"
 
@@ -50,10 +49,6 @@ void vdb::test::test_common(void)
     std::cout << "sizeof(iphdr) = " << sizeof(iphdr) << std::endl;
     std::cout << "sizeof(ip6_hdr) = " << sizeof(ip6_hdr) << std::endl;
     std::cout << "sizeof(udphdr) = " << sizeof(udphdr) << std::endl;
-    std::cout << "sizeof(pcap_ethernet_t) = " << sizeof(pcap_ethernet_t) << std::endl;
-    std::cout << "sizeof(ipv4_header_t) = " << sizeof(ipv4_header_t) << std::endl;
-    std::cout << "sizeof(ipv6_header_t) = " << sizeof(ipv6_header_t) << std::endl;
-    std::cout << "sizeof(udp_header_t) = " << sizeof(udp_header_t) << std::endl;
 }
 
 #ifdef __CYGWIN__

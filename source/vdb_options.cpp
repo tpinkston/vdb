@@ -107,7 +107,6 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_CAPTURE].insert(OPT_VERBOSE);
     command_options[USER_COMMAND_CAPTURE].insert(OPT_ERRORS_OFF);
     command_options[USER_COMMAND_CAPTURE].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_PCAP);
 
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_NET_ADDRESS);
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_COLOR_OFF);

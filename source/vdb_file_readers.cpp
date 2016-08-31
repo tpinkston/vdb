@@ -200,12 +200,18 @@ bool vdb::pcap_reader_t::read_pcap_entry(
     byte_stream &stream,
     pdu_data_t &data)
 {
-    pcap_ethernet_t
-        ethernet;
-    ip_header_t
-        *ip_header_ptr = 0;
-    udp_header_t
-        udp_header;
+    uint16_t
+        ethernet_type = 0,
+        source_port = 0,
+        destination_port = 0;
+    int8_t
+        protocol = 0;
+    inet_address_t
+        address_ipv4;
+    inet6_address_t
+        address_ipv6;
+    void
+        *address_ptr = 0;
     bool
         valid_entry = false;
 
@@ -213,43 +219,75 @@ bool vdb::pcap_reader_t::read_pcap_entry(
     //
     data.clear();
 
-    ethernet.read(stream);
+    // First 12 bytes are the destination and source MAC addresses (6 bytes
+    // each), skip them and read unsigned 16-bit ethernet type...
+    //
+    stream.skip(12);
+    stream.read(ethernet_type);
 
     if (not stream.error())
     {
-        if (options::flag(OPT_EXTRA_VERBOSE))
-        {
-            ethernet.print("pcap.ethernet.", std::cout);
-        }
+        LOG_EXTRA_VERBOSE("Ethernet type is 0x%04X...", ethernet_type)
 
-        if (ethernet.type == ETHERTYPE_IP)
+        // Next is either the IPv4 or IPv6 header:
+        // struct iphdr (20 bytes)
+        // struct ip6_hdr (40 bytes)
+        //
+        if (ethernet_type == ETHERTYPE_IP)
         {
-            ip_header_ptr = new ipv4_header_t();
-            ip_header_ptr->read(stream);
+            address_ptr = &address_ipv4;
+
+            // Skip 9 bytes then read the 8-bit protocol value
+            //
+            stream.skip(9);
+            stream.read(protocol);
+
+            // Skip another 2 bytes bytes then read the 4-byte source IP
+            // address, then skip another 4 bytes for the destination IP
+            //
+            stream.skip(2);
+            stream.read(address_ptr, sizeof(inet_address_t));
+            stream.skip(4);
         }
-        else if (ethernet.type == ETHERTYPE_IPV6)
+        else if (ethernet_type == ETHERTYPE_IPV6)
         {
-            ip_header_ptr = new ipv6_header_t();
-            ip_header_ptr->read(stream);
+            address_ptr = &address_ipv6;
+
+            // Skip 8 bytes bytes then read the 16-byte source IP address,
+            // then skip another 16 bytes for the destination IP
+            //
+            stream.skip(8);
+            stream.read(address_ptr, sizeof(inet6_address_t));
+            stream.skip(16);
         }
         else
         {
-            LOG_WARNING("Unexpected ethernet type: %d", ethernet.type)
+            LOG_WARNING("Unexpected ethernet type: 0x%04X", ethernet_type)
         }
 
-        if (ip_header_ptr and not stream.error())
+        if (address_ptr and not stream.error())
         {
             if (options::flag(OPT_EXTRA_VERBOSE) and not stream.error())
             {
-                ip_header_ptr->print("ip_header.", std::cout);
+                if (address_ptr == &address_ipv4)
+                {
+                    LOG_EXTRA_VERBOSE(
+                        "Source IPv4 address is %s...",
+                        network::get_address(AF_INET, &address_ipv4).c_str());
+                }
+                else
+                {
+                    LOG_EXTRA_VERBOSE(
+                        "Source IPv6 address is %s...",
+                        network::get_address(AF_INET6, &address_ipv6).c_str());
+                }
             }
 
             // The first entry in PCAP files written by the SE Core Gateway
             // are not PDUs but some other data related to the BRPS.  The
             // observable difference is that the protocol value will be -1.
             //
-            if (ip_header_ptr->get_protocol() and
-                (*ip_header_ptr->get_protocol() < 0))
+            if (protocol < 0)
             {
                 // Let entry go through as valid but with empty PDU data.
                 //
@@ -257,14 +295,21 @@ bool vdb::pcap_reader_t::read_pcap_entry(
             }
             else
             {
-                udp_header.read(stream);
+                // Read the the source and destination port from the UPD
+                // header record.  Then skip the remaining 4 bytes.
+                //
+                stream.read(source_port);
+                stream.read(destination_port);
+                stream.skip(4);
 
                 if (not stream.error())
                 {
-                    if (options::flag(OPT_EXTRA_VERBOSE))
-                    {
-                        udp_header.print("udp_header.", std::cout);
-                    }
+                    LOG_EXTRA_VERBOSE(
+                        "Source port %d...",
+                        source_port);
+                    LOG_EXTRA_VERBOSE(
+                        "Destination port %d...",
+                        destination_port);
 
                     data.set_index(index_counter++);
                     data.set_time(time::get_system(header.ts));
@@ -275,41 +320,19 @@ bool vdb::pcap_reader_t::read_pcap_entry(
                         (uint8_t *)(stream.get_buffer() + stream.get_index()),
                         stream.get_length_remaining());
 
-                    if (ethernet.type == ETHERTYPE_IP)
+                    if (ethernet_type == ETHERTYPE_IP)
                     {
-                        inet_address_t
-                            address;
-
-                        std::memcpy(
-                            &address,
-                            ip_header_ptr->get_source_address(),
-                            ip_header_ptr->get_address_size());
-
-                        data.set_source(address, udp_header.destination_port);
+                        data.set_source(address_ipv4, destination_port);
                     }
-                    else if (ethernet.type == ETHERTYPE_IPV6)
+                    else
                     {
-                        inet6_address_t
-                            address;
-
-                        std::memcpy(
-                            &address,
-                            ip_header_ptr->get_source_address(),
-                            ip_header_ptr->get_address_size());
-
-                        data.set_source(address, udp_header.destination_port);
+                        data.set_source(address_ipv6, destination_port);
                     }
 
                     valid_entry = true;
                 }
             }
         }
-    }
-
-    if (ip_header_ptr)
-    {
-        delete ip_header_ptr;
-        ip_header_ptr = 0;
     }
 
     return valid_entry;
