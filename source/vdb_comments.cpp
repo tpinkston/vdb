@@ -86,7 +86,7 @@ int vdb::comments::add(void)
         standard_reader_t
             reader(filename);
 
-        if (reader.good() and reader.read_header())
+        if (reader.good())
         {
             const uint32_t
                 comment_length = comment.length(),
@@ -177,7 +177,7 @@ int vdb::comments::remove(void)
         standard_reader_t
             reader(filename);
 
-        if (reader.good() and reader.read_header())
+        if (reader.good())
         {
             if (reader.header.comments.size() == 0)
             {

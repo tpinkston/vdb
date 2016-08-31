@@ -13,6 +13,7 @@ Options:
   -t --pdu-type=T1,...      Captures only PDUs with PDU type T (numeric)
   -f --pdu-family=F1,...    Captures only PDUs with PDU family F (numeric)
   -i --ids=I1,...           Captures only PDUs with specified entity ID(s)
+  -p --pcap                 Writes to FILE in 'pcap' form (if applicable)
   -h --help                 Print this info
   -x --extract              Print PDU data extraction (overrides -s)
   -q --quiet                Print as little as possible

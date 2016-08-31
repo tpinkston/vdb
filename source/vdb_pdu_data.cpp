@@ -44,34 +44,34 @@ uint16_t vdb::pdu_data_t::get_hostname_length(void) const
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet_socket_address_t &socket_address,
+    const inet_address_t &source_address,
     uint16_t socket_port)
 {
-    LOG_VERBOSE("Setting address with IPv4 address...");
+    LOG_EXTRA_VERBOSE("Setting address with IPv4 address...");
 
     port = socket_port;
     ip_version = 4;
     hostname.clear();
-    network::get_hostname(socket_address, hostname);
+    network::get_hostname(source_address, hostname);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &socket_address.sin_addr, sizeof(inet_address_t));
+    std::memcpy(address, &source_address, sizeof(inet_address_t));
 }
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet6_socket_address_t &socket_address,
+    const inet6_address_t &source_address,
     uint16_t socket_port)
 {
-    LOG_VERBOSE("Setting address with IPv6 address...");
+    LOG_EXTRA_VERBOSE("Setting address with IPv6 address...");
 
     port = socket_port;
     ip_version = 6;
     hostname.clear();
-    network::get_hostname(socket_address, hostname);
+    network::get_hostname(source_address, hostname);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &socket_address.sin6_addr, sizeof(inet6_address_t));
+    std::memcpy(address, &source_address, sizeof(inet6_address_t));
 }
 
 // ----------------------------------------------------------------------------

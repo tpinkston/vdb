@@ -10,7 +10,8 @@ Options:
   -t --pdu-type=T1,...      List only PDUs with PDU type T (numeric)
   -f --pdu-family=F1,...    List only PDUs with PDU family F (numeric)
   -i --ids=I1,...           List only PDUs with specified entity ID(s)
-  -p --pdu-range=RANGE      List only PDUs in specified range (indexes)
+  -r --range=RANGE          List only PDUs in specified range (indexes)
+  -p --pcap                 Assumes FILE is a 'pcap' file 
   -h --help                 Print this info
   -d --dump                 Print PDU hex dump (overrides -s and -x)
   -x --extract              Print PDU data extraction (overrides -s)

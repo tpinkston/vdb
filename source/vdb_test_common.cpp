@@ -14,9 +14,11 @@
 // ============================================================================
 
 #include "vdb_binary.h"
+#include "vdb_bits.h"
 #include "vdb_byte_stream.h"
 #include "vdb_hexadecimal.h"
 #include "vdb_logger.h"
+#include "vdb_pcap.h"
 #include "vdb_string.h"
 #include "vdb_test.h"
 
@@ -28,6 +30,7 @@ int test_common_hexadecimal(void);
 int test_common_logger(void);
 int test_common_string(void);
 int test_common_byte_stream(void);
+int test_common_bits(void);
 
 // ----------------------------------------------------------------------------
 void vdb::test::test_common(void)
@@ -41,6 +44,16 @@ void vdb::test::test_common(void)
     failure_counter += test_common_hexadecimal();
     failure_counter += test_common_string();
     failure_counter += test_common_byte_stream();
+    failure_counter += test_common_bits();
+
+    std::cout << "sizeof(ip) = " << sizeof(ip) << std::endl;
+    std::cout << "sizeof(iphdr) = " << sizeof(iphdr) << std::endl;
+    std::cout << "sizeof(ip6_hdr) = " << sizeof(ip6_hdr) << std::endl;
+    std::cout << "sizeof(udphdr) = " << sizeof(udphdr) << std::endl;
+    std::cout << "sizeof(pcap_ethernet_t) = " << sizeof(pcap_ethernet_t) << std::endl;
+    std::cout << "sizeof(ipv4_header_t) = " << sizeof(ipv4_header_t) << std::endl;
+    std::cout << "sizeof(ipv6_header_t) = " << sizeof(ipv6_header_t) << std::endl;
+    std::cout << "sizeof(udp_header_t) = " << sizeof(udp_header_t) << std::endl;
 }
 
 #ifdef __CYGWIN__
@@ -331,6 +344,81 @@ int test_common_byte_stream(void)
         9,
         16,
         std::cout);
+
+    return (failure_counter > 0) ? 1 : 0;
+}
+
+// ----------------------------------------------------------------------------
+int test_common_bits(void)
+{
+    std::cout << "==============================================" << std::endl;
+    std::cout << "test_common_bits" << std::endl;
+    std::cout << "==============================================" << std::endl;
+
+    vdb::record8_t
+        b1;
+    vdb::record16_t
+        b2;
+    int
+        failure_counter = 0;
+
+    ASSERT_TRUE(A1, sizeof(vdb::record8_t) == 1);
+    ASSERT_TRUE(A2, sizeof(b1) == 1);
+
+    b1.value = (0x0D);
+
+    std::cout << "b1.s1.v1 = " << (int)b1.s1.v1 << std::endl;
+    std::cout << "b1.s1.v2 = " << (int)b1.s1.v2 << std::endl;
+    std::cout << "b1.s1.v3 = " << (int)b1.s1.v3 << std::endl;
+    std::cout << "b1.s1.v4 = " << (int)b1.s1.v4 << std::endl;
+    std::cout << "b1.s1.v5 = " << (int)b1.s1.v5 << std::endl;
+    std::cout << "b1.s1.v6 = " << (int)b1.s1.v6 << std::endl;
+    std::cout << "b1.s1.v7 = " << (int)b1.s1.v7 << std::endl;
+    std::cout << "b1.s1.v8 = " << (int)b1.s1.v8 << std::endl;
+    std::cout << std::endl;
+    std::cout << "b1.s2.v1 = " << (int)b1.s2.v1 << std::endl;
+    std::cout << "b1.s2.v2 = " << (int)b1.s2.v2 << std::endl;
+    std::cout << "b1.s2.v3 = " << (int)b1.s2.v3 << std::endl;
+    std::cout << "b1.s2.v4 = " << (int)b1.s2.v4 << std::endl;
+    std::cout << std::endl;
+    std::cout << "b1.s4.v1 = " << (int)b1.s4.v1 << std::endl;
+    std::cout << "b1.s4.v2 = " << (int)b1.s4.v2 << std::endl;
+
+    ASSERT_TRUE(B1, sizeof(vdb::record16_t) == 2);
+    ASSERT_TRUE(B2, sizeof(b2) == 2);
+
+    b2.value = (0x0D0D);
+
+    std::cout << "b2.s1.v1 = " << (int)b2.s1.v1 << std::endl;
+    std::cout << "b2.s1.v2 = " << (int)b2.s1.v2 << std::endl;
+    std::cout << "b2.s1.v3 = " << (int)b2.s1.v3 << std::endl;
+    std::cout << "b2.s1.v4 = " << (int)b2.s1.v4 << std::endl;
+    std::cout << "b2.s1.v5 = " << (int)b2.s1.v5 << std::endl;
+    std::cout << "b2.s1.v6 = " << (int)b2.s1.v6 << std::endl;
+    std::cout << "b2.s1.v7 = " << (int)b2.s1.v7 << std::endl;
+    std::cout << "b2.s1.v8 = " << (int)b2.s1.v8 << std::endl;
+    std::cout << "b2.s1.v9 = " << (int)b2.s1.v9 << std::endl;
+    std::cout << "b2.s1.v10 = " << (int)b2.s1.v10 << std::endl;
+    std::cout << "b2.s1.v11 = " << (int)b2.s1.v11 << std::endl;
+    std::cout << "b2.s1.v12 = " << (int)b2.s1.v12 << std::endl;
+    std::cout << "b2.s1.v13 = " << (int)b2.s1.v13 << std::endl;
+    std::cout << "b2.s1.v14 = " << (int)b2.s1.v14 << std::endl;
+    std::cout << "b2.s1.v15 = " << (int)b2.s1.v15 << std::endl;
+    std::cout << "b2.s1.v16 = " << (int)b2.s1.v16 << std::endl;
+    std::cout << std::endl;
+    std::cout << "b2.s2.v1 = " << (int)b2.s2.v1 << std::endl;
+    std::cout << "b2.s2.v2 = " << (int)b2.s2.v2 << std::endl;
+    std::cout << "b2.s2.v3 = " << (int)b2.s2.v3 << std::endl;
+    std::cout << "b2.s2.v4 = " << (int)b2.s2.v4 << std::endl;
+    std::cout << "b2.s2.v5 = " << (int)b2.s2.v5 << std::endl;
+    std::cout << "b2.s2.v6 = " << (int)b2.s2.v6 << std::endl;
+    std::cout << "b2.s2.v7 = " << (int)b2.s2.v7 << std::endl;
+    std::cout << "b2.s2.v8 = " << (int)b2.s2.v8 << std::endl;
+    std::cout << std::endl;
+    std::cout << "b2.s4.v1 = " << (int)b2.s4.v1 << std::endl;
+    std::cout << "b2.s4.v2 = " << (int)b2.s4.v2 << std::endl;
+    std::cout << "b2.s4.v3 = " << (int)b2.s4.v3 << std::endl;
+    std::cout << "b2.s4.v4 = " << (int)b2.s4.v4 << std::endl;
 
     return (failure_counter > 0) ? 1 : 0;
 }

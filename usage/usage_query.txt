@@ -5,6 +5,7 @@ Usage:
 Options:
 
   -c --color-off            Do not use colored output
+  -p --pcap                 Assumes FILE is a 'pcap' file 
   -e --exercise=E           Use only PDUs on exercise number E
      --collisions           Print collision info for all entities
      --emissions            Print emission (radar/IFF) info for all entities

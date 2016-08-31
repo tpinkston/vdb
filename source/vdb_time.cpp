@@ -108,6 +108,29 @@ std::string vdb::time::to_string(uint64_t time)
 }
 
 // ----------------------------------------------------------------------------
+uint64_t vdb::time::get_system(const time_value_t &value)
+{
+    uint64_t
+        milliseconds = (value.tv_sec * 1000LL);
+
+    milliseconds += (uint64_t)((float64_t)value.tv_usec / 1000.0);
+
+    return milliseconds;
+}
+
+// ----------------------------------------------------------------------------
+time_value_t vdb::time::get_time_value(uint64_t time)
+{
+    time_value_t
+        time_value;
+
+    time_value.tv_sec = (time / 1000LL);
+    time_value.tv_usec = (time - (time_value.tv_sec * 1000LL)) * 1000;
+
+    return time_value;
+}
+
+// ----------------------------------------------------------------------------
 void vdb::time::parse(
     uint64_t system_time,
     uint32_t &hours,

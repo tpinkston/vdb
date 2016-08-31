@@ -42,6 +42,9 @@
 #include <netdb.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip6.h>
+#include <netinet/udp.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -52,6 +55,10 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+
+// PCAP headers
+#include <pcap.h>
+#include <ethertype.h>
 
 #ifdef __CYGWIN__
 #include <cygwin/socket.h>
@@ -74,6 +81,7 @@ namespace vdb
 
     bool byteswapping(void);
     void set_byteswapping(void);
+    void force_byteswapping(bool value);
 
     void byteswap(int16_t &value, bool force = false);
     void byteswap(uint16_t &value, bool force = false);

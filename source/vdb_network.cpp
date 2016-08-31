@@ -13,12 +13,12 @@
 // details (http://www.gnu.org/licenses).
 // ============================================================================
 
+#include "vdb_byte_stream.h"
 #include "vdb_hexadecimal.h"
 #include "vdb_logger.h"
 #include "vdb_network.h"
-
-#include "vdb_byte_stream.h"
 #include "vdb_options.h"
+#include "vdb_pdu_data.h"
 #include "vdb_string.h"
 #include "vdb_time.h"
 
@@ -304,11 +304,11 @@ std::string vdb::network::get_address(int family, const void *address_ptr)
 
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
-    const inet_socket_address_t &address,
+    const inet_address_t &address,
     std::string &host)
 {
     const uint32_t
-        ip = address.sin_addr.s_addr;
+        ip = address.s_addr;
     ipv4_address_cache_t::const_iterator
         itor;
     bool
@@ -327,14 +327,12 @@ bool vdb::network::get_hostname(
     {
         success = query_hostname(address, host);
 
-        if (success)
+        if (not success)
         {
-            ipv4_address_cache[ip] = host;
+            host = "unknown";
         }
-        else
-        {
-            ipv4_address_cache[ip] = "unknown";
-        }
+
+        ipv4_address_cache[ip] = host;
     }
 
     return success;
@@ -342,14 +340,12 @@ bool vdb::network::get_hostname(
 
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
-    const inet_socket_address_t &address,
+    const inet_address_t &address,
     std::string &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
         service[HOSTNAME_MAX_SIZE];
-    bool
-        success = false;
     int
         result = 0;
 
@@ -366,19 +362,20 @@ bool vdb::network::query_hostname(
     if (result == 0)
     {
         host = hostname;
-        success = true;
     }
     else
     {
-        perror("getnameinfo(IPv4)");
+        LOG_WARNING(
+            "Name resolution failed for %s",
+            get_address(AF_INET, &address).c_str());
     }
 
-    return success;
+    return (result == 0);
 }
 
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
-    const inet6_socket_address_t &address,
+    const inet6_address_t &address,
     std::string &host)
 {
     // TODO: Cache hostname from IPv6 address
@@ -388,14 +385,12 @@ bool vdb::network::get_hostname(
 
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
-    const inet6_socket_address_t &address,
+    const inet6_address_t &address,
     std::string &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
         service[HOSTNAME_MAX_SIZE];
-    bool
-        success = false;
     int
         result = 0;
 
@@ -412,14 +407,15 @@ bool vdb::network::query_hostname(
     if (result == 0)
     {
         host = hostname;
-        success = true;
     }
     else
     {
-        perror("getnameinfo(IPv6)");
+        LOG_WARNING(
+            "Name resolution failed for %s",
+            get_address(AF_INET6, &address).c_str());
     }
 
-    return success;
+    return (result == 0);
 }
 
 // ----------------------------------------------------------------------------
@@ -595,11 +591,11 @@ void vdb::capture_socket_t::receive(pdu_data_t &data)
 
         if (ipv6)
         {
-            data.set_source(address_ipv6, (uint16_t)port);
+            data.set_source(address_ipv6.sin6_addr, (uint16_t)port);
         }
         else
         {
-            data.set_source(address_ipv4, (uint16_t)port);
+            data.set_source(address_ipv4.sin_addr, (uint16_t)port);
         }
 
         LOG_VERBOSE(
@@ -680,4 +676,243 @@ void vdb::playback_socket_t::send(const pdu_data_t &data)
             result,
             data.get_pdu_length());
     }
+}
+
+// ----------------------------------------------------------------------------
+vdb::ipv4_header_t::ipv4_header_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+vdb::ipv4_header_t::~ipv4_header_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv4_header_t::clear(void)
+{
+    version = 0;
+    header_length = 0;
+    service_type = 0;
+    total_length = 0;
+    identification = 0;
+    fragment_offset_flags = 0;
+    ttl = 0;
+    protocol = 0;
+    header_checksum = 0;
+
+    std::memset(&source_address, 0, sizeof(source_address));
+    std::memset(&destination_address, 0, sizeof(destination_address));
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv4_header_t::print(
+    const std::string &prefix,
+    std::ostream &stream) const
+{
+    stream << prefix << "version "
+           << (int)version << std::endl
+           << prefix << "header_length "
+           << (int)header_length << std::endl
+           << prefix << "service_type "
+           << (int)service_type << std::endl
+           << prefix << "total_length "
+           << (int)total_length << std::endl
+           << prefix << "identification "
+           << (int)identification << std::endl
+           << prefix << "fragment_offset_flags "
+           << (int)fragment_offset_flags << std::endl
+           << prefix << "ttl "
+           << (int)ttl << std::endl
+           << prefix << "protocol "
+           << (int)protocol << std::endl
+           << prefix << "header_checksum "
+           << (int)header_checksum << std::endl
+           << prefix << "source_address "
+           << network::get_address(AF_INET, &source_address) << std::endl
+           << prefix << "destination_address "
+           << network::get_address(AF_INET, &destination_address) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv4_header_t::read(byte_stream &stream)
+{
+    uint8_t
+        value = 0;
+
+    stream.read(value);
+    stream.read(service_type);
+    stream.read(total_length);
+    stream.read(identification);
+    stream.read(fragment_offset_flags);
+    stream.read(ttl);
+    stream.read(protocol);
+    stream.read(header_checksum);
+    stream.read(&source_address, sizeof(source_address));
+    stream.read(&destination_address, sizeof(destination_address));
+
+    version = ((value >> 4) & 0xF0);
+    header_length = (value & 0x0F);
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv4_header_t::write(byte_stream &stream) const
+{
+    uint8_t
+        value = 0;
+
+    value += (header_length & 0x0F);
+    value += ((version << 4) & 0xF0);
+
+    stream.write(value);
+    stream.write(service_type);
+    stream.write(total_length);
+    stream.write(identification);
+    stream.write(fragment_offset_flags);
+    stream.write(ttl);
+    stream.write(protocol);
+    stream.write(header_checksum);
+    stream.write(&source_address, sizeof(source_address));
+    stream.write(&destination_address, sizeof(destination_address));
+}
+
+// ----------------------------------------------------------------------------
+vdb::ipv6_header_t::ipv6_header_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+vdb::ipv6_header_t::~ipv6_header_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv6_header_t::clear(void)
+{
+    version = 0;
+    traffic_class = 0;
+    flow_label = 0;
+    payload_length = 0;
+    next_header = 0;
+    hop_limit = 0;
+
+    std::memset(&source_address, 0, sizeof(source_address));
+    std::memset(&destination_address, 0, sizeof(destination_address));
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv6_header_t::print(
+    const std::string &prefix,
+    std::ostream &stream) const
+{
+    stream << prefix << "version "
+           << (int)version << std::endl
+           << prefix << "traffic_class "
+           << (int)traffic_class << std::endl
+           << prefix << "flow_label "
+           << (int)flow_label << std::endl
+           << prefix << "payload_length "
+           << (int)payload_length << std::endl
+           << prefix << "next_header "
+           << (int)next_header << std::endl
+           << prefix << "hop_limit "
+           << (int)hop_limit << std::endl
+           << prefix << "source_address "
+           << network::get_address(AF_INET6, &source_address) << std::endl
+           << prefix << "destination_address "
+           << network::get_address(AF_INET6, &destination_address) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv6_header_t::read(byte_stream &stream)
+{
+    uint32_t
+        value = 0;
+
+    stream.read(value);
+    stream.read(payload_length);
+    stream.read(next_header);
+    stream.read(hop_limit);
+    stream.read(&source_address, sizeof(source_address));
+    stream.read(&destination_address, sizeof(destination_address));
+
+    version = ((value >> 28) & 0x0F);
+    traffic_class = ((value >> 20) & 0xFF);
+    flow_label = (value & 0x0FFFFF);
+}
+
+// ----------------------------------------------------------------------------
+void vdb::ipv6_header_t::write(byte_stream &stream) const
+{
+    uint32_t
+        value = 0;
+
+    value += (flow_label & 0x0FFFFF);
+    value += ((traffic_class << 20) & 0xFF);
+    value += ((version << 28) & 0xF0);
+
+    stream.write(value);
+    stream.write(payload_length);
+    stream.write(next_header);
+    stream.write(hop_limit);
+    stream.write(&source_address, sizeof(source_address));
+    stream.write(&destination_address, sizeof(destination_address));
+}
+
+// ----------------------------------------------------------------------------
+vdb::udp_header_t::udp_header_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+vdb::udp_header_t::~udp_header_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdb::udp_header_t::clear(void)
+{
+    source_port = 0;
+    destination_port = 0;
+    payload_length = 0;
+    checksum = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::udp_header_t::print(
+    const std::string &prefix,
+    std::ostream &stream) const
+{
+    stream << prefix << "source_port "
+           << (int)source_port << std::endl
+           << prefix << "destination_port "
+           << (int)destination_port << std::endl
+           << prefix << "payload_length "
+           << (int)payload_length << std::endl
+           << prefix << "checksum "
+           << (int)checksum << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::udp_header_t::read(byte_stream &stream)
+{
+    stream.read(source_port);
+    stream.read(destination_port);
+    stream.read(payload_length);
+    stream.read(checksum);
+}
+
+// ----------------------------------------------------------------------------
+void vdb::udp_header_t::write(byte_stream &stream) const
+{
+    stream.write(source_port);
+    stream.write(destination_port);
+    stream.write(payload_length);
+    stream.write(checksum);
 }

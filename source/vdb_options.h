@@ -82,6 +82,7 @@ namespace vdb
         OPT_RADIOS              = OPT_FLAG_MASK | 17,
         OPT_OBJECTS             = OPT_FLAG_MASK | 18,
         OPT_ALL                 = OPT_FLAG_MASK | 19,
+        OPT_PCAP                = OPT_FLAG_MASK | 20,
 
         // Options with complex parameters
         OPT_ENTITY_IDS          = OPT_COMPLEX_MASK | 1

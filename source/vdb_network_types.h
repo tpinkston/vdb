@@ -16,24 +16,4 @@
 #ifndef VDB_NETWORK_TYPES_H
 #define VDB_NETWORK_TYPES_H
 
-#include "vdb_common.h"
-
-namespace vdb
-{
-    typedef struct sockaddr
-        socket_address_t;
-    typedef struct sockaddr_in
-        inet_socket_address_t;
-    typedef struct sockaddr_in6
-        inet6_socket_address_t;
-    typedef struct in_addr
-        inet_address_t;
-    typedef struct in6_addr
-        inet6_address_t;
-    typedef struct hostent
-        host_entry_t;
-    typedef struct ifreq
-        interface_request_t;
-}
-
 #endif

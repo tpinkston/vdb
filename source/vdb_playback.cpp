@@ -89,10 +89,6 @@ int vdb::playback::playback_pdus(void)
         {
             result = 1;
         }
-        else if (not reader_ptr->read_header())
-        {
-            result = 1;
-        }
         else
         {
             open_socket();

@@ -17,13 +17,24 @@
 #define VDB_PDU_DATA_H
 
 #include "vdb_common.h"
-#include "vdb_network_types.h"
+#include "vdb_network.h"
 #include "vdb_object.h"
+#include "vdb_pcap.h"
 
 namespace vdb
 {
     class byte_stream;
     class pdu_t;
+
+    // 16-bit status record
+    //
+    // Bits  Description
+    // ----  -----------
+    // 15-1  Unused
+    //    0  PDU data is from PCAP file
+    //
+    typedef uint16_t
+        pdu_data_status_t;
 
     class pdu_data_t : public record_t
     {
@@ -31,6 +42,8 @@ namespace vdb
 
         pdu_data_t(void);
         virtual ~pdu_data_t(void);
+
+        bool has_pdu(void) const { return (pdu_length > 0); }
 
         uint64_t get_time(void) const { return time; }
         void set_time(uint64_t value) { time = value; }
@@ -43,12 +56,12 @@ namespace vdb
         uint16_t get_hostname_length(void) const;
 
         void set_source(
-            const inet_socket_address_t &socket_address,
+            const inet_address_t &source_address,
             uint16_t socket_port
         );
 
         void set_source(
-            const inet6_socket_address_t &socket_address,
+            const inet6_address_t &source_address,
             uint16_t socket_port
         );
 
@@ -122,8 +135,8 @@ namespace vdb
             time;
         uint32_t
             padding;
-        uint16_t
-            status; // bit flags
+        pdu_data_status_t
+            status;
         std::string
             hostname;
         uint8_t

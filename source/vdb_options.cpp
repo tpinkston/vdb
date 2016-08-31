@@ -81,9 +81,10 @@ void vdb::options::configure(void)
     add("lasers", 0, OPT_LASERS, OPT_ARG_NONE);
     add("objects", 0, OPT_OBJECTS, OPT_ARG_NONE);
     add("quiet", 'q', OPT_QUIET, OPT_ARG_NONE);
+    add("pcap", 'p', OPT_PCAP, OPT_ARG_NONE);
     add("pdu-family", 'f', OPT_PDU_FAMILY, OPT_ARG_REQUIRED);
-    add("pdu-range", 'p', OPT_PDU_RANGE, OPT_ARG_REQUIRED);
     add("pdu-type", 't', OPT_PDU_TYPE, OPT_ARG_REQUIRED);
+    add("range", 'r', OPT_PDU_RANGE, OPT_ARG_REQUIRED);
     add("radios", 0, OPT_RADIOS, OPT_ARG_NONE);
     add("summarize", 's', OPT_SUMMARIZE, OPT_ARG_NONE);
     add("verbose", 'v', OPT_VERBOSE, OPT_ARG_NONE);
@@ -106,6 +107,7 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_CAPTURE].insert(OPT_VERBOSE);
     command_options[USER_COMMAND_CAPTURE].insert(OPT_ERRORS_OFF);
     command_options[USER_COMMAND_CAPTURE].insert(OPT_WARNINGS);
+    command_options[USER_COMMAND_CAPTURE].insert(OPT_PCAP);
 
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_NET_ADDRESS);
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_COLOR_OFF);
@@ -124,6 +126,7 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_VERBOSE);
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_ERRORS_OFF);
     command_options[USER_COMMAND_PLAYBACK].insert(OPT_WARNINGS);
+    command_options[USER_COMMAND_PLAYBACK].insert(OPT_PCAP);
 
     command_options[USER_COMMAND_LIST].insert(OPT_NET_ADDRESS);
     command_options[USER_COMMAND_LIST].insert(OPT_COLOR_OFF);
@@ -139,6 +142,7 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_LIST].insert(OPT_PDU_TYPE);
     command_options[USER_COMMAND_LIST].insert(OPT_VERBOSE);
     command_options[USER_COMMAND_LIST].insert(OPT_WARNINGS);
+    command_options[USER_COMMAND_LIST].insert(OPT_PCAP);
 
     command_options[USER_COMMAND_QUERY].insert(OPT_COLOR_OFF);
     command_options[USER_COMMAND_QUERY].insert(OPT_ERRORS_OFF);
@@ -153,6 +157,7 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_QUERY].insert(OPT_RADIOS);
     command_options[USER_COMMAND_QUERY].insert(OPT_OBJECTS);
     command_options[USER_COMMAND_QUERY].insert(OPT_ALL);
+    command_options[USER_COMMAND_QUERY].insert(OPT_PCAP);
 
     command_options[USER_COMMAND_COMMENT].insert(OPT_ERRORS_OFF);
     command_options[USER_COMMAND_COMMENT].insert(OPT_VERBOSE);

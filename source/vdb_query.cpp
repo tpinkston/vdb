@@ -320,13 +320,17 @@ int vdb::query::query_pdus(void)
         LOG_EXTRA_VERBOSE("Starting query...");
 
         filename = *options::get_command_argument(0);
-        reader_ptr = new standard_reader_t(filename);
+
+        if (options::flag(OPT_PCAP))
+        {
+            reader_ptr = new pcap_reader_t(filename);
+        }
+        else
+        {
+            reader_ptr = new standard_reader_t(filename);
+        }
 
         if (not reader_ptr->good())
-        {
-            result = 1;
-        }
-        else if (not reader_ptr->read_header())
         {
             result = 1;
         }

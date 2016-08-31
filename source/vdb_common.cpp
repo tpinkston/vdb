@@ -50,6 +50,16 @@ void vdb::set_byteswapping(void)
 }
 
 // ----------------------------------------------------------------------------
+void vdb::force_byteswapping(bool value)
+{
+    perform_byteswapping = value;
+
+    LOG_VERBOSE(
+        "Forcing byteswapping %s...",
+        (perform_byteswapping ? "on" : "off"));
+}
+
+// ----------------------------------------------------------------------------
 void vdb::byteswap(int16_t &value, bool force)
 {
     if (perform_byteswapping or force)

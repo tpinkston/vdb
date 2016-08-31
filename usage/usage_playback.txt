@@ -12,7 +12,8 @@ Options:
   -t --pdu-type=T1,...      Plays only PDUs with PDU type T (numeric)
   -f --pdu-family=F1,...    Plays only PDUs with PDU family F (numeric)
   -i --ids=I1,...           Plays only PDUs with specified entity ID(s)
-  -p --pdu-range=RANGE      Plays only PDUs in specified range (indexes)
+  -r --range=RANGE          Plays only PDUs in specified range (indexes)
+  -p --pcap                 Assumes FILE is a 'pcap' file 
   -h --help                 Print this info
   -d --dump                 Print PDU hex dump (overrides -s and -x)
   -x --extract              Print PDU data extraction (overrides -s)
@@ -32,9 +33,9 @@ Examples:
 
   Plays back just 3 specific PDUs captured in file 'capture.vdb' on port 5000:
   
-    $ vdb playback 5000 capture.vdb --pdu-range=21,22,23
-    $ vdb playback -p 21,22,23 5000 capture.vdb
+    $ vdb playback 5000 capture.vdb --range=21,22,23
+    $ vdb playback -r 21,22,23 5000 capture.vdb
   
-    $ vdb playback 5000 capture.vdb --pdu-range=21-23
-    $ vdb playback -p 21-23 5000 capture.vdb
+    $ vdb playback 5000 capture.vdb --range=21-23
+    $ vdb playback -r 21-23 5000 capture.vdb
   

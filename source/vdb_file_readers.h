@@ -19,6 +19,7 @@
 #include "vdb_common.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
+#include "vdb_pcap.h"
 
 namespace vdb
 {
@@ -34,18 +35,25 @@ namespace vdb
         file_reader_t(const std::string &filename);
         virtual ~file_reader_t(void);
 
-        virtual bool read_header(void) = 0;
-
-        virtual bool next_entry(pdu_data_t &data) = 0;
-
         const std::string &get_filename(void) const { return filename; }
 
+        // Returns true if no errors have occurred.
+        //
         bool good(void) const { return not error_condition; }
+
+        // Returns true if error has occurred.
+        //
         bool error(void) const { return error_condition; }
 
         bool parse(bool (*callback)(const pdu_data_t &));
 
       protected:
+
+        // Reads the next entry from the file, returns false when there are
+        // no more entries to be read (data will not valid when false is
+        // returned).
+        //
+        virtual bool next_entry(pdu_data_t &data) = 0;
 
         const std::string
             filename;
@@ -63,14 +71,14 @@ namespace vdb
         standard_reader_t(const std::string &filename);
         virtual ~standard_reader_t(void);
 
-        virtual bool read_header(void);
-
-        virtual bool next_entry(pdu_data_t &data);
-
         file_header_t
             header;
         file_stream
             stream;
+
+      protected:
+
+        virtual bool next_entry(pdu_data_t &data);
     };
 
     // ------------------------------------------------------------------------
@@ -83,9 +91,22 @@ namespace vdb
         pcap_reader_t(const std::string &filename);
         virtual ~pcap_reader_t(void);
 
-        virtual bool read_header(void);
+      protected:
 
         virtual bool next_entry(pdu_data_t &data);
+
+      private:
+
+        bool read_pcap_entry(
+            const pcap_packet_header_t &header,
+            byte_stream &stream,
+            pdu_data_t &data
+        );
+
+        pcap_t
+            *pcap_ptr;
+        uint32_t
+            index_counter;
     };
 }
 

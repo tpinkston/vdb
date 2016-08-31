@@ -18,6 +18,8 @@
 
 #include "vdb_object.h"
 
+typedef struct timeval
+    time_value_t;
 typedef struct tm
     time_struct_t;
 
@@ -33,6 +35,9 @@ namespace vdb
 
         static uint64_t get_system(void);
         static std::string to_string(uint64_t time);
+
+        static uint64_t get_system(const time_value_t &value);
+        static time_value_t get_time_value(uint64_t time);
 
         static void parse(
             uint64_t system_time,
