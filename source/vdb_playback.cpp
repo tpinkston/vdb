@@ -78,7 +78,7 @@ int vdb::playback::playback_pdus(void)
     else
     {
         const std::string
-            filename = *options::get_command_argument(0);
+            filename = *options::get_command_argument(1);
 
         LOG_EXTRA_VERBOSE("Starting playback...");
 
