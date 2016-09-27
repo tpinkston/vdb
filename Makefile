@@ -9,14 +9,14 @@ GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
 THIS_FILE=$(lastword $(MAKEFILE_LIST))
 
-build: data usage version pcap builder
+build: pcap data usage version builder
 	@echo
 	@echo "build:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile
 .PHONY : build
 
 
-all: data usage version pcap builder
+all: pcap data usage version builder
 	@echo
 	@echo "all:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile all
@@ -26,7 +26,7 @@ all: data usage version pcap builder
 data:
 	@echo
 	@echo "data:"
-	@./convert_data.sh
+	@./vdis/data/update.sh
 .PHONY : data
 
 
@@ -64,6 +64,8 @@ pcap:
 		echo "Decompressing..."; \
 		cd ${BUILD_PATH}; \
 		tar -xf ${PCAP_VERSION}.tar.gz; \
+		find ${PCAP_VERSION} -name "*.h" -exec chmod -w {} \;; \
+		find ${PCAP_VERSION} -name "*.c" -exec chmod -w {} \;; \
 	fi
 	@if [ -e ${PCAP_PATH}/Makefile ]; then echo "Already configured..."; fi
 	@if [ ! -e ${PCAP_PATH}/Makefile ]; then \

@@ -956,10 +956,10 @@ void vdb::variable_parameter_records_t::print_extended_equipment(
             sa_server = binary::get_1_bit_16(8, value),
             ied = binary::get_2_bits_16(10, value);
 
-        stream << prefix << "auxiliary_power_plant2 "
+        stream << prefix << "spoiler "
                << (presence_e)spoiler
                << " [" << spoiler << "]" << std::endl
-               << prefix << "auxiliary_power_plant3 "
+               << prefix << "cargo_racks "
                << (presence_e)cargo_racks
                << " [" << cargo_racks << "]" << std::endl
                << prefix << "auxiliary_power_plant4 "
