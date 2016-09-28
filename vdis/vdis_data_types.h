@@ -431,7 +431,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_target_t
     {
-        entity_id_t             entity;					// 6 bytes
+        entity_id_t             entity;                    // 6 bytes
         uint8_t                 emitter;                // 1 byte
         uint8_t                 beam;                   // 1 byte
 
@@ -510,10 +510,10 @@ namespace vdis
 
         inline void clear(void)
         {
-        	type = 0;
-        	name = 0;
-        	mode = 0;
-        	options = 0;
+            type = 0;
+            name = 0;
+            mode = 0;
+            options = 0;
         }
 
         void print(const std::string &, std::ostream &) const;
@@ -537,16 +537,16 @@ namespace vdis
 
         inline void clear(void)
         {
-        	status = 0;
-        	data_field_1 = 0;
-        	information_layers = 0;
-        	data_field_2 = 0;
-        	parameter_1 = 0;
-        	parameter_2 = 0;
-        	parameter_3 = 0;
-        	parameter_4 = 0;
-        	parameter_5 = 0;
-        	parameter_6 = 0;
+            status = 0;
+            data_field_1 = 0;
+            information_layers = 0;
+            data_field_2 = 0;
+            parameter_1 = 0;
+            parameter_2 = 0;
+            parameter_3 = 0;
+            parameter_4 = 0;
+            parameter_5 = 0;
+            parameter_6 = 0;
         }
 
         void print(const std::string &, std::ostream &) const;
@@ -557,11 +557,11 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_parameter_data_t
     {
-    	float32_t               erp;                         // 4 bytes
-    	float32_t               frequency;                   // 4 bytes
-    	float32_t               pgrf;                        // 4 bytes
-    	float32_t               pulse_width;                 // 4 bytes
-    	float32_t               burst_length;                // 4 bytes
+        float32_t               erp;                         // 4 bytes
+        float32_t               frequency;                   // 4 bytes
+        float32_t               pgrf;                        // 4 bytes
+        float32_t               pulse_width;                 // 4 bytes
+        float32_t               burst_length;                // 4 bytes
         uint8_t                 applicable_modes;            // 1 byte
         uint8_t                 system_specific_data[3];     // 3 bytes
 
@@ -570,15 +570,15 @@ namespace vdis
 
         inline void clear(void)
         {
-        	erp = 0;
-        	frequency = 0;
-        	pgrf = 0;
-        	pulse_width = 0;
-        	burst_length = 0;
-        	applicable_modes = 0;
-        	system_specific_data[0] = 0;
-        	system_specific_data[1] = 0;
-        	system_specific_data[2] = 0;
+            erp = 0;
+            frequency = 0;
+            pgrf = 0;
+            pulse_width = 0;
+            burst_length = 0;
+            applicable_modes = 0;
+            system_specific_data[0] = 0;
+            system_specific_data[1] = 0;
+            system_specific_data[2] = 0;
         }
 
         void print(const std::string &, std::ostream &) const;
@@ -589,26 +589,70 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_layer2_data_t
     {
-    	// Layer header
-        uint8_t                 number;                      // 1 byte
-        uint8_t                 specific_information;        // 1 byte
-        uint16_t                layer_length;                // 2 bytes
+        // Layer header
+        uint8_t                 number;                     // 1 byte
+        uint8_t                 specific_information;       // 1 byte
+        uint16_t                layer_length;               // 2 bytes
 
         // Beam data
-    	float32_t               azimuth_center;              // 4 bytes
-    	float32_t               azimuth_sweep;               // 4 bytes
-    	float32_t               elevation_center;            // 4 bytes
-    	float32_t               elevation_sweep;             // 4 bytes
-    	float32_t               sweep_sync;                  // 4 bytes
+        float32_t               azimuth_center;             // 4 bytes
+        float32_t               azimuth_sweep;              // 4 bytes
+        float32_t               elevation_center;           // 4 bytes
+        float32_t               elevation_sweep;            // 4 bytes
+        float32_t               sweep_sync;                 // 4 bytes
 
-    	// Secondary operational data
-        uint8_t                 parameter_1;                 // 1 byte
-        uint8_t                 parameter_2;                 // 1 byte
-        uint16_t                parameter_data_count;        // 2 bytes
-        iff_parameter_data_t  **parameter_data;              // Variable
+        // Secondary operational data
+        uint8_t                 parameter_1;                // 1 byte
+        uint8_t                 parameter_2;                // 1 byte
+        uint16_t                parameter_data_count;       // 2 bytes
+        iff_parameter_data_t  **parameter_data;             // Variable
 
         iff_layer2_data_t(void);
         ~iff_layer2_data_t(void);
+
+        void clear(void);
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct environment_record_t
+    {
+        uint32_t                type;                       // 4 bytes
+        uint16_t                data_length;                // 2 bytes
+        uint8_t                 index;                      // 1 byte
+        uint8_t                 padding;                    // 1 byte
+        uint8_t                *parameter_data;             // Variable
+
+        environment_record_t(void);
+        ~environment_record_t(void);
+
+        void clear(void);
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct linear_segment_t
+    {
+        uint8_t                 number;                     // 1 byte
+        uint8_t                 modifications;              // 1 byte
+        uint16_t                generic_appearance;         // 2 bytes
+        uint32_t                specific_appearance;        // 4 bytes
+        location24_t            location;                   // 24 bytes
+        orientation_t           orientation;                // 12 bytes
+
+        // In the latest standard these are represented as 32-bit floating
+        // point numbers, not 16-bit unsigned integers.
+        //
+        uint16_t                segment_length;             // 2 bytes
+        uint16_t                segment_width;              // 2 bytes
+        uint16_t                segment_height;             // 2 bytes
+        uint16_t                segment_depth;              // 2 bytes
+
+        uint32_t                padding;                    // 4 bytes
 
         void clear(void);
         void print(const std::string &, std::ostream &) const;

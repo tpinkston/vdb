@@ -36,12 +36,12 @@ namespace
         DATA_QUERY_PDU_SIZE,            // 20,PDU_TYPE_DATA
         EVENT_REPORT_PDU_SIZE,          // 21,PDU_TYPE_EVENT_REPORT
         COMMENT_PDU_SIZE,               // 22,PDU_TYPE_COMMENT
-		EM_EMISSION_PDU_SIZE,           // 23,PDU_TYPE_EM_EMISSION
+        EM_EMISSION_PDU_SIZE,           // 23,PDU_TYPE_EM_EMISSION
         DESIGNATOR_PDU_SIZE,            // 24,PDU_TYPE_DESIGNATOR
-        0, // 25,PDU_TYPE_TRANSMITTER
-        0, // 26,PDU_TYPE_SIGNAL
-        0, // 27,PDU_TYPE_RECEIVER
-        0, // 28,PDU_TYPE_IFF
+        TRANSMITTER_PDU_SIZE,           // 25,PDU_TYPE_TRANSMITTER
+        SIGNAL_PDU_SIZE,                // 26,PDU_TYPE_SIGNAL
+        RECEIVER_PDU_SIZE,              // 27,PDU_TYPE_RECEIVER
+        IFF_PDU_SIZE,                   // 28,PDU_TYPE_IFF
         0, // 29,PDU_TYPE_UNDERWATER_ACOUSTIC
         0, // 30,PDU_TYPE_SEES
         0, // 31,PDU_TYPE_INTERCOM_SIGNAL
@@ -54,11 +54,11 @@ namespace
         0, // 38,PDU_TYPE_MINEFIELD_QUERY
         0, // 39,PDU_TYPE_MINEFIELD_DATA
         0, // 40,PDU_TYPE_MINEFIELD_RESPONSE_NAK
-        0, // 41,PDU_TYPE_ENVIRONMENTAL_PROCESS
+        ENVIRONMENTAL_PROCESS_PDU_SIZE, // 41,PDU_TYPE_ENVIRONMENTAL_PROCESS
         0, // 42,PDU_TYPE_GRIDDED_DATA
-        0, // 43,PDU_TYPE_POINT_OBJECT_STATE
-        0, // 44,PDU_TYPE_LINEAR_OBJECT_STATE
-        0, // 45,PDU_TYPE_AREAL_OBJECT_STATE
+        POINT_OBJECT_STATE_PDU_SIZE,    // 43,PDU_TYPE_POINT_OBJECT_STATE
+        LINEAR_OBJECT_STATE_PDU_SIZE,   // 44,PDU_TYPE_LINEAR_OBJECT_STATE
+        AREAL_OBJECT_STATE_PDU_SIZE,    // 45,PDU_TYPE_AREAL_OBJECT_STATE
         0, // 46,PDU_TYPE_TSPI
         0, // 47,PDU_TYPE_APPEARANCE
         0, // 48,PDU_TYPE_ARTICULATED_PARTS
@@ -547,19 +547,6 @@ bool vdis::pdu_t::validate_header(byte_buffer_t &buffer)
     }
 
     return (valid_protocol and valid_type and valid_family);
-}
-
-// ----------------------------------------------------------------------------
-vdis::default_pdu_t::~default_pdu_t(void)
-{
-    clear();
-}
-
-// ----------------------------------------------------------------------------
-void vdis::default_pdu_t::clear(void)
-{
-    header.clear();
-    content.clear();
 }
 
 // ----------------------------------------------------------------------------
