@@ -38,8 +38,8 @@ namespace vdis
     class byte_stream_t;
 
     struct base_pdu_t;
-    struct fixed_datum_record_t;
-    struct variable_datum_record_t;
+    struct fixed_datum_t;
+    struct variable_datum_t;
     struct vp_record_t;
 
     // ------------------------------------------------------------------------
