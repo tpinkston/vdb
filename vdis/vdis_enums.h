@@ -29,6 +29,8 @@
 #include "antenna_pattern_type.h"
 #include "app_ctrl_application_type.h"
 #include "app_ctrl_control_type.h"
+#include "app_general_status.h"
+#include "app_state.h"
 #include "areal_minefield_breach.h"
 #include "articulated_parts.h"
 #include "articulated_parts_metric.h"
@@ -86,6 +88,7 @@
 #include "env_proc_status.h"
 #include "env_state_rec_type.h"
 #include "event_type.h"
+#include "exercise_state.h"
 #include "exp_cat.h"
 #include "force_id.h"
 #include "formation.h"
@@ -196,6 +199,7 @@
 #include "terminal_primary.h"
 #include "terminal_secondary.h"
 #include "transfer_type.h"
+#include "transition.h"
 #include "transmit_line.h"
 #include "transmit_state.h"
 #include "ua_function.h"
@@ -246,6 +250,8 @@
 #define ENUM_ANTENNA_PATTERN_TYPE "ANTENNA_PATTERN_TYPE"
 #define ENUM_APP_CTRL_APPLICATION_TYPE "APP_CTRL_APPLICATION_TYPE"
 #define ENUM_APP_CTRL_CONTROL_TYPE "APP_CTRL_CONTROL_TYPE"
+#define ENUM_APP_GENERAL_STATUS "APP_GENERAL_STATUS"
+#define ENUM_APP_STATE "APP_STATE"
 #define ENUM_AREAL_MINEFIELD_BREACH "AREAL_MINEFIELD_BREACH"
 #define ENUM_ARTICULATED_PARTS "ARTICULATED_PARTS"
 #define ENUM_ARTICULATED_PARTS_METRIC "ARTICULATED_PARTS_METRIC"
@@ -303,6 +309,7 @@
 #define ENUM_ENV_PROC_STATUS "ENV_PROC_STATUS"
 #define ENUM_ENV_STATE_REC_TYPE "ENV_STATE_REC_TYPE"
 #define ENUM_EVENT_TYPE "EVENT_TYPE"
+#define ENUM_EXERCISE_STATE "EXERCISE_STATE"
 #define ENUM_EXP_CAT "EXP_CAT"
 #define ENUM_FORCE_ID "FORCE_ID"
 #define ENUM_FORMATION "FORMATION"
@@ -413,6 +420,7 @@
 #define ENUM_TERMINAL_PRIMARY "TERMINAL_PRIMARY"
 #define ENUM_TERMINAL_SECONDARY "TERMINAL_SECONDARY"
 #define ENUM_TRANSFER_TYPE "TRANSFER_TYPE"
+#define ENUM_TRANSITION "TRANSITION"
 #define ENUM_TRANSMIT_LINE "TRANSMIT_LINE"
 #define ENUM_TRANSMIT_STATE "TRANSMIT_STATE"
 #define ENUM_UA_FUNCTION "UA_FUNCTION"
@@ -444,1084 +452,1104 @@
 #define ENUM_YES_NO "YES_NO"
 
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ack_acknowledge_flag_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ack_acknowledge_flag_e value)
 {
-    return vdis::enumerations::print(ENUM_ACK_ACKNOWLEDGE_FLAG, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACK_ACKNOWLEDGE_FLAG, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ack_response_flag_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ack_response_flag_e value)
 {
-    return vdis::enumerations::print(ENUM_ACK_RESPONSE_FLAG, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACK_RESPONSE_FLAG, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::action_seq_dir_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::action_seq_dir_e value)
 {
-    return vdis::enumerations::print(ENUM_ACTION_SEQ_DIR, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACTION_SEQ_DIR, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::action_seq_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::action_seq_type_e value)
 {
-    return vdis::enumerations::print(ENUM_ACTION_SEQ_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACTION_SEQ_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::actreq_action_ids_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::actreq_action_ids_e value)
 {
-    return vdis::enumerations::print(ENUM_ACTREQ_ACTION_IDS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACTREQ_ACTION_IDS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::actres_req_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::actres_req_status_e value)
 {
-    return vdis::enumerations::print(ENUM_ACTRES_REQ_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ACTRES_REQ_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::afapd_version_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::afapd_version_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_AFAPD_VERSION_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AFAPD_VERSION_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::aggregate_kind_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::aggregate_kind_e value)
 {
-    return vdis::enumerations::print(ENUM_AGGREGATE_KIND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AGGREGATE_KIND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::aggregate_state_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::aggregate_state_e value)
 {
-    return vdis::enumerations::print(ENUM_AGGREGATE_STATE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AGGREGATE_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::air_ac_lights_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::air_ac_lights_e value)
 {
-    return vdis::enumerations::print(ENUM_AIR_AC_LIGHTS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AIR_AC_LIGHTS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::air_eq_slingload_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::air_eq_slingload_e value)
 {
-    return vdis::enumerations::print(ENUM_AIR_EQ_SLINGLOAD, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AIR_EQ_SLINGLOAD, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::air_form_pat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::air_form_pat_e value)
 {
-    return vdis::enumerations::print(ENUM_AIR_FORM_PAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AIR_FORM_PAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::air_light_mode_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::air_light_mode_e value)
 {
-    return vdis::enumerations::print(ENUM_AIR_LIGHT_MODE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AIR_LIGHT_MODE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::air_smoke_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::air_smoke_e value)
 {
-    return vdis::enumerations::print(ENUM_AIR_SMOKE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AIR_SMOKE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::amplitude_and_angle_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::amplitude_and_angle_e value)
 {
-    return vdis::enumerations::print(ENUM_AMPLITUDE_AND_ANGLE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AMPLITUDE_AND_ANGLE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::amplitude_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::amplitude_e value)
 {
-    return vdis::enumerations::print(ENUM_AMPLITUDE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AMPLITUDE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::angle_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::angle_e value)
 {
-    return vdis::enumerations::print(ENUM_ANGLE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ANGLE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::antenna_pattern_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::antenna_pattern_type_e value)
 {
-    return vdis::enumerations::print(ENUM_ANTENNA_PATTERN_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ANTENNA_PATTERN_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::app_ctrl_application_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::app_ctrl_application_type_e value)
 {
-    return vdis::enumerations::print(ENUM_APP_CTRL_APPLICATION_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_APP_CTRL_APPLICATION_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::app_ctrl_control_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::app_ctrl_control_type_e value)
 {
-    return vdis::enumerations::print(ENUM_APP_CTRL_CONTROL_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_APP_CTRL_CONTROL_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::areal_minefield_breach_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::app_general_status_e value)
 {
-    return vdis::enumerations::print(ENUM_AREAL_MINEFIELD_BREACH, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_APP_GENERAL_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::articulated_parts_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::app_state_e value)
 {
-    return vdis::enumerations::print(ENUM_ARTICULATED_PARTS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_APP_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::articulated_parts_metric_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::areal_minefield_breach_e value)
 {
-    return vdis::enumerations::print(ENUM_ARTICULATED_PARTS_METRIC, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_AREAL_MINEFIELD_BREACH, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::attached_parts_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::articulated_parts_e value)
 {
-    return vdis::enumerations::print(ENUM_ATTACHED_PARTS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ARTICULATED_PARTS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::beam_function_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::articulated_parts_metric_e value)
 {
-    return vdis::enumerations::print(ENUM_BEAM_FUNCTION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ARTICULATED_PARTS_METRIC, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::cf_cat_land_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::attached_parts_e value)
 {
-    return vdis::enumerations::print(ENUM_CF_CAT_LAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ATTACHED_PARTS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::cf_cat_subsurface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::beam_function_e value)
 {
-    return vdis::enumerations::print(ENUM_CF_CAT_SUBSURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_BEAM_FUNCTION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::cf_cat_surface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::cf_cat_land_e value)
 {
-    return vdis::enumerations::print(ENUM_CF_CAT_SURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CF_CAT_LAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::cfs_tether_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::cf_cat_subsurface_e value)
 {
-    return vdis::enumerations::print(ENUM_CFS_TETHER, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CF_CAT_SUBSURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::classification_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::cf_cat_surface_e value)
 {
-    return vdis::enumerations::print(ENUM_CLASSIFICATION_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CF_CAT_SURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::clear_channel_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::cfs_tether_e value)
 {
-    return vdis::enumerations::print(ENUM_CLEAR_CHANNEL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CFS_TETHER, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::collision_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::classification_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_COLLISION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CLASSIFICATION_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::collision_origin_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::clear_channel_e value)
 {
-    return vdis::enumerations::print(ENUM_COLLISION_ORIGIN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CLEAR_CHANNEL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::colors_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::collision_e value)
 {
-    return vdis::enumerations::print(ENUM_COLORS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COLLISION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::combination_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::collision_origin_e value)
 {
-    return vdis::enumerations::print(ENUM_COMBINATION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COLLISION_ORIGIN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::command_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::colors_e value)
 {
-    return vdis::enumerations::print(ENUM_COMMAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COLORS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::comms_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::combination_e value)
 {
-    return vdis::enumerations::print(ENUM_COMMS_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COMBINATION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::const_grid_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::command_e value)
 {
-    return vdis::enumerations::print(ENUM_CONST_GRID, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COMMAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::control_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::comms_type_e value)
 {
-    return vdis::enumerations::print(ENUM_CONTROL_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COMMS_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::coord_system_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::const_grid_e value)
 {
-    return vdis::enumerations::print(ENUM_COORD_SYSTEM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CONST_GRID, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::country_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::control_type_e value)
 {
-    return vdis::enumerations::print(ENUM_COUNTRY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CONTROL_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::crypto_sys_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::coord_system_e value)
 {
-    return vdis::enumerations::print(ENUM_CRYPTO_SYS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COORD_SYSTEM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::damage_cause_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::country_e value)
 {
-    return vdis::enumerations::print(ENUM_DAMAGE_CAUSE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_COUNTRY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::damage_extent_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::crypto_sys_e value)
 {
-    return vdis::enumerations::print(ENUM_DAMAGE_EXTENT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_CRYPTO_SYS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::data_rep_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::damage_cause_e value)
 {
-    return vdis::enumerations::print(ENUM_DATA_REP, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DAMAGE_CAUSE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::datum_ids_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::damage_extent_e value)
 {
-    return vdis::enumerations::print(ENUM_DATUM_IDS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DAMAGE_EXTENT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::dead_reckoning_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::data_rep_e value)
 {
-    return vdis::enumerations::print(ENUM_DEAD_RECKONING, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DATA_REP, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::de_beam_shape_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::datum_ids_e value)
 {
-    return vdis::enumerations::print(ENUM_DE_BEAM_SHAPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DATUM_IDS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::desig_motion_pattern_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::dead_reckoning_e value)
 {
-    return vdis::enumerations::print(ENUM_DESIG_MOTION_PATTERN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DEAD_RECKONING, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::desig_obj_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::de_beam_shape_e value)
 {
-    return vdis::enumerations::print(ENUM_DESIG_OBJ_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DE_BEAM_SHAPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::desig_spot_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::desig_motion_pattern_e value)
 {
-    return vdis::enumerations::print(ENUM_DESIG_SPOT_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESIG_MOTION_PATTERN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::desig_system_name_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::desig_obj_status_e value)
 {
-    return vdis::enumerations::print(ENUM_DESIG_SYSTEM_NAME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESIG_OBJ_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::destination_line_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::desig_spot_type_e value)
 {
-    return vdis::enumerations::print(ENUM_DESTINATION_LINE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESIG_SPOT_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::destination_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::desig_system_name_e value)
 {
-    return vdis::enumerations::print(ENUM_DESTINATION_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESIG_SYSTEM_NAME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::detonation_result_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::destination_line_e value)
 {
-    return vdis::enumerations::print(ENUM_DETONATION_RESULT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESTINATION_LINE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::disguise_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::destination_type_e value)
 {
-    return vdis::enumerations::print(ENUM_DISGUISE_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DESTINATION_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::domain_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::detonation_result_e value)
 {
-    return vdis::enumerations::print(ENUM_DOMAIN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DETONATION_RESULT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::dr_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::disguise_status_e value)
 {
-    return vdis::enumerations::print(ENUM_DR_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DISGUISE_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::eds_comp_id_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::domain_e value)
 {
-    return vdis::enumerations::print(ENUM_EDS_COMP_ID, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DOMAIN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::eds_dmg_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::dr_type_e value)
 {
-    return vdis::enumerations::print(ENUM_EDS_DMG_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_DR_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::eds_surf_dmg_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::eds_comp_id_e value)
 {
-    return vdis::enumerations::print(ENUM_EDS_SURF_DMG, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EDS_COMP_ID, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::emitter_function_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::eds_dmg_status_e value)
 {
-    return vdis::enumerations::print(ENUM_EMITTER_FUNCTION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EDS_DMG_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::emitter_name_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::eds_surf_dmg_e value)
 {
-    return vdis::enumerations::print(ENUM_EMITTER_NAME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EDS_SURF_DMG, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::encoding_class_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::emitter_function_e value)
 {
-    return vdis::enumerations::print(ENUM_ENCODING_CLASS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EMITTER_FUNCTION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::encoding_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::emitter_name_e value)
 {
-    return vdis::enumerations::print(ENUM_ENCODING_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EMITTER_NAME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ent_assoc_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::encoding_class_e value)
 {
-    return vdis::enumerations::print(ENUM_ENT_ASSOC_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENCODING_CLASS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::entity_marking_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::encoding_type_e value)
 {
-    return vdis::enumerations::print(ENUM_ENTITY_MARKING, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENCODING_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ent_kind_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ent_assoc_status_e value)
 {
-    return vdis::enumerations::print(ENUM_ENT_KIND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENT_ASSOC_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_cat_air_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::entity_marking_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_CAT_AIR, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENTITY_MARKING, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_cat_land_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ent_kind_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_CAT_LAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENT_KIND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_cat_space_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_cat_air_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_CAT_SPACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_CAT_AIR, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_cat_subsurface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_cat_land_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_CAT_SUBSURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_CAT_LAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_cat_surface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_cat_space_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_CAT_SURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_CAT_SPACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_geometry_rec_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_cat_subsurface_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_GEOMETRY_REC_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_CAT_SUBSURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_proc_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_cat_surface_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_PROC_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_CAT_SURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::env_state_rec_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_geometry_rec_type_e value)
 {
-    return vdis::enumerations::print(ENUM_ENV_STATE_REC_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_GEOMETRY_REC_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::event_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_proc_status_e value)
 {
-    return vdis::enumerations::print(ENUM_EVENT_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_PROC_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::exp_cat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::env_state_rec_type_e value)
 {
-    return vdis::enumerations::print(ENUM_EXP_CAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ENV_STATE_REC_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::force_id_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::event_type_e value)
 {
-    return vdis::enumerations::print(ENUM_FORCE_ID, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EVENT_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::formation_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::exercise_state_e value)
 {
-    return vdis::enumerations::print(ENUM_FORMATION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EXERCISE_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::frozen_behavior_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::exp_cat_e value)
 {
-    return vdis::enumerations::print(ENUM_FROZEN_BEHAVIOR, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_EXP_CAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::fuel_meas_units_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::force_id_e value)
 {
-    return vdis::enumerations::print(ENUM_FUEL_MEAS_UNITS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_FORCE_ID, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::fuse_burst_desc_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::formation_e value)
 {
-    return vdis::enumerations::print(ENUM_FUSE_BURST_DESC, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_FORMATION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::grouped_entity_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::frozen_behavior_e value)
 {
-    return vdis::enumerations::print(ENUM_GROUPED_ENTITY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_FROZEN_BEHAVIOR, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::grp_mem_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::fuel_meas_units_e value)
 {
-    return vdis::enumerations::print(ENUM_GRP_MEM_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_FUEL_MEAS_UNITS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::headgazweapaim_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::fuse_burst_desc_e value)
 {
-    return vdis::enumerations::print(ENUM_HEADGAZWEAPAIM_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_FUSE_BURST_DESC, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::hoist_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::grouped_entity_e value)
 {
-    return vdis::enumerations::print(ENUM_HOIST_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_GROUPED_ENTITY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::hook_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::grp_mem_type_e value)
 {
-    return vdis::enumerations::print(ENUM_HOOK_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_GRP_MEM_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ied_presence_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::headgazweapaim_type_e value)
 {
-    return vdis::enumerations::print(ENUM_IED_PRESENCE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_HEADGAZWEAPAIM_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::iff_system_mode_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::hoist_status_e value)
 {
-    return vdis::enumerations::print(ENUM_IFF_SYSTEM_MODE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_HOIST_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::iff_system_name_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::hook_type_e value)
 {
-    return vdis::enumerations::print(ENUM_IFF_SYSTEM_NAME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_HOOK_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::iff_system_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ied_presence_e value)
 {
-    return vdis::enumerations::print(ENUM_IFF_SYSTEM_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_IED_PRESENCE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::input_source_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::iff_system_mode_e value)
 {
-    return vdis::enumerations::print(ENUM_INPUT_SOURCE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_IFF_SYSTEM_MODE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::jamming_technique_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::iff_system_name_e value)
 {
-    return vdis::enumerations::print(ENUM_JAMMING_TECHNIQUE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_IFF_SYSTEM_NAME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::land_smoke_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::iff_system_type_e value)
 {
-    return vdis::enumerations::print(ENUM_LAND_SMOKE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_IFF_SYSTEM_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::laser_function_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::input_source_e value)
 {
-    return vdis::enumerations::print(ENUM_LASER_FUNCTION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_INPUT_SOURCE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::leaf_coverage_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::jamming_technique_e value)
 {
-    return vdis::enumerations::print(ENUM_LEAF_COVERAGE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_JAMMING_TECHNIQUE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_age_group_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::land_smoke_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_AGE_GROUP, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LAND_SMOKE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_camouflage_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::laser_function_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAMOUFLAGE_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LASER_FUNCTION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cat_air_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::leaf_coverage_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAT_AIR, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LEAF_COVERAGE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cat_land_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_age_group_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAT_LAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_AGE_GROUP, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cat_space_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_camouflage_type_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAT_SPACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAMOUFLAGE_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cat_subsurface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cat_air_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAT_SUBSURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAT_AIR, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cat_surface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cat_land_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CAT_SURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAT_LAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cloth_scheme_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cat_space_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CLOTH_SCHEME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAT_SPACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cloth_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cat_subsurface_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_CLOTH_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAT_SUBSURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_compliance_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cat_surface_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_COMPLIANCE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CAT_SURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cond_clean_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cloth_scheme_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_COND_CLEAN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CLOTH_SCHEME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cond_ext_dmg_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cloth_type_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_COND_EXT_DMG, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_CLOTH_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_cond_mtl_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_compliance_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_COND_MTL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_COMPLIANCE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_decal_scheme_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cond_clean_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_DECAL_SCHEME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_COND_CLEAN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_eq_chute_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cond_ext_dmg_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_EQ_CHUTE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_COND_EXT_DMG, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_eq_laser_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_cond_mtl_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_EQ_LASER, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_COND_MTL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_ethnicity_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_decal_scheme_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_ETHNICITY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_DECAL_SCHEME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_gender_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_eq_chute_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_GENDER, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_EQ_CHUTE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_health_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_eq_laser_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_HEALTH, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_EQ_LASER, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_posture_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_ethnicity_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_POSTURE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_ETHNICITY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_prim_cond_head_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_gender_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_PRIM_COND_HEAD, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_GENDER, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_sec_cond_facial_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_health_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_SEC_COND_FACIAL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_HEALTH, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::lf_weapon_state_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_posture_e value)
 {
-    return vdis::enumerations::print(ENUM_LF_WEAPON_STATE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_POSTURE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::major_modulation_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_prim_cond_head_e value)
 {
-    return vdis::enumerations::print(ENUM_MAJOR_MODULATION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_PRIM_COND_HEAD, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::message_format_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_sec_cond_facial_e value)
 {
-    return vdis::enumerations::print(ENUM_MESSAGE_FORMAT_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_SEC_COND_FACIAL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::mun_cat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::lf_weapon_state_e value)
 {
-    return vdis::enumerations::print(ENUM_MUN_CAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_LF_WEAPON_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::munition_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::major_modulation_e value)
 {
-    return vdis::enumerations::print(ENUM_MUNITION_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_MAJOR_MODULATION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::nature_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::message_format_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_NATURE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_MESSAGE_FORMAT_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::object_damage_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::mun_cat_e value)
 {
-    return vdis::enumerations::print(ENUM_OBJECT_DAMAGE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_MUN_CAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::object_geometry_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::munition_status_e value)
 {
-    return vdis::enumerations::print(ENUM_OBJECT_GEOMETRY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_MUNITION_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::object_kind_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::nature_e value)
 {
-    return vdis::enumerations::print(ENUM_OBJECT_KIND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_NATURE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::offset_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::object_damage_e value)
 {
-    return vdis::enumerations::print(ENUM_OFFSET_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_OBJECT_DAMAGE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::on_off_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::object_geometry_e value)
 {
-    return vdis::enumerations::print(ENUM_ON_OFF, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_OBJECT_GEOMETRY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_family_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::object_kind_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_FAMILY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_OBJECT_KIND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_cei_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::offset_type_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_CEI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_OFFSET_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_dmi_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::on_off_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_DMI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_ON_OFF, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_dti_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_family_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_DTI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_FAMILY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_fti_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_cei_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_FTI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_CEI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_iai_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_dmi_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_IAI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_DMI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_lvci_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_dti_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_LVCI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_DTI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_rai_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_fti_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_RAI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_FTI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_status_tei_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_iai_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_STATUS_TEI, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_IAI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pdu_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_lvci_e value)
 {
-    return vdis::enumerations::print(ENUM_PDU_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_LVCI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::phys_assoc_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_rai_e value)
 {
-    return vdis::enumerations::print(ENUM_PHYS_ASSOC_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_RAI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::phys_conn_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_status_tei_e value)
 {
-    return vdis::enumerations::print(ENUM_PHYS_CONN_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_STATUS_TEI, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::plat_cat_air_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pdu_type_e value)
 {
-    return vdis::enumerations::print(ENUM_PLAT_CAT_AIR, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PDU_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::plat_cat_land_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::phys_assoc_type_e value)
 {
-    return vdis::enumerations::print(ENUM_PLAT_CAT_LAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PHYS_ASSOC_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::plat_cat_space_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::phys_conn_type_e value)
 {
-    return vdis::enumerations::print(ENUM_PLAT_CAT_SPACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PHYS_CONN_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::plat_cat_subsurface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::plat_cat_air_e value)
 {
-    return vdis::enumerations::print(ENUM_PLAT_CAT_SUBSURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PLAT_CAT_AIR, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::plat_cat_surface_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::plat_cat_land_e value)
 {
-    return vdis::enumerations::print(ENUM_PLAT_CAT_SURFACE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PLAT_CAT_LAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_cond_clean_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::plat_cat_space_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_COND_CLEAN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PLAT_CAT_SPACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_cond_ext_dmg_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::plat_cat_subsurface_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_COND_EXT_DMG, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PLAT_CAT_SUBSURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_cond_mtl_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::plat_cat_surface_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_COND_MTL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PLAT_CAT_SURFACE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_cond_rust_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_cond_clean_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_COND_RUST, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_COND_CLEAN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_decal_scheme_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_cond_ext_dmg_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_DECAL_SCHEME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_COND_EXT_DMG, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pl_paint_scheme_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_cond_mtl_e value)
 {
-    return vdis::enumerations::print(ENUM_PL_PAINT_SCHEME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_COND_MTL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::position_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_cond_rust_e value)
 {
-    return vdis::enumerations::print(ENUM_POSITION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_COND_RUST, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::precedence_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_decal_scheme_e value)
 {
-    return vdis::enumerations::print(ENUM_PRECEDENCE_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_DECAL_SCHEME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::presence_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pl_paint_scheme_e value)
 {
-    return vdis::enumerations::print(ENUM_PRESENCE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PL_PAINT_SCHEME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::present_domain_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::position_e value)
 {
-    return vdis::enumerations::print(ENUM_PRESENT_DOMAIN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_POSITION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::protocol_version_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::precedence_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_PROTOCOL_VERSION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PRECEDENCE_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::pulse_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::presence_e value)
 {
-    return vdis::enumerations::print(ENUM_PULSE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PRESENCE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::radar_track_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::present_domain_e value)
 {
-    return vdis::enumerations::print(ENUM_RADAR_TRACK, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PRESENT_DOMAIN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::rad_cat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::protocol_version_e value)
 {
-    return vdis::enumerations::print(ENUM_RAD_CAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PROTOCOL_VERSION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::radio_system_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::pulse_e value)
 {
-    return vdis::enumerations::print(ENUM_RADIO_SYSTEM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_PULSE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::radio_type_cat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::radar_track_e value)
 {
-    return vdis::enumerations::print(ENUM_RADIO_TYPE_CAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RADAR_TRACK, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::receiver_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::rad_cat_e value)
 {
-    return vdis::enumerations::print(ENUM_RECEIVER, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RAD_CAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::record_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::radio_system_e value)
 {
-    return vdis::enumerations::print(ENUM_RECORD_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RADIO_SYSTEM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::reference_system_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::radio_type_cat_e value)
 {
-    return vdis::enumerations::print(ENUM_REFERENCE_SYSTEM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RADIO_TYPE_CAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::repair_response_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::receiver_e value)
 {
-    return vdis::enumerations::print(ENUM_REPAIR_RESPONSE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RECEIVER, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::repair_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::record_type_e value)
 {
-    return vdis::enumerations::print(ENUM_REPAIR_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RECORD_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::rest_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::reference_system_e value)
 {
-    return vdis::enumerations::print(ENUM_REST_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_REFERENCE_SYSTEM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::rqr_event_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::repair_response_e value)
 {
-    return vdis::enumerations::print(ENUM_RQR_EVENT_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_REPAIR_RESPONSE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::se_cat_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::repair_type_e value)
 {
-    return vdis::enumerations::print(ENUM_SE_CAT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_REPAIR_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::service_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::rest_status_e value)
 {
-    return vdis::enumerations::print(ENUM_SERVICE_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_REST_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::severity_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::rqr_event_type_e value)
 {
-    return vdis::enumerations::print(ENUM_SEVERITY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_RQR_EVENT_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::sf_reason_codes_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::se_cat_e value)
 {
-    return vdis::enumerations::print(ENUM_SF_REASON_CODES, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SE_CAT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::sling_damage_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::service_type_e value)
 {
-    return vdis::enumerations::print(ENUM_SLING_DAMAGE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SERVICE_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::speed_bump_mtl_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::severity_e value)
 {
-    return vdis::enumerations::print(ENUM_SPEED_BUMP_MTL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SEVERITY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::start_of_message_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::sf_reason_codes_e value)
 {
-    return vdis::enumerations::print(ENUM_START_OF_MESSAGE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SF_REASON_CODES, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::station_name_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::sling_damage_e value)
 {
-    return vdis::enumerations::print(ENUM_STATION_NAME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SLING_DAMAGE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::stealth_attach_command_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::speed_bump_mtl_e value)
 {
-    return vdis::enumerations::print(ENUM_STEALTH_ATTACH_COMMAND, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SPEED_BUMP_MTL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::stealth_attach_mode_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::start_of_message_e value)
 {
-    return vdis::enumerations::print(ENUM_STEALTH_ATTACH_MODE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_START_OF_MESSAGE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::stealth_spectrum_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::station_name_e value)
 {
-    return vdis::enumerations::print(ENUM_STEALTH_SPECTRUM_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_STATION_NAME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::stealthstate_sensor_mode_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::stealth_attach_command_e value)
 {
-    return vdis::enumerations::print(ENUM_STEALTHSTATE_SENSOR_MODE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_STEALTH_ATTACH_COMMAND, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::synchronization_state_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::stealth_attach_mode_e value)
 {
-    return vdis::enumerations::print(ENUM_SYNCHRONIZATION_STATE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_STEALTH_ATTACH_MODE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::tdl_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::stealth_spectrum_type_e value)
 {
-    return vdis::enumerations::print(ENUM_TDL_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_STEALTH_SPECTRUM_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::terminal_primary_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::stealthstate_sensor_mode_e value)
 {
-    return vdis::enumerations::print(ENUM_TERMINAL_PRIMARY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_STEALTHSTATE_SENSOR_MODE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::terminal_secondary_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::synchronization_state_e value)
 {
-    return vdis::enumerations::print(ENUM_TERMINAL_SECONDARY, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_SYNCHRONIZATION_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::transfer_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::tdl_type_e value)
 {
-    return vdis::enumerations::print(ENUM_TRANSFER_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TDL_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::transmit_line_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::terminal_primary_e value)
 {
-    return vdis::enumerations::print(ENUM_TRANSMIT_LINE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TERMINAL_PRIMARY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::transmit_state_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::terminal_secondary_e value)
 {
-    return vdis::enumerations::print(ENUM_TRANSMIT_STATE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TERMINAL_SECONDARY, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ua_function_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::transfer_type_e value)
 {
-    return vdis::enumerations::print(ENUM_UA_FUNCTION, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TRANSFER_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ua_prop_plant_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::transition_e value)
 {
-    return vdis::enumerations::print(ENUM_UA_PROP_PLANT, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TRANSITION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ua_scan_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::transmit_line_e value)
 {
-    return vdis::enumerations::print(ENUM_UA_SCAN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TRANSMIT_LINE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ua_sys_name_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::transmit_state_e value)
 {
-    return vdis::enumerations::print(ENUM_UA_SYS_NAME, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_TRANSMIT_STATE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::unmodulated_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ua_function_e value)
 {
-    return vdis::enumerations::print(ENUM_UNMODULATED, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_UA_FUNCTION, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::usmtf_version_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ua_prop_plant_e value)
 {
-    return vdis::enumerations::print(ENUM_USMTF_VERSION_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_UA_PROP_PLANT, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::vmf_version_enum_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ua_scan_e value)
 {
-    return vdis::enumerations::print(ENUM_VMF_VERSION_ENUM, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_UA_SCAN, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::vp_record_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ua_sys_name_e value)
 {
-    return vdis::enumerations::print(ENUM_VP_RECORD_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_UA_SYS_NAME, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::warhead_burst_desc_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::unmodulated_e value)
 {
-    return vdis::enumerations::print(ENUM_WARHEAD_BURST_DESC, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_UNMODULATED, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_cel_night_ill_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::usmtf_version_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CEL_NIGHT_ILL, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_USMTF_VERSION_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_cel_season_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::vmf_version_enum_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CEL_SEASON, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_VMF_VERSION_ENUM, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_cel_tod_mode_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::vp_record_type_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CEL_TOD_MODE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_VP_RECORD_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_cel_tod_scene_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::warhead_burst_desc_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CEL_TOD_SCENE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WARHEAD_BURST_DESC, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_clouds_dens_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_cel_night_ill_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CLOUDS_DENS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CEL_NIGHT_ILL, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_clouds_scud_flags_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_cel_season_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CLOUDS_SCUD_FLAGS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CEL_SEASON, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_clouds_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_cel_tod_mode_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CLOUDS_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CEL_TOD_MODE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_clouds_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_cel_tod_scene_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_CLOUDS_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CEL_TOD_SCENE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_gr_fog_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_clouds_dens_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_GR_FOG_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CLOUDS_DENS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_haze_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_clouds_scud_flags_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_HAZE_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CLOUDS_SCUD_FLAGS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_haze_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_clouds_status_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_HAZE_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CLOUDS_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_layer_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_clouds_type_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_LAYER_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_CLOUDS_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_light_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_gr_fog_status_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_LIGHT_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_GR_FOG_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_prec_rain_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_haze_status_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_PREC_RAIN, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_HAZE_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_prec_rate_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_haze_type_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_PREC_RATE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_HAZE_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_prec_type_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_layer_type_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_PREC_TYPE, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_LAYER_TYPE, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::ws_thun_status_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_light_status_e value)
 {
-    return vdis::enumerations::print(ENUM_WS_THUN_STATUS, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_LIGHT_STATUS, value));
 }
 
-inline std::ostream &operator<<(std::ostream &out, vdis::yes_no_e value)
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_prec_rain_e value)
 {
-    return vdis::enumerations::print(ENUM_YES_NO, value, out);
+    return (stream << vdis::enumerations::get_name(ENUM_WS_PREC_RAIN, value));
+}
+
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_prec_rate_e value)
+{
+    return (stream << vdis::enumerations::get_name(ENUM_WS_PREC_RATE, value));
+}
+
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_prec_type_e value)
+{
+    return (stream << vdis::enumerations::get_name(ENUM_WS_PREC_TYPE, value));
+}
+
+inline std::ostream &operator<<(std::ostream &stream, vdis::ws_thun_status_e value)
+{
+    return (stream << vdis::enumerations::get_name(ENUM_WS_THUN_STATUS, value));
+}
+
+inline std::ostream &operator<<(std::ostream &stream, vdis::yes_no_e value)
+{
+    return (stream << vdis::enumerations::get_name(ENUM_YES_NO, value));
 }
 
 #endif

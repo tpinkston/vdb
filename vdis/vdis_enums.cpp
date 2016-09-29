@@ -343,6 +343,22 @@ void vdis::enumerations::add_all(void)
     add(ENUM_APP_CTRL_CONTROL_TYPE, 7, "APP_CTRL_CONTROL_TYPE_STATUS");
 
 
+    // From file: app_general_status.csv
+    //
+    add(ENUM_APP_GENERAL_STATUS, 0, "APP_GENERAL_STATUS_UNKNOWN");
+    add(ENUM_APP_GENERAL_STATUS, 1, "APP_GENERAL_STATUS_FUNCTIONAL");
+    add(ENUM_APP_GENERAL_STATUS, 2, "APP_GENERAL_STATUS_DEGRADED_BUT_FUNCTIONAL");
+    add(ENUM_APP_GENERAL_STATUS, 3, "APP_GENERAL_STATUS_NOT_FUNCTIONAL");
+
+
+    // From file: app_state.csv
+    //
+    add(ENUM_APP_STATE, 0, "APP_STATE_APP_OFFLINE_OR_UNKNOWN");
+    add(ENUM_APP_STATE, 1, "APP_STATE_AVAILABLE");
+    add(ENUM_APP_STATE, 2, "APP_STATE_ALLOCATED");
+    add(ENUM_APP_STATE, 3, "APP_STATE_ERROR");
+
+
     // From file: areal_minefield_breach.csv
     //
     add(ENUM_AREAL_MINEFIELD_BREACH, 0, "AREAL_MINEFIELD_BREACH_NO_BREACHING");
@@ -4562,6 +4578,17 @@ void vdis::enumerations::add_all(void)
     add(ENUM_EVENT_TYPE, 18, "EVENT_TYPE_RADAR_PERCEPTION");
 
 
+    // From file: exercise_state.csv
+    //
+    add(ENUM_EXERCISE_STATE, 0, "EXERCISE_STATE_UNKNOWN");
+    add(ENUM_EXERCISE_STATE, 1, "EXERCISE_STATE_UNALLOCATED");
+    add(ENUM_EXERCISE_STATE, 2, "EXERCISE_STATE_ALLOCATED");
+    add(ENUM_EXERCISE_STATE, 3, "EXERCISE_STATE_INITIALIZED");
+    add(ENUM_EXERCISE_STATE, 4, "EXERCISE_STATE_PAUSED");
+    add(ENUM_EXERCISE_STATE, 5, "EXERCISE_STATE_EXECUTING");
+    add(ENUM_EXERCISE_STATE, 6, "EXERCISE_STATE_ERROR");
+
+
     // From file: exp_cat.csv
     //
     add(ENUM_EXP_CAT, 0, "EXP_CAT_OTH");
@@ -6974,6 +7001,12 @@ void vdis::enumerations::add_all(void)
     add(ENUM_TRANSFER_TYPE, 8, "TRANSFER_TYPE_MAN_PULL_TRANSFER_ENTITY");
     add(ENUM_TRANSFER_TYPE, 9, "TRANSFER_TYPE_MAN_PULL_TRANSFER_ENV_PROC");
     add(ENUM_TRANSFER_TYPE, 10, "TRANSFER_TYPE_REMOVE_ENTITY");
+
+
+    // From file: transition.csv
+    //
+    add(ENUM_TRANSITION, 0, "TRANSITION_NOT_TRANSITIONING");
+    add(ENUM_TRANSITION, 1, "TRANSITION_TRANSITIONING");
 
 
     // From file: transmit_line.csv
