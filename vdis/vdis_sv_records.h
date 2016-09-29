@@ -49,8 +49,6 @@ namespace vdis
             return (vdis::datum_ids_e)type;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const
         {
             return (content_ptr ? content_ptr->length() : 0);
@@ -79,8 +77,6 @@ namespace vdis
 
         ~default_sv_content_t(void) { clear(); }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return (buffer.length() + 6); }
 
         inline void clear(void)
@@ -121,8 +117,6 @@ namespace vdis
             return (app_state_e)requested_state;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         uint16_t length(void) const;
 
         void clear(void);
@@ -151,8 +145,6 @@ namespace vdis
             return (app_general_status_e)general_status;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -199,8 +191,6 @@ namespace vdis
             return (stealthstate_sensor_mode_e)sensor_mode;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -230,8 +220,6 @@ namespace vdis
 
         ~stealth_location_t(void) { clear(); }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -272,8 +260,6 @@ namespace vdis
             return (stealth_attach_mode_e)attach_mode;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -316,8 +302,6 @@ namespace vdis
             return (dead_reckoning_e)algorithm;
         }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -347,8 +331,6 @@ namespace vdis
 
         ~stealth_field_of_view_t(void) { clear(); }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)
@@ -375,8 +357,6 @@ namespace vdis
 
         ~stealth_marking_id_t(void) { clear(); }
 
-        // Returns length in bytes of entire record (with type and length)
-        //
         inline uint16_t length(void) const { return LENGTH_BYTES; }
 
         inline void clear(void)

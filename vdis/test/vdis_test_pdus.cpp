@@ -11,10 +11,10 @@ void vdis::test::test_pdus(void)
     std::vector<std::string>
         filenames;
 
-//    filenames.push_back("001_entity_state.UH60M");
-//    filenames.push_back("001_entity_state.M1A2");
-//    filenames.push_back("001_entity_state.DI_AK74");
-//    filenames.push_back("001_entity_state.SLING_HMMWV");
+    filenames.push_back("001_entity_state.UH60M");
+    filenames.push_back("001_entity_state.M1A2");
+    filenames.push_back("001_entity_state.DI_AK74");
+    filenames.push_back("001_entity_state.SLING_HMMWV");
     filenames.push_back("200_application_control.STATUS1");
     filenames.push_back("200_application_control.STEALTH1");
 
@@ -27,12 +27,17 @@ void vdis::test::test_pdus(void)
         byte_stream_t
             stream;
 
+        out << std::endl
+            << "==========================================" << std::endl
+            << "PDU[" << filenames[i] << "]:" << std::endl
+            << "==========================================" << std::endl;
+
         if (import_pdu(filenames[i], stream))
         {
             pdu_t
                 pdu(stream);
 
-            out << "PDU:" << std::endl << pdu;
+            out << pdu << std::endl;
         }
     }
 }

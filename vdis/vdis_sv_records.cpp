@@ -33,9 +33,8 @@ vdis::sv_record_t **vdis::read_sv_records(
 }
 
 // ----------------------------------------------------------------------------
-// Reads 2 bytes for record length, converts value in bits to value
-// in bytes, and checks the byte stream for the needed bytes.
-// Returns datum length in bytes.
+// Reads 2 bytes for record length and checks the byte stream for the needed
+// bytes.  Returns record length in bytes minus 6 bytes for type and length.
 //
 uint16_t vdis::sv_content_t::read_length(byte_stream_t &stream)
 {
@@ -262,7 +261,7 @@ void vdis::application_state_t::read(byte_stream_t &stream)
 {
     clear();
 
-    read_length(stream);
+    uint16_t record_length = read_length(stream);
 
     stream.read(padding);
     stream.read(transition);
@@ -290,6 +289,13 @@ void vdis::application_state_t::read(byte_stream_t &stream)
         {
             stream.skip(4);
         }
+    }
+
+    if (record_length != length())
+    {
+        LOG_ERROR(
+            "Inconsistent length for application_state_t: %d",
+            record_length);
     }
 }
 
@@ -344,11 +350,13 @@ void vdis::application_health_status_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for application_health_status_t")
+        LOG_ERROR(
+            "Inconsistent length for application_health_status_t: %d",
+            record_length);
     }
 
     stream.read(padding);
@@ -396,11 +404,13 @@ void vdis::stealth_spectrum_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_spectrum_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_spectrum_t: %d",
+            record_length);
     }
 
     stream.read(spectrum_type);
@@ -444,11 +454,13 @@ void vdis::stealth_location_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_location_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_location_t: %d",
+            record_length);
     }
 
     stream.read(padding16);
@@ -494,11 +506,13 @@ void vdis::stealth_attachment_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_attachment_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_attachment_t: %d",
+            record_length);
     }
 
     stream.read(padding16);
@@ -548,11 +562,13 @@ void vdis::stealth_velocity_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_velocity_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_velocity_t: %d",
+            record_length);
     }
 
     stream.read(relative);
@@ -596,11 +612,13 @@ void vdis::stealth_field_of_view_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_field_of_view_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_field_of_view_t: %d",
+            record_length);
     }
 
     stream.read(padding16);
@@ -638,11 +656,13 @@ void vdis::stealth_marking_id_t::read(byte_stream_t &stream)
 {
     clear();
 
-    uint16_t length = read_length(stream);
+    uint16_t record_length = read_length(stream);
 
-    if (length != LENGTH_BYTES)
+    if (record_length != LENGTH_BYTES)
     {
-        LOG_ERROR("Inconsistent length for stealth_marking_id_t: %d", length);
+        LOG_ERROR(
+            "Inconsistent length for stealth_marking_id_t: %d",
+            record_length);
     }
 
     stream.read(id);
