@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#define TEST_TRUE(t,e) vdis::test::assert(#t, #e, e, true)
-#define TEST_FALSE(t,e) vdis::test::assert(#t, #e, e, false)
+#define TEST_TRUE(t,e) vdis::test::assert(t, #e, e, true)
+#define TEST_FALSE(t,e) vdis::test::assert(t, #e, e, false)
 
 namespace vdis
 {
@@ -32,7 +32,7 @@ namespace vdis
         );
 
         static void assert(
-            const char *index,
+            float test,
             const char *expression,
             bool result,
             bool expectation

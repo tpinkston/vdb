@@ -33,7 +33,7 @@ vdis::byte_buffer_t::byte_buffer_t(uint32_t size) :
 vdis::byte_buffer_t::byte_buffer_t(
     const uint8_t *buffer,
     uint32_t size,
-    bool copy
+    bool allocate
 ) :
     data_length(0),
     data_buffer(0),
@@ -43,11 +43,10 @@ vdis::byte_buffer_t::byte_buffer_t(
     {
         data_length = size;
 
-        if (copy)
+        if (allocate)
         {
             data_buffer = new uint8_t[data_length];
             data_allocated = true;
-
             std::memcpy(data_buffer, buffer, data_length);
         }
         else
@@ -203,17 +202,27 @@ void vdis::byte_buffer_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::byte_buffer_t::reset(const uint8_t *buffer, uint32_t size)
+void vdis::byte_buffer_t::reset(
+    const uint8_t *buffer,
+    uint32_t size,
+    bool allocate)
 {
     clear();
 
     if (buffer and (size > 0))
     {
         data_length = size;
-        data_buffer = new uint8_t[data_length];
-        data_allocated = true;
 
-        std::memcpy(data_buffer, buffer, data_length);
+        if (allocate)
+        {
+            data_buffer = new uint8_t[data_length];
+            data_allocated = true;
+            std::memcpy(data_buffer, buffer, data_length);
+        }
+        else
+        {
+            data_buffer = const_cast<uint8_t*>(buffer);
+        }
     }
 }
 

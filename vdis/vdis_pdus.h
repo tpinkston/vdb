@@ -32,6 +32,7 @@
 #define POINT_OBJECT_STATE_PDU_SIZE         88
 #define LINEAR_OBJECT_STATE_PDU_SIZE        40
 #define AREAL_OBJECT_STATE_PDU_SIZE         48
+#define APPLICATION_CONTROL_PDU_SIZE        40
 
 namespace vdis
 {
@@ -39,6 +40,7 @@ namespace vdis
 
     struct base_pdu_t;
     struct fixed_datum_t;
+    struct sv_record_t;
     struct variable_datum_t;
     struct vp_record_t;
 
@@ -734,6 +736,47 @@ namespace vdis
 
         areal_object_state_pdu_t(void);
         ~areal_object_state_pdu_t(void);
+
+        void clear(void);
+        void print(std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct application_control_pdu_t : public base_pdu_t
+    {
+        entity_id_t             originator;                 // 6 bytes
+        entity_id_t             recipient;                  // 6 bytes
+        uint8_t                 reliability_service;        // 1 byte
+        uint8_t                 time_interval;              // 1 byte
+        uint8_t                 control_type;               // 1 byte
+        uint8_t                 padding;                    // 1 byte
+        uint16_t                originator_type;            // 2 bytes
+        uint16_t                recipient_type;             // 2 bytes
+        uint32_t                request_id;                 // 4 bytes
+        uint8_t                 total_parts;                // 1 byte
+        uint8_t                 current_part;               // 1 byte
+        uint16_t                record_count;               // 2 bytes
+        sv_record_t           **records;                    // Variable length
+
+        application_control_pdu_t(void);
+        ~application_control_pdu_t(void);
+
+        inline app_ctrl_control_type_e control_type_enum(void) const
+        {
+            return (app_ctrl_control_type_e)control_type;
+        }
+
+        inline app_ctrl_application_type_e originator_type_enum(void) const
+        {
+            return (app_ctrl_application_type_e)originator_type;
+        }
+
+        inline app_ctrl_application_type_e recipient_type_enum(void) const
+        {
+            return (app_ctrl_application_type_e)recipient_type;
+        }
 
         void clear(void);
         void print(std::ostream &) const;

@@ -7,6 +7,7 @@
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
 #include "vdis_string.h"
+#include "vdis_sv_records.h"
 #include "vdis_vp_records.h"
 
 namespace
@@ -213,7 +214,7 @@ namespace
         0, // 197,PDU_TYPE_UNDEFINED
         0, // 198,PDU_TYPE_UNDEFINED
         0, // 199,PDU_TYPE_UNDEFINED
-        0, // 200,PDU_TYPE_APPLICATION_CTRL
+        APPLICATION_CONTROL_PDU_SIZE,   // 200,PDU_TYPE_APPLICATION_CTRL
         0, // 201,PDU_TYPE_UNDEFINED
         0, // 202,PDU_TYPE_UNDEFINED
         0, // 203,PDU_TYPE_UNDEFINED
@@ -717,7 +718,7 @@ void vdis::entity_state_pdu_t::read(byte_stream_t &stream)
     dead_reckoning.read(stream);
     marking.read(stream);
     capabilities.read(stream);
-    vp_records = vp_record_t::read(stream, vp_record_count);
+    vp_records = read_vp_records(stream, vp_record_count);
 }
 
 // ----------------------------------------------------------------------------
@@ -942,7 +943,7 @@ void vdis::detonation_pdu_t::read(byte_stream_t &stream)
     stream.read(result);
     stream.read(vp_record_count);
     stream.read(padding);
-    vp_records = vp_record_t::read(stream, vp_record_count);
+    vp_records = read_vp_records(stream, vp_record_count);
 }
 
 // ----------------------------------------------------------------------------
@@ -988,6 +989,176 @@ void vdis::detonation_pdu_t::write(byte_stream_t &stream)
                     "Null VP record at index %d for shooter %s!",
                     i,
                     to_string(shooter).c_str());
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::application_control_pdu_t::application_control_pdu_t(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    reliability_service = 0;
+    time_interval = 0;
+    control_type = 0;
+    padding = 0;
+    originator_type = 0;
+    recipient_type = 0;
+    request_id = 0;
+    total_parts = 0;
+    current_part = 0;
+    record_count = 0;
+    records = 0;
+}
+
+// ----------------------------------------------------------------------------
+vdis::application_control_pdu_t::~application_control_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::application_control_pdu_t::clear(void)
+{
+    for(uint16_t i = 0; (records and (i < record_count)); ++i)
+    {
+        delete records[i];
+        records[i] = 0;
+    }
+
+    if (records)
+    {
+        delete[] records;
+    }
+
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    reliability_service = 0;
+    time_interval = 0;
+    control_type = 0;
+    padding = 0;
+    originator_type = 0;
+    recipient_type = 0;
+    request_id = 0;
+    total_parts = 0;
+    current_part = 0;
+    record_count = 0;
+    records = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::application_control_pdu_t::print(std::ostream &out) const
+{
+    const std::string
+        prefix = "application_control.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << originator << std::endl
+        << prefix << "recipient "
+        << recipient << std::endl
+        << prefix << "reliability_service "
+        << (int)reliability_service << std::endl
+        << prefix << "time_interval "
+        << (int)time_interval << std::endl
+        << prefix << "control_type "
+        << control_type_enum() << std::endl
+        << prefix << "padding "
+        << to_bin_string(padding) << std::endl
+        << prefix << "originator_type "
+        << originator_type_enum() << std::endl
+        << prefix << "recipient_type "
+        << recipient_type_enum() << std::endl
+        << prefix << "request_id "
+        << request_id << std::endl
+        << prefix << "total_parts "
+        << (int)total_parts << std::endl
+        << prefix << "current_part "
+        << (int)current_part << std::endl
+        << prefix << prefix << "records.count"
+        << (int)record_count << std::endl;
+
+    for(uint16_t i = 0; (records and (i < record_count)); ++i)
+    {
+        if (records[i])
+        {
+            records[i]->print(
+                (prefix + "records[" + to_string(i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::application_control_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(reliability_service);
+    stream.read(time_interval);
+    stream.read(control_type);
+    stream.read(padding);
+    stream.read(originator_type);
+    stream.read(recipient_type);
+    stream.read(request_id);
+    stream.read(total_parts);
+    stream.read(current_part);
+    stream.read(record_count);
+
+    records = read_sv_records(stream, record_count);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::application_control_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(reliability_service);
+    stream.write(time_interval);
+    stream.write(control_type);
+    stream.write(padding);
+    stream.write(originator_type);
+    stream.write(recipient_type);
+    stream.write(request_id);
+    stream.write(total_parts);
+    stream.write(current_part);
+    stream.write(record_count);
+
+    if ((record_count > 0) and not records)
+    {
+        LOG_ERROR(
+            "Null VP record array with length %d for originator %s!",
+            record_count,
+            to_string(originator).c_str());
+    }
+    else if ((record_count == 0) and records)
+    {
+        LOG_ERROR(
+            "Non-null VP record array with length 0 for originator %s!",
+            to_string(originator).c_str());
+    }
+    else if ((record_count > 0) and records)
+    {
+        for(uint8_t i = 0; i < record_count; ++i)
+        {
+            if (records[i])
+            {
+                records[i]->write(stream);
+            }
+            else
+            {
+                LOG_ERROR(
+                    "Null VP record at index %d for originator %s!",
+                    i,
+                    to_string(originator).c_str());
             }
         }
     }

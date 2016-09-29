@@ -5,6 +5,10 @@
 #include "vdis_byte_stream.h"
 #include "vdis_logger.h"
 
+const vdis::byte_stream_t::operation_t
+    vdis::byte_stream_t::BYTE_STREAM_OP_READ = "read",
+    vdis::byte_stream_t::BYTE_STREAM_OP_WRITE = "write";
+
 // ----------------------------------------------------------------------------
 vdis::byte_stream_t::byte_stream_t(void) :
     buffer_index(0),
@@ -161,6 +165,42 @@ void vdis::byte_stream_t::resize(uint32_t size)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::byte_stream_t::read(byte_buffer_t &buffer, uint32_t size)
+{
+    if (read_ready(size))
+    {
+        uint8_t *temp_buffer = new uint8_t[size];
+
+        read(temp_buffer, size);
+
+        buffer.reset(temp_buffer, size, false);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_stream_t::write(const byte_buffer_t &buffer)
+{
+    if ((buffer.length() > 0) and write_ready(buffer.length()))
+    {
+        write(buffer.buffer(), buffer.length());
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_stream_t::write(const byte_buffer_t &buffer, uint32_t size)
+{
+    if (size > buffer.length())
+    {
+        size = buffer.length();
+    }
+
+    if ((size > 0) and write_ready(size))
+    {
+        write(buffer.buffer(), size);
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::byte_stream_t::read(void *value_ptr, uint32_t size)
 {
     if (read_ready(size))
@@ -181,7 +221,9 @@ void vdis::byte_stream_t::write(const void *value_ptr, uint32_t size)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::byte_stream_t::operation_ready(uint32_t size, operation_t operation)
+bool vdis::byte_stream_t::operation_ready(
+    const operation_t &operation,
+    uint32_t size)
 {
     LOG_EXTRA_VERBOSE("Data stream check %s: %d...", operation.c_str(), size);
 

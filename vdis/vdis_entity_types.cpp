@@ -37,57 +37,12 @@ void vdis::entity_types::print(std::ostream &stream)
 
     while(name != names.end())
     {
-        convert(name->first, entity_type);
+        entity_type.set(name->first);
 
         stream << entity_type << "," << name->second << std::endl;
 
         ++name;
     }
-}
-
-// ----------------------------------------------------------------------------
-void vdis::entity_types::convert(const entity_type_t &type, uint64_t &value)
-{
-    value = 0;
-    value = (uint8_t)(type.kind & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.domain & 0xFF);
-    value <<= 16;
-    value |= (uint16_t)(type.country & 0xFFFF);
-    value <<= 8;
-    value |= (uint8_t)(type.category & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.subcategory & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.specific & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.extra & 0xFF);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::entity_types::convert(const uint64_t value, entity_type_t &type)
-{
-    uint64_t bits = value;
-
-    type.extra = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.specific = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.subcategory = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.category = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.country = (uint16_t)(bits & 0xFFFF);
-    bits >>= 16;
-
-    type.domain = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.kind = (uint8_t)(bits & 0xFF);
 }
 
 // ----------------------------------------------------------------------------
@@ -272,7 +227,7 @@ void vdis::entity_types::add(
     type.specific = specific;
     type.extra = extra;
 
-    convert(type, value);
+    value = type.get();
 
     search_itor = names.find(value);
 

@@ -12,7 +12,7 @@ namespace vdis
 
         byte_buffer_t(void);
         byte_buffer_t(uint32_t size);
-        byte_buffer_t(const uint8_t *buffer, uint32_t size, bool copy = true);
+        byte_buffer_t(const uint8_t *buffer, uint32_t size, bool allocate = true);
         byte_buffer_t(const byte_buffer_t &copy);
         virtual ~byte_buffer_t(void);
 
@@ -26,7 +26,7 @@ namespace vdis
 
         void print(const std::string &, std::ostream &) const;
 
-        virtual void reset(const uint8_t *buffer, uint32_t size);
+        virtual void reset(const uint8_t *buffer, uint32_t size, bool allocate = true);
         virtual void reset(const byte_buffer_t &buffer);
 
       protected:
@@ -36,6 +36,9 @@ namespace vdis
 
       private:
 
+        // true: 'data_buffer' will be deallocated in deconstructor
+        // false: bytes in 'data_buffer' get deallocated elsewhere
+        //
         bool        data_allocated;
     };
 

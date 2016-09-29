@@ -5,9 +5,6 @@
 #include "vdis_integer.h"
 #include "vdis_services.h"
 
-#define BYTE_STREAM_OP_READ     "read"
-#define BYTE_STREAM_OP_WRITE    "write"
-
 namespace vdis
 {
     class byte_stream_t : public byte_buffer_t
@@ -62,28 +59,24 @@ namespace vdis
         void write(float32_t value);
         void write(float64_t value);
 
+        void read(byte_buffer_t &buffer, uint32_t size);
+        void write(const byte_buffer_t &buffer);
+        void write(const byte_buffer_t &buffer, uint32_t size);
+
         void read(void *value_ptr, uint32_t size);
         void write(const void *value_ptr, uint32_t size);
-
-//        template<typename T>
-//        void read(T &value)
-//        {
-//            read(&value, sizeof(T));
-//        }
-//
-//        template<typename T>
-//        void write(const T &value)
-//        {
-//            write(&value, sizeof(T));
-//        }
 
       protected:
 
         typedef std::string operation_t;
 
+        static const operation_t
+            BYTE_STREAM_OP_READ,
+            BYTE_STREAM_OP_WRITE;
+
         bool read_ready(uint32_t size);
         bool write_ready(uint32_t size);
-        bool operation_ready(uint32_t size, operation_t operation);
+        bool operation_ready(const operation_t &operation, uint32_t size);
 
         uint32_t
             buffer_index;
@@ -343,13 +336,13 @@ namespace vdis
     // ------------------------------------------------------------------------
     inline bool byte_stream_t::read_ready(uint32_t size)
     {
-        return operation_ready(size, BYTE_STREAM_OP_READ);
+        return operation_ready(BYTE_STREAM_OP_READ, size);
     }
 
     // ------------------------------------------------------------------------
     inline bool byte_stream_t::write_ready(uint32_t size)
     {
-        return operation_ready(size, BYTE_STREAM_OP_WRITE);
+        return operation_ready(BYTE_STREAM_OP_WRITE, size);
     }
 }
 

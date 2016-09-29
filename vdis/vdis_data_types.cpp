@@ -101,7 +101,21 @@ void vdis::object_id_t::write(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 void vdis::entity_type_t::set(uint64_t value)
 {
-    entity_types::convert(value, *this);
+    uint64_t bits = value;
+
+    extra = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    specific = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    subcategory = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    category = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    country = (uint16_t)(bits & 0xFFFF);
+    bits >>= 16;
+    domain = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    kind = (uint8_t)(bits & 0xFF);
 }
 
 // ----------------------------------------------------------------------------
@@ -109,7 +123,20 @@ uint64_t vdis::entity_type_t::get(void) const
 {
     uint64_t value = 0;
 
-    entity_types::convert(*this, value);
+    value = 0;
+    value = (uint8_t)(kind & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(domain & 0xFF);
+    value <<= 16;
+    value |= (uint16_t)(country & 0xFFFF);
+    value <<= 8;
+    value |= (uint8_t)(category & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(subcategory & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(specific & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(extra & 0xFF);
 
     return value;
 }
@@ -168,6 +195,37 @@ void vdis::entity_type_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::object_type_t::set(uint32_t value)
+{
+    uint32_t bits = value;
+
+    subcategory = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    category = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+    kind = (uint8_t)(bits & 0xFF);
+    bits >>= 8;
+
+    domain = (uint8_t)(bits & 0xFF);
+}
+
+// ----------------------------------------------------------------------------
+uint32_t vdis::object_type_t::get(void) const
+{
+    uint32_t value = 0;
+
+    value = (uint8_t)(domain & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(kind & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(category & 0xFF);
+    value <<= 8;
+    value |= (uint8_t)(subcategory & 0xFF);
+
+    return value;
+}
+
+// ----------------------------------------------------------------------------
 void vdis::object_type_t::read(byte_stream_t &stream)
 {
     stream.read(domain);
@@ -204,12 +262,31 @@ std::string vdis::entity_marking_t::ascii_characters(void) const
 {
     std::ostringstream
         stream;
+    uint32_t
+        sum = 0;
     bool
         done = false;
 
-    for(unsigned i = 0; (i < VDIS_MARKING_CHARACTERS) and not done; ++i)
+    for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
+    {
+        sum += (uint32_t)characters[i];
+    }
+
+    if (sum == 0)
+    {
+        stream << "(NULL)";
+    }
+    else for(unsigned i = 0; (i < VDIS_MARKING_CHARACTERS) and not done; ++i)
     {
         uint8_t value = characters[i];
+
+        // Some systems will ignore specifications and use all 12 bytes
+        // as ASCII characters.
+        //
+        if ((i == 0) and (character_set > 31) and (character_set < 127))
+        {
+            stream << (char)character_set;
+        }
 
         if (value == 0)
         {
@@ -533,6 +610,29 @@ void vdis::pdu_header_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::sling_line_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "length " << to_string(line_length, 1, 2) << std::endl
+        << prefix << "offset " << to_string(line_offset, 1, 2) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::sling_line_t::read(byte_stream_t &stream)
+{
+    stream.read(line_length);
+    stream.read(line_offset);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::sling_line_t::write(byte_stream_t &stream)
+{
+    stream.write(line_length);
+    stream.write(line_offset);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::burst_descriptor_t::print(
     const std::string &prefix,
     std::ostream &out) const
@@ -580,6 +680,35 @@ void vdis::modulation_type_t::write(byte_stream_t &stream)
     stream.write(major_modulation);
     stream.write(modulation_detail);
     stream.write(radio_system);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::exercise_state_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "id " << (int)id << std::endl
+        << prefix << "transition " << (int)transition << std::endl
+        << prefix << "current_state " << (int)current_state << std::endl
+        << prefix << "requested_state " << (int)requested_state << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::exercise_state_t::read(byte_stream_t &stream)
+{
+    stream.read(id);
+    stream.read(transition);
+    stream.read(current_state);
+    stream.read(requested_state);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::exercise_state_t::write(byte_stream_t &stream)
+{
+    stream.write(id);
+    stream.write(transition);
+    stream.write(current_state);
+    stream.write(requested_state);
 }
 
 // ----------------------------------------------------------------------------

@@ -162,6 +162,9 @@ namespace vdis
             subcategory = 0;
         }
 
+        void set(uint32_t value);
+        uint32_t get(void) const;
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -174,6 +177,11 @@ namespace vdis
 
         std::string hex_characters(void) const;
         std::string ascii_characters(void) const;
+
+        inline entity_marking_e marking_type(void) const
+        {
+            return (entity_marking_e)character_set;
+        }
 
         void clear(void);
 
@@ -367,6 +375,23 @@ namespace vdis
             length = 0;
             status = 0;
             padding = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct sling_line_t
+    {
+        float32_t               line_length;            // 4 bytes
+        float32_t               line_offset;            // 4 bytes
+
+        inline void clear(void)
+        {
+            line_offset = 0;
+            line_length = 0;
         }
 
         void print(const std::string &, std::ostream &) const;
@@ -635,6 +660,29 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct exercise_state_t
+    {
+        uint8_t                     id;                     // 1 byte
+        uint8_t                     transition;             // 1 byte
+        uint8_t                     current_state;          // 1 byte
+        uint8_t                     requested_state;        // 1 byte
+
+        // TODO: enumeration methods
+
+        inline void clear(void)
+        {
+            id = 0;
+            transition = 0;
+            current_state = 0;
+            requested_state = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct linear_segment_t
     {
         uint8_t                 number;                     // 1 byte
@@ -644,15 +692,27 @@ namespace vdis
         location24_t            location;                   // 24 bytes
         orientation_t           orientation;                // 12 bytes
 
-        // In the latest standard these are represented as 32-bit floating
-        // point numbers, not 16-bit unsigned integers.
-        //
+// In the latest standard these are represented as 32-bit floating
+// point numbers, not 16-bit unsigned integers.
+//
+#ifdef LINEAR_SEGMENTS_USE_32BIT_FLOAT
+        float32_t               segment_length;             // 4 bytes
+        float32_t               segment_width;              // 4 bytes
+        float32_t               segment_height;             // 4 bytes
+        float32_t               segment_depth;              // 4 bytes
+#else
         uint16_t                segment_length;             // 2 bytes
         uint16_t                segment_width;              // 2 bytes
         uint16_t                segment_height;             // 2 bytes
         uint16_t                segment_depth;              // 2 bytes
+#endif
 
         uint32_t                padding;                    // 4 bytes
+
+        inline float32_t length(void) const { return segment_length; }
+        inline float32_t width(void) const { return segment_width; }
+        inline float32_t height(void) const { return segment_height; }
+        inline float32_t depth(void) const { return segment_depth; }
 
         void clear(void);
         void print(const std::string &, std::ostream &) const;
@@ -674,7 +734,5 @@ std::ostream &operator<<(std::ostream &, const vdis::orientation_t &);
 std::ostream &operator<<(std::ostream &, const vdis::velocity_t &);
 std::ostream &operator<<(std::ostream &, const vdis::timestamp_t &);
 std::ostream &operator<<(std::ostream &, const vdis::clocktime_t &);
-std::ostream &operator<<(std::ostream &, const vdis::burst_descriptor_t &);
-std::ostream &operator<<(std::ostream &, const vdis::modulation_type_t &);
 
 #endif

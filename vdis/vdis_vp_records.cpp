@@ -9,6 +9,34 @@ namespace
 }
 
 // ----------------------------------------------------------------------------
+vdis::vp_record_t **vdis::read_vp_records(
+    byte_stream_t &stream,
+    uint32_t count)
+{
+    vp_record_t
+        **records = new vp_record_t*[count];
+
+    for(uint32_t i = 0; i < count; ++i)
+    {
+        vp_record_t
+            *record_ptr = new vp_record_t({ 0, 0 });
+
+        LOG_EXTRA_VERBOSE(
+            "Reading VP record %d/%d with stream at index %d/%d",
+            (i + 1),
+            count,
+            stream.index(),
+            stream.length());
+
+        record_ptr->read(stream);
+
+        records[i] = record_ptr;
+    }
+
+    return records;
+}
+
+// ----------------------------------------------------------------------------
 void vdis::vp_record_content_t::using_type(const entity_type_t *type_ptr)
 {
     entity_type_ptr = type_ptr;
@@ -120,35 +148,6 @@ void vdis::vp_record_t::read(byte_stream_t &stream)
 void vdis::vp_record_t::write(byte_stream_t &stream)
 {
     // TODO
-}
-
-
-// ----------------------------------------------------------------------------
-vdis::vp_record_t **vdis::vp_record_t::read(
-    byte_stream_t &stream,
-    uint32_t count)
-{
-    vp_record_t
-        **records = new vp_record_t*[count];
-
-    for(uint32_t i = 0; i < count; ++i)
-    {
-        vp_record_t
-            *record_ptr = new vp_record_t({ 0, 0 });
-
-        LOG_EXTRA_VERBOSE(
-            "Reading VP record %d/%d with stream at index %d/%d",
-            (i + 1),
-            count,
-            stream.index(),
-            stream.length());
-
-        record_ptr->read(stream);
-
-        records[i] = record_ptr;
-    }
-
-    return records;
 }
 
 // ----------------------------------------------------------------------------

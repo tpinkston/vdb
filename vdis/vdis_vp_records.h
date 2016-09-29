@@ -13,13 +13,18 @@
 
 namespace vdis
 {
+    struct vp_record_t;
+
+    // Returns array with length equal to 'count'
+    //
+    vp_record_t **read_vp_records(byte_stream_t &stream, uint32_t count);
+
     // ------------------------------------------------------------------------
     struct vp_record_content_t
     {
         virtual ~vp_record_content_t(void) { }
 
         virtual void print(const std::string &, std::ostream &) const = 0;
-
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
 
@@ -40,13 +45,9 @@ namespace vdis
         }
 
         void clear(void);
-
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
-
-        static vp_record_t **read(byte_stream_t &stream, uint32_t count);
     };
 
     // ------------------------------------------------------------------------
@@ -55,7 +56,6 @@ namespace vdis
         uint8_t                 buffer[VP_RECORD_DATA_SIZE];
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -80,7 +80,6 @@ namespace vdis
         }
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -118,7 +117,6 @@ namespace vdis
         }
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -136,7 +134,6 @@ namespace vdis
         }
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -169,7 +166,6 @@ namespace vdis
         }
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -216,7 +212,6 @@ namespace vdis
         }
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -227,7 +222,6 @@ namespace vdis
         uint8_t                 padding[12];            // 12 bytes
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -238,7 +232,6 @@ namespace vdis
         uint8_t                 padding[12];            // 12 bytes
 
         void print(const std::string &, std::ostream &) const;
-
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };

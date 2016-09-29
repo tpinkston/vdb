@@ -18,9 +18,6 @@ namespace vdis
 
         static void print(std::ostream &stream);
 
-        static void convert(const entity_type_t &type, uint64_t &value);
-        static void convert(const uint64_t value, entity_type_t &type);
-
         static const std::string &get_name(uint64_t value);
         static const std::string &get_description(uint64_t value);
 

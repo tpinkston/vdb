@@ -2,6 +2,7 @@
 #include "vdis_entity_types.h"
 #include "vdis_logger.h"
 #include "vdis_services.h"
+#include "vdis_string.h"
 #include "vdis_test.h"
 
 #include <fstream>
@@ -24,12 +25,12 @@ int main(int argc, char *argv[])
 
 // ----------------------------------------------------------------------------
 void vdis::test::assert(
-    const char *index,
+    float test,
     const char *expression,
     bool result,
     bool expectation)
 {
-    out << color::bold_blue << index << color::none << ": ";
+    out << color::bold_blue << to_string(test, 2, 2) << color::none << ": ";
 
     if (result == expectation)
     {
