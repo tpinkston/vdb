@@ -688,9 +688,9 @@ void vdis::exercise_state_t::print(
     std::ostream &out) const
 {
     out << prefix << "id " << (int)id << std::endl
-        << prefix << "transition " << (int)transition << std::endl
-        << prefix << "current_state " << (int)current_state << std::endl
-        << prefix << "requested_state " << (int)requested_state << std::endl;
+        << prefix << "transition " << transition_enum() << std::endl
+        << prefix << "current_state " << current_state_enum() << std::endl
+        << prefix << "requested_state " << requested_state_enum() << std::endl;
 }
 
 // ----------------------------------------------------------------------------

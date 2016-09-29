@@ -49,7 +49,7 @@ void vdis::test::assert(
 // ----------------------------------------------------------------------------
 int vdis::test::run(int argc, char *argv[])
 {
-    //logger::set_enabled(logger::EXTRA_VERBOSE, true);
+    logger::set_enabled(logger::EXTRA_VERBOSE, true);
     logger::set_enabled(logger::VERBOSE, true);
     logger::set_enabled(logger::WARNING, true);
 

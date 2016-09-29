@@ -197,9 +197,9 @@ if [ "$CONVERTED" == true ]; then
     for NAME in "${ENUM_NAMES[@]}"; do
         NAME_UPPER=`echo "$NAME" | awk '{print toupper($0)}'`
         echo "" >> "$ENUMS_H_OUT"
-        echo "inline std::ostream &operator<<(std::ostream &stream, vdis::${NAME}_e value)" >> "$ENUMS_H_OUT"
+        echo "inline std::ostream &operator<<(std::ostream &out, vdis::${NAME}_e value)" >> "$ENUMS_H_OUT"
         echo "{" >> "$ENUMS_H_OUT"
-        echo "    return (stream << vdis::enumerations::get_name(ENUM_${NAME_UPPER}, value));" >> "$ENUMS_H_OUT"
+        echo "    return vdis::enumerations::print(ENUM_${NAME_UPPER}, value, out);" >> "$ENUMS_H_OUT"
         echo "}" >> "$ENUMS_H_OUT"
     done < $ENUM_IN
     echo "" >> "$ENUMS_H_OUT"

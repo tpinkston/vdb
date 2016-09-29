@@ -11,10 +11,12 @@ void vdis::test::test_pdus(void)
     std::vector<std::string>
         filenames;
 
-    filenames.push_back("001_entity_state.UH60M");
-    filenames.push_back("001_entity_state.M1A2");
-    filenames.push_back("001_entity_state.DI_AK74");
-    filenames.push_back("001_entity_state.SLING_HMMWV");
+//    filenames.push_back("001_entity_state.UH60M");
+//    filenames.push_back("001_entity_state.M1A2");
+//    filenames.push_back("001_entity_state.DI_AK74");
+//    filenames.push_back("001_entity_state.SLING_HMMWV");
+    filenames.push_back("200_application_control.STATUS1");
+    filenames.push_back("200_application_control.STEALTH1");
 
     out << "==============================================" << std::endl;
     out << "vdis::test::test_pdus" << std::endl;

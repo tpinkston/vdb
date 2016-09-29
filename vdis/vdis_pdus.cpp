@@ -327,6 +327,12 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new detonation_pdu_t;
                 break;
             }
+            case PDU_TYPE_APPLICATION_CTRL:
+            {
+                LOG_EXTRA_VERBOSE("Creating new application_control_pdu_t...");
+                base_ptr = new application_control_pdu_t;
+                break;
+            }
             default:
             {
                 base_ptr = new default_pdu_t;
@@ -1079,7 +1085,7 @@ void vdis::application_control_pdu_t::print(std::ostream &out) const
         << (int)total_parts << std::endl
         << prefix << "current_part "
         << (int)current_part << std::endl
-        << prefix << prefix << "records.count"
+        << prefix << "records.count "
         << (int)record_count << std::endl;
 
     for(uint16_t i = 0; (records and (i < record_count)); ++i)

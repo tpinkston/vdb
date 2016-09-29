@@ -667,7 +667,20 @@ namespace vdis
         uint8_t                     current_state;          // 1 byte
         uint8_t                     requested_state;        // 1 byte
 
-        // TODO: enumeration methods
+        inline transition_e transition_enum(void) const
+        {
+            return (transition_e)transition;
+        }
+
+        inline exercise_state_e current_state_enum(void) const
+        {
+            return (exercise_state_e)current_state;
+        }
+
+        inline exercise_state_e requested_state_enum(void) const
+        {
+            return (exercise_state_e)requested_state;
+        }
 
         inline void clear(void)
         {
