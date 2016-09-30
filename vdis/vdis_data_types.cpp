@@ -1,10 +1,14 @@
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
 #include "vdis_entity_types.h"
+#include "vdis_services.h"
 #include "vdis_string.h"
 
 namespace
 {
+    const uint16_t
+        NONE = 0,
+        ALL = 65535;
     const float32_t
         TIME_UNIT_TO_SECONDS = (3600.0 / 2147483647.0),
         SECONDS_TO_TIME_UNITS = (1.0 / TIME_UNIT_TO_SECONDS);
@@ -51,6 +55,98 @@ void vdis::simulation_id_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+bool vdis::entity_id_t::is_none(void) const
+{
+    return (site == NONE) and (application == NONE) and (entity == NONE);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::entity_id_t::is_all(void) const
+{
+    return (site == ALL) and (application == ALL) and (entity == ALL);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::entity_id_t::operator==(const entity_id_t &other) const
+{
+    return (site == other.site) and
+           (application == other.application) and
+           (entity == other.entity);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::entity_id_t::operator!=(const entity_id_t &other) const
+{
+    return not (*this == other);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::entity_id_t::operator<(const entity_id_t &other) const
+{
+    if (site < other.site)
+    {
+        return true;
+    }
+    else if (site > other.site)
+    {
+        return false;
+    }
+    else if (application < other.application)
+    {
+        return true;
+    }
+    else if (application > other.application)
+    {
+        return false;
+    }
+    else if (entity < other.entity)
+    {
+        return true;
+    }
+    else if (entity > other.entity)
+    {
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::entity_id_t::operator>(const entity_id_t &other) const
+{
+    if (site > other.site)
+    {
+        return true;
+    }
+    else if (site < other.site)
+    {
+        return false;
+    }
+    else if (application > other.application)
+    {
+        return true;
+    }
+    else if (application < other.application)
+    {
+        return false;
+    }
+    else if (entity > other.entity)
+    {
+        return true;
+    }
+    else if (entity < other.entity)
+    {
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::entity_id_t::read(byte_stream_t &stream)
 {
     stream.read(site);
@@ -80,6 +176,18 @@ void vdis::event_id_t::write(byte_stream_t &stream)
     stream.write(site);
     stream.write(application);
     stream.write(event);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::object_id_t::is_none(void) const
+{
+    return (site == NONE) and (application == NONE) and (object == NONE);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::object_id_t::is_all(void) const
+{
+    return (site == ALL) and (application == ALL) and (object == ALL);
 }
 
 // ----------------------------------------------------------------------------
@@ -244,28 +352,25 @@ void vdis::object_type_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::entity_marking_t::hex_characters(void) const
+void vdis::marking_t::str(const std::string &name)
 {
-    std::ostringstream
-        stream;
+    character_set = ENTITY_MARKING_ASCII;
 
     for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
     {
-        stream << to_hex_string((uint8_t)characters[i]);
+        characters[i] = ((i < name.length()) ? (uint8_t)name[i] : 0);
     }
-
-    return stream.str();
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::entity_marking_t::ascii_characters(void) const
+std::string vdis::marking_t::str(void) const
 {
-    std::ostringstream
-        stream;
+    const bool
+        ASCII = is_printable_character(character_set);
+    std::string
+        string;
     uint32_t
         sum = 0;
-    bool
-        done = false;
 
     for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
     {
@@ -274,53 +379,99 @@ std::string vdis::entity_marking_t::ascii_characters(void) const
 
     if (sum == 0)
     {
-        stream << "(NULL)";
+        string = "(NULL)";
     }
-    else for(unsigned i = 0; (i < VDIS_MARKING_CHARACTERS) and not done; ++i)
+    else if (ASCII or (character_set == ENTITY_MARKING_ASCII))
     {
-        uint8_t value = characters[i];
+        std::ostringstream
+            stream;
+        bool
+            done = false;
 
-        // Some systems will ignore specifications and use all 12 bytes
-        // as ASCII characters.
-        //
-        if ((i == 0) and (character_set > 31) and (character_set < 127))
+        for(unsigned i = 0; (i < VDIS_MARKING_CHARACTERS) and not done; ++i)
         {
-            stream << (char)character_set;
+            uint8_t value = characters[i];
+
+            // Some systems will ignore specifications and use all 12 bytes
+            // as ASCII characters.
+            //
+            if ((i == 0) and ASCII)
+            {
+                stream << (char)character_set;
+            }
+
+            if (value == 0)
+            {
+                done = true;
+            }
+            else if (is_printable_character(value))
+            {
+                stream << (char)value;
+            }
+            else
+            {
+                stream << "x" << to_hex_string(value);
+            }
         }
 
-        if (value == 0)
+        string = ("'" + stream.str() + "'");
+    }
+    else
+    {
+        std::ostringstream
+            stream;
+
+        for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
         {
-            done = true;
+            stream << to_hex_string((uint8_t)characters[i]);
         }
-        else if ((value > 31) and (value < 127))
-        {
-            stream << (char)value;
-        }
-        else
-        {
-            stream << "\\x" << to_hex_string(value);
-        }
+
+        string = stream.str();
     }
 
-    return trim(stream.str());
+    return string;
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_marking_t::clear(void)
+void vdis::marking_t::clear(void)
 {
     character_set = 0;
     clear_memory(characters, VDIS_MARKING_CHARACTERS);
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_marking_t::read(byte_stream_t &stream)
+bool vdis::marking_t::operator==(const marking_t &other) const
+{
+    return (std::memcmp(this, &other, 12) == 0);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::marking_t::operator!=(const marking_t &other) const
+{
+    return (std::memcmp(this, &other, 12) != 0);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::marking_t::operator<(const marking_t &other) const
+{
+    return (std::memcmp(this, &other, 12) < 0);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::marking_t::operator>(const marking_t &other) const
+{
+    return (std::memcmp(this, &other, 12) > 0);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::marking_t::read(byte_stream_t &stream)
 {
     stream.read(character_set);
     stream.read(characters, VDIS_MARKING_CHARACTERS);
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_marking_t::write(byte_stream_t &stream)
+void vdis::marking_t::write(byte_stream_t &stream)
 {
     stream.write(character_set);
     stream.write(characters, VDIS_MARKING_CHARACTERS);
@@ -775,20 +926,9 @@ std::ostream &operator<<(std::ostream &out, const vdis::object_type_t &o)
 }
 
 // ----------------------------------------------------------------------------
-std::ostream &operator<<(std::ostream &out, const vdis::entity_marking_t &o)
+std::ostream &operator<<(std::ostream &out, const vdis::marking_t &o)
 {
-    switch((vdis::entity_marking_e)o.character_set)
-    {
-        case vdis::ENTITY_MARKING_ASCII:
-            out << "'" << o.ascii_characters() << "'";
-            break;
-        default:
-            out << o.hex_characters()
-                << " " << (vdis::entity_marking_e)o.character_set;
-            break;
-    }
-
-    return out;
+    return (out << o.str());
 }
 
 // ----------------------------------------------------------------------------

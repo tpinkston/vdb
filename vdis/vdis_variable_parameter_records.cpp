@@ -1,7 +1,7 @@
 #include "vdis_logger.h"
-#include "vdis_vp_records.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
+#include "vdis_variable_parameter_records.h"
 
 namespace
 {
@@ -9,17 +9,17 @@ namespace
 }
 
 // ----------------------------------------------------------------------------
-vdis::vp_record_t **vdis::read_vp_records(
+vdis::variable_parameter_record_t **vdis::read_variable_parameter_records(
     byte_stream_t &stream,
     uint32_t count)
 {
-    vp_record_t
-        **records = new vp_record_t*[count];
+    variable_parameter_record_t
+        **records = new variable_parameter_record_t*[count];
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        vp_record_t
-            *record_ptr = new vp_record_t({ 0, 0 });
+        variable_parameter_record_t
+            *record_ptr = new variable_parameter_record_t({ 0, 0 });
 
         LOG_EXTRA_VERBOSE(
             "Reading VP record %d/%d with stream at index %d/%d",
@@ -37,19 +37,20 @@ vdis::vp_record_t **vdis::read_vp_records(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::vp_record_content_t::using_type(const entity_type_t *type_ptr)
+void vdis::variable_parameter_content_t::using_type(
+    const entity_type_t *type_ptr)
 {
     entity_type_ptr = type_ptr;
 }
 
 // ----------------------------------------------------------------------------
-vdis::vp_record_t::~vp_record_t(void)
+vdis::variable_parameter_record_t::~variable_parameter_record_t(void)
 {
     clear();
 }
 
 // ----------------------------------------------------------------------------
-void vdis::vp_record_t::clear(void)
+void vdis::variable_parameter_record_t::clear(void)
 {
     if (content_ptr)
     {
@@ -61,7 +62,7 @@ void vdis::vp_record_t::clear(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::vp_record_t::print(
+void vdis::variable_parameter_record_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -78,7 +79,7 @@ void vdis::vp_record_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::vp_record_t::read(byte_stream_t &stream)
+void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
 {
     if (stream.remaining_length() < VP_RECORD_SIZE)
     {
@@ -145,7 +146,7 @@ void vdis::vp_record_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::vp_record_t::write(byte_stream_t &stream)
+void vdis::variable_parameter_record_t::write(byte_stream_t &stream)
 {
     // TODO
 }

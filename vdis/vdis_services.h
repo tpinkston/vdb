@@ -74,31 +74,39 @@ namespace vdis
     void swap(uint64_t &value, bool force = false);
 
     // ------------------------------------------------------------------------
-    // Padding calculation
+    // Miscellaneous
 
     uint32_t padding_length(uint32_t length, uint32_t boundary = 8);
+
+    inline bool is_printable_character(uint8_t value)
+    {
+        return (value > 31) and (value < 127);
+    }
 
     // ------------------------------------------------------------------------
     // Entity ID to marking
 
     struct entity_id_t;
-    struct entity_marking_t;
+    struct marking_t;
 
-    class entity_markings
+    class entity_marking
     {
       public:
 
-        static const entity_marking_t *get(const entity_id_t &id);
+        entity_marking(const entity_id_t &id) : id(id) { }
+        ~entity_marking(void) { }
 
-        static const entity_marking_t *set(
-            const entity_id_t &id,
-            const entity_marking_t *marking_ptr
-        );
+        static std::string get_marking(const entity_id_t &);
+        static const marking_t *get(const entity_id_t &);
+        static void set(const entity_id_t &, const marking_t &);
+        static void unset(const entity_id_t &);
+
+        const entity_id_t
+            &id;
 
       private:
 
-
-        typedef std::map<uint64_t, const entity_marking_t *>
+        typedef std::map<entity_id_t, marking_t>
             marking_map_t;
 
         static marking_map_t
@@ -152,6 +160,16 @@ inline void vdis::swap(uint32_t &value, bool force)
 inline void vdis::swap(uint64_t &value, bool force)
 {
     value = byteswap(value, force);
+}
+
+// ----------------------------------------------------------------------------
+inline std::ostream &operator<<(
+    std::ostream &out,
+    const vdis::entity_marking &value)
+{
+    out << value.id << " " << vdis::entity_marking::get_marking(value.id);
+
+    return out;
 }
 
 #endif

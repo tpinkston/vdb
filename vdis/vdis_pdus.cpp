@@ -6,9 +6,10 @@
 #include "vdis_enums.h"
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
+#include "vdis_services.h"
+#include "vdis_standard_variable_records.h"
 #include "vdis_string.h"
-#include "vdis_sv_records.h"
-#include "vdis_vp_records.h"
+#include "vdis_variable_parameter_records.h"
 
 namespace
 {
@@ -273,11 +274,18 @@ namespace
     };
 }
 
-bool vdis::pdu_t::ignore_invalid_headers = false;
+bool
+    vdis::pdu_t::valid_headers = true;
+bool
+    vdis::entity_state_pdu_t::set_entity_markings = true;
 
 // ----------------------------------------------------------------------------
 vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
 {
+    uint32_t
+        start_index = stream.index(),
+        bytes_read = 0;
+
     LOG_EXTRA_VERBOSE(
         "Constructing PDU with stream at index: %d/%d)",
         stream.index(),
@@ -291,7 +299,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
             "Stream too short for PDU: %d bytes",
             stream.remaining_length());
     }
-    else if (validate_header(stream) || ignore_invalid_headers)
+    else if (valid_headers || validate_header(stream))
     {
         const pdu_type_e
             type = (pdu_type_e)stream[2];
@@ -313,7 +321,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
             {
                 LOG_EXTRA_VERBOSE("Creating new entity_state_pdu_t...");
                 base_ptr = new entity_state_pdu_t;
-              break;
+                break;
             }
             case PDU_TYPE_FIRE:
             {
@@ -345,32 +353,22 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
         if (base_ptr)
         {
             base_ptr->read(stream);
-        }
 
-        if (base_ptr and (stream.remaining_length() > 0))
-        {
-            LOG_WARNING(
-                "Unread bytes (%d) in stream after reading PDU: %s",
-                stream.remaining_length(),
-                enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
-        }
+            // Compare number of bytes read with PDU length in PDU header
+            //
+            bytes_read = (stream.index() - start_index);
 
-        if (base_ptr and (base_ptr->header.length != stream.index()))
-        {
-            LOG_WARNING(
-                "PDU length (%d) does not match bytes read (%d) from stream "
-                "after reading PDU: %s",
-                base_ptr->header.length,
-                stream.index(),
-                enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
+            if (base_ptr->header.length != bytes_read)
+            {
+                LOG_WARNING(
+                    "PDU length (%d) does not match bytes read (%d) "
+                    "after reading PDU: %s",
+                    base_ptr->header.length,
+                    bytes_read,
+                    enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
+            }
         }
     }
-}
-
-// ----------------------------------------------------------------------------
-vdis::pdu_t::~pdu_t(void)
-{
-    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -382,25 +380,6 @@ void vdis::pdu_t::clear(void)
 
         delete base_ptr;
         base_ptr = 0;
-    }
-}
-
-// ----------------------------------------------------------------------------
-bool vdis::pdu_t::is_ignoring_invalid_headers(void)
-{
-    return ignore_invalid_headers;
-}
-
-// ----------------------------------------------------------------------------
-void vdis::pdu_t::set_ignoring_invalid_headers(bool value)
-{
-    if (ignore_invalid_headers != value)
-    {
-        LOG_VERBOSE(
-            "Ignoring invalid headers: %s",
-            (value ? "true " : "false"));
-
-        ignore_invalid_headers = value;
     }
 }
 
@@ -588,7 +567,7 @@ vdis::entity_state_pdu_t::entity_state_pdu_t(void)
     header.clear();
     id.clear();
     force = 0;
-    vp_record_count = 0;
+    record_count = 0;
     type.clear();
     alternate_type.clear();
     velocity.clear();
@@ -598,7 +577,7 @@ vdis::entity_state_pdu_t::entity_state_pdu_t(void)
     dead_reckoning.clear();
     marking.clear();
     capabilities.clear();
-    vp_records = 0;
+    records = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -610,21 +589,21 @@ vdis::entity_state_pdu_t::~entity_state_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::entity_state_pdu_t::clear(void)
 {
-    for(uint32_t i = 0; (vp_records and (i < vp_record_count)); ++i)
+    for(uint32_t i = 0; (records and (i < record_count)); ++i)
     {
-        delete vp_records[i];
-        vp_records[i] = 0;
+        delete records[i];
+        records[i] = 0;
     }
 
-    if (vp_records)
+    if (records)
     {
-        delete[] vp_records;
+        delete[] records;
     }
 
     header.clear();
     id.clear();
     force = 0;
-    vp_record_count = 0;
+    record_count = 0;
     type.clear();
     alternate_type.clear();
     velocity.clear();
@@ -634,7 +613,7 @@ void vdis::entity_state_pdu_t::clear(void)
     dead_reckoning.clear();
     marking.clear();
     capabilities.clear();
-    vp_records = 0;
+    records = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -656,27 +635,27 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
         << prefix << "appearance.value "
         << to_bin_string(appearance, true) << std::endl;
 
-    if (type.kind_enum() == vdis::ENT_KIND_LIFEFORMS)
+    if (type.kind_enum() == ENT_KIND_LIFEFORMS)
     {
-        vdis::lifeform_appearance_t
+        lifeform_appearance_t
             entity_appearance;
 
         entity_appearance.value = appearance;
         entity_appearance.print(prefix, out);
     }
-    else if (type.kind_enum() == vdis::ENT_KIND_PLATFORMS)
+    else if (type.kind_enum() == ENT_KIND_PLATFORMS)
     {
-        if (type.domain_enum() == vdis::DOMAIN_AIR)
+        if (type.domain_enum() == DOMAIN_AIR)
         {
-            vdis::air_platform_appearance_t
+            air_platform_appearance_t
                 entity_appearance;
 
             entity_appearance.value = appearance;
             entity_appearance.print(prefix, out);
         }
-        else if (type.domain_enum() == vdis::DOMAIN_LAND)
+        else if (type.domain_enum() == DOMAIN_LAND)
         {
-            vdis::land_platform_appearance_t
+            land_platform_appearance_t
                 entity_appearance;
 
             entity_appearance.value = appearance;
@@ -687,23 +666,23 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
     dead_reckoning.print(prefix, out);
     capabilities.print(prefix, out);
 
-    out << prefix << "vp_records.count" << (int)vp_record_count << std::endl;
+    out << prefix << "records.count " << (int)record_count << std::endl;
 
-    vdis::vp_record_content_t::using_type(&type);
+    variable_parameter_content_t::using_type(&type);
 
-    for(uint32_t i = 0; i < vp_record_count; ++i)
+    for(uint32_t i = 0; i < record_count; ++i)
     {
-        const vdis::vp_record_t *record_ptr = vp_record(i);
+        const variable_parameter_record_t *record_ptr = record(i);
 
         if (record_ptr)
         {
             record_ptr->print(
-                (prefix + "vp_records[" + vdis::to_string(i) + "]."),
+                (prefix + "records[" + to_string(i) + "]."),
                 out);
         }
     }
 
-    vdis::vp_record_content_t::using_type(0);
+    variable_parameter_content_t::using_type(0);
 }
 
 // ----------------------------------------------------------------------------
@@ -714,7 +693,7 @@ void vdis::entity_state_pdu_t::read(byte_stream_t &stream)
     header.read(stream);
     id.read(stream);
     stream.read(force);
-    stream.read(vp_record_count);
+    stream.read(record_count);
     type.read(stream);
     alternate_type.read(stream);
     velocity.read(stream);
@@ -724,7 +703,12 @@ void vdis::entity_state_pdu_t::read(byte_stream_t &stream)
     dead_reckoning.read(stream);
     marking.read(stream);
     capabilities.read(stream);
-    vp_records = read_vp_records(stream, vp_record_count);
+    records = read_variable_parameter_records(stream, record_count);
+
+    if (set_entity_markings)
+    {
+        entity_marking::set(id, marking);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -733,7 +717,7 @@ void vdis::entity_state_pdu_t::write(byte_stream_t &stream)
     header.write(stream);
     id.write(stream);
     stream.write(force);
-    stream.write(vp_record_count);
+    stream.write(record_count);
     type.write(stream);
     alternate_type.write(stream);
     velocity.write(stream);
@@ -744,26 +728,26 @@ void vdis::entity_state_pdu_t::write(byte_stream_t &stream)
     marking.write(stream);
     capabilities.write(stream);
 
-    if ((vp_record_count > 0) and not vp_records)
+    if ((record_count > 0) and not records)
     {
         LOG_ERROR(
             "Null VP record array with length %d for entity %s!",
-            vp_record_count,
+            record_count,
             to_string(id).c_str());
     }
-    else if ((vp_record_count == 0) and vp_records)
+    else if ((record_count == 0) and records)
     {
         LOG_ERROR(
             "Non-null VP record array with length 0 for entity %s!",
             to_string(id).c_str());
     }
-    else if ((vp_record_count > 0) and vp_records)
+    else if ((record_count > 0) and records)
     {
-        for(uint8_t i = 0; i < vp_record_count; ++i)
+        for(uint8_t i = 0; i < record_count; ++i)
         {
-            if (vp_records[i])
+            if (records[i])
             {
-                vp_records[i]->write(stream);
+                records[i]->write(stream);
             }
             else
             {
@@ -799,8 +783,8 @@ void vdis::fire_pdu_t::print(std::ostream &out) const
 
     header.print((prefix + "header."), out);
 
-    out << prefix << "shooter " << shooter << std::endl
-        << prefix << "target " << target << std::endl
+    out << prefix << "shooter " << entity_marking(shooter) << std::endl
+        << prefix << "target " << entity_marking(target) << std::endl
         << prefix << "munition " << munition << std::endl
         << prefix << "event " << event << std::endl
         << prefix << "fire_mission_index " << fire_mission_index << std::endl
@@ -855,9 +839,9 @@ vdis::detonation_pdu_t::detonation_pdu_t(void)
     burst_descriptor.clear();
     entity_location.clear();
     result = 0;
-    vp_record_count = 0;
+    record_count = 0;
     padding = 0;
-    vp_records = 0;
+    records = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -869,15 +853,15 @@ vdis::detonation_pdu_t::~detonation_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::detonation_pdu_t::clear(void)
 {
-    for(uint32_t i = 0; (vp_records and (i < vp_record_count)); ++i)
+    for(uint32_t i = 0; (records and (i < record_count)); ++i)
     {
-        delete vp_records[i];
-        vp_records[i] = 0;
+        delete records[i];
+        records[i] = 0;
     }
 
-    if (vp_records)
+    if (records)
     {
-        delete[] vp_records;
+        delete[] records;
     }
 
     header.clear();
@@ -890,9 +874,9 @@ void vdis::detonation_pdu_t::clear(void)
     burst_descriptor.clear();
     entity_location.clear();
     result = 0;
-    vp_record_count = 0;
+    record_count = 0;
     padding = 0;
-    vp_records = 0;
+    records = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -903,8 +887,8 @@ void vdis::detonation_pdu_t::print(std::ostream &out) const
 
     header.print((prefix + "header."), out);
 
-    out << prefix << "shooter " << shooter << std::endl
-        << prefix << "target " << target << std::endl
+    out << prefix << "shooter " << entity_marking(shooter) << std::endl
+        << prefix << "target " << entity_marking(target) << std::endl
         << prefix << "munition " << munition << std::endl
         << prefix << "event " << event << std::endl
         << prefix << "velocity " << velocity << std::endl
@@ -914,19 +898,19 @@ void vdis::detonation_pdu_t::print(std::ostream &out) const
 
     out << prefix << "entity_location " << entity_location << std::endl
         << prefix << "result " << (detonation_result_e)result << std::endl
-        << prefix << prefix << "vp_records.count"
-        << (int)vp_record_count << std::endl;
+        << prefix << prefix << "records.count "
+        << (int)record_count << std::endl;
 
-    vdis::vp_record_content_t::using_type(0);
+    variable_parameter_content_t::using_type(0);
 
-    for(uint32_t i = 0; i < vp_record_count; ++i)
+    for(uint32_t i = 0; i < record_count; ++i)
     {
-        const vdis::vp_record_t *record_ptr = vp_record(i);
+        const variable_parameter_record_t *record_ptr = record(i);
 
         if (record_ptr)
         {
             record_ptr->print(
-                (prefix + "vp_records[" + vdis::to_string(i) + "]."),
+                (prefix + "records[" + to_string(i) + "]."),
                 out);
         }
     }
@@ -947,9 +931,9 @@ void vdis::detonation_pdu_t::read(byte_stream_t &stream)
     burst_descriptor.read(stream);
     entity_location.read(stream);
     stream.read(result);
-    stream.read(vp_record_count);
+    stream.read(record_count);
     stream.read(padding);
-    vp_records = read_vp_records(stream, vp_record_count);
+    records = read_variable_parameter_records(stream, record_count);
 }
 
 // ----------------------------------------------------------------------------
@@ -965,29 +949,29 @@ void vdis::detonation_pdu_t::write(byte_stream_t &stream)
     burst_descriptor.write(stream);
     entity_location.write(stream);
     stream.write(result);
-    stream.write(vp_record_count);
+    stream.write(record_count);
     stream.write(padding);
 
-    if ((vp_record_count > 0) and not vp_records)
+    if ((record_count > 0) and not records)
     {
         LOG_ERROR(
             "Null VP record array with length %d for shooter %s!",
-            vp_record_count,
+            record_count,
             to_string(shooter).c_str());
     }
-    else if ((vp_record_count == 0) and vp_records)
+    else if ((record_count == 0) and records)
     {
         LOG_ERROR(
             "Non-null VP record array with length 0 for shooter %s!",
             to_string(shooter).c_str());
     }
-    else if ((vp_record_count > 0) and vp_records)
+    else if ((record_count > 0) and records)
     {
-        for(uint8_t i = 0; i < vp_record_count; ++i)
+        for(uint8_t i = 0; i < record_count; ++i)
         {
-            if (vp_records[i])
+            if (records[i])
             {
-                vp_records[i]->write(stream);
+                records[i]->write(stream);
             }
             else
             {
@@ -1064,9 +1048,9 @@ void vdis::application_control_pdu_t::print(std::ostream &out) const
     header.print((prefix + "header."), out);
 
     out << prefix << "originator "
-        << originator << std::endl
+        << entity_marking(originator) << std::endl
         << prefix << "recipient "
-        << recipient << std::endl
+        << entity_marking(recipient) << std::endl
         << prefix << "reliability_service "
         << (int)reliability_service << std::endl
         << prefix << "time_interval "
@@ -1118,7 +1102,7 @@ void vdis::application_control_pdu_t::read(byte_stream_t &stream)
     stream.read(current_part);
     stream.read(record_count);
 
-    records = read_sv_records(stream, record_count);
+    records = read_standard_variable_records(stream, record_count);
 }
 
 // ----------------------------------------------------------------------------

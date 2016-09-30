@@ -1,5 +1,5 @@
-#ifndef VDIS_SV_RECORDS_H
-#define VDIS_SV_RECORDS_H
+#ifndef VDIS_STANDARD_VARIABLE_RECORDS_H
+#define VDIS_STANDARD_VARIABLE_RECORDS_H
 
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
@@ -12,16 +12,19 @@ namespace vdis
     //    Entity Damage Status PDU
     //    Application Control PDU
     //
-    struct sv_record_t;
+    struct standard_variable_record_t;
 
     // Returns array with length equal to 'count'
     //
-    sv_record_t **read_sv_records(byte_stream_t &stream, uint16_t count);
+    standard_variable_record_t **read_standard_variable_records(
+        byte_stream_t &stream,
+        uint16_t count
+    );
 
     // ------------------------------------------------------------------------
-    struct sv_content_t
+    struct standard_variable_content_t
     {
-        virtual ~sv_content_t(void) { }
+        virtual ~standard_variable_content_t(void) { }
 
         // Returns length in bytes of entire record (with type and length)
         //
@@ -36,13 +39,13 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct sv_record_t
+    struct standard_variable_record_t
     {
         uint32_t                     type;               // 4 bytes
-        sv_content_t                *content_ptr;        // Variable length
+        standard_variable_content_t *content_ptr;        // Variable length
 
-        sv_record_t(void) : type(0), content_ptr(0) { }
-        ~sv_record_t(void) { clear(); }
+        standard_variable_record_t(void) : type(0), content_ptr(0) { }
+        ~standard_variable_record_t(void) { clear(); }
 
         inline datum_ids_e datum_id_enum(void) const
         {
@@ -71,11 +74,11 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct default_sv_content_t : sv_content_t
+    struct default_standard_variable_content_t : standard_variable_content_t
     {
         byte_buffer_t               buffer;
 
-        ~default_sv_content_t(void) { clear(); }
+        ~default_standard_variable_content_t(void) { clear(); }
 
         inline uint16_t length(void) const { return (buffer.length() + 6); }
 
@@ -90,7 +93,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct application_state_t : public sv_content_t
+    struct application_state_t : public standard_variable_content_t
     {
         uint8_t                     padding;                // 1 byte
         uint8_t                     transition;             // 1 byte
@@ -129,7 +132,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct application_health_status_t : public sv_content_t
+    struct application_health_status_t : public standard_variable_content_t
     {
         uint16_t                    padding;                // 2 bytes
         uint16_t                    status_type;            // 2 bytes
@@ -166,7 +169,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_spectrum_t : public sv_content_t
+    struct stealth_spectrum_t : public standard_variable_content_t
     {
         uint8_t                     spectrum_type;          // 1 byte
         uint8_t                     invert;                 // 1 byte
@@ -211,7 +214,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_location_t : public sv_content_t
+    struct stealth_location_t : public standard_variable_content_t
     {
         uint16_t                    padding16;              // 2 bytes
         location24_t                location;               // 24 bytes
@@ -239,7 +242,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_attachment_t : public sv_content_t
+    struct stealth_attachment_t : public standard_variable_content_t
     {
         uint16_t                    padding16;              // 2 bytes
         entity_id_t                 attached_entity;        // 6 bytes
@@ -281,7 +284,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_velocity_t : public sv_content_t
+    struct stealth_velocity_t : public standard_variable_content_t
     {
         uint8_t                     relative;               // 1 byte
         uint8_t                     algorithm;              // 1 byte
@@ -323,7 +326,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_field_of_view_t : public sv_content_t
+    struct stealth_field_of_view_t : public standard_variable_content_t
     {
         uint16_t                    padding16;              // 2 bytes
         float32_t                   horizontal;             // 4 bytes
@@ -349,10 +352,10 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct stealth_marking_id_t : public sv_content_t
+    struct stealth_marking_id_t : public standard_variable_content_t
     {
         uint16_t                    id;                     // 2 bytes
-        entity_marking_t            marking;                // 12 bytes
+        marking_t                   marking;                // 12 bytes
         uint32_t                    padding32;              // 4 bytes
 
         ~stealth_marking_id_t(void) { clear(); }

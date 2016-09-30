@@ -5,17 +5,17 @@
 #include "vdis_string.h"
 
 // ----------------------------------------------------------------------------
-vdis::fixed_datum_t **vdis::read_fixed_datums(
+vdis::fixed_datum_record_t **vdis::read_fixed_datum_records(
     byte_stream_t &stream,
     uint32_t count)
 {
-    fixed_datum_t
-        **records = new fixed_datum_t*[count];
+    fixed_datum_record_t
+        **records = new fixed_datum_record_t*[count];
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        fixed_datum_t
-            *record_ptr = new fixed_datum_t({ 0, 0 });
+        fixed_datum_record_t
+            *record_ptr = new fixed_datum_record_t({ 0, 0 });
 
         LOG_EXTRA_VERBOSE(
             "Reading fixed datum %d/%d with stream at index %d/%d",
@@ -33,17 +33,17 @@ vdis::fixed_datum_t **vdis::read_fixed_datums(
 }
 
 // ----------------------------------------------------------------------------
-vdis::variable_datum_t **vdis::read_variable_datums(
+vdis::variable_datum_record_t **vdis::read_variable_datum_records(
     byte_stream_t &stream,
     uint32_t count)
 {
-    variable_datum_t
-        **records = new variable_datum_t*[count];
+    variable_datum_record_t
+        **records = new variable_datum_record_t*[count];
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        variable_datum_t
-            *record_ptr = new variable_datum_t({ 0, 0 });
+        variable_datum_record_t
+            *record_ptr = new variable_datum_record_t({ 0, 0 });
 
         LOG_EXTRA_VERBOSE(
             "Reading variable datum %d/%d with stream at index %d/%d",
@@ -61,7 +61,7 @@ vdis::variable_datum_t **vdis::read_variable_datums(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::fixed_datum_t::print(
+void vdis::fixed_datum_record_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -71,14 +71,14 @@ void vdis::fixed_datum_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::fixed_datum_t::read(byte_stream_t &stream)
+void vdis::fixed_datum_record_t::read(byte_stream_t &stream)
 {
     stream.read(id);
     stream.read(value);
 }
 
 // ----------------------------------------------------------------------------
-void vdis::fixed_datum_t::write(byte_stream_t &stream)
+void vdis::fixed_datum_record_t::write(byte_stream_t &stream)
 {
     stream.write(id);
     stream.write(value);
@@ -89,7 +89,7 @@ void vdis::fixed_datum_t::write(byte_stream_t &stream)
 // in bytes, and checks the byte stream for the needed bytes.
 // Returns datum length in bytes.
 //
-uint32_t vdis::datum_content_t::read_length(byte_stream_t &stream)
+uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 {
     uint32_t
         length = 0;
@@ -133,7 +133,7 @@ uint32_t vdis::datum_content_t::read_length(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::variable_datum_t::print(
+void vdis::variable_datum_record_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -149,7 +149,7 @@ void vdis::variable_datum_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::variable_datum_t::read(byte_stream_t &stream)
+void vdis::variable_datum_record_t::read(byte_stream_t &stream)
 {
     stream.read(id);
 
@@ -172,7 +172,7 @@ void vdis::variable_datum_t::read(byte_stream_t &stream)
         }
         default:
         {
-            content_ptr = new default_datum_content_t;
+            content_ptr = new default_variable_datum_content_t;
             break;
         }
     }
@@ -181,7 +181,7 @@ void vdis::variable_datum_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::variable_datum_t::write(byte_stream_t &stream)
+void vdis::variable_datum_record_t::write(byte_stream_t &stream)
 {
     stream.write(id);
 
@@ -198,7 +198,7 @@ void vdis::variable_datum_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_datum_content_t::print(
+void vdis::default_variable_datum_content_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -213,7 +213,7 @@ void vdis::default_datum_content_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_datum_content_t::read(byte_stream_t &stream)
+void vdis::default_variable_datum_content_t::read(byte_stream_t &stream)
 {
     const uint32_t length = read_length(stream);
 
@@ -221,7 +221,7 @@ void vdis::default_datum_content_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_datum_content_t::write(byte_stream_t &stream)
+void vdis::default_variable_datum_content_t::write(byte_stream_t &stream)
 {
     const uint32_t length = (buffer.length() * 8);
 

@@ -34,6 +34,11 @@ namespace vdis
             application = 0;
         }
 
+        bool operator==(const simulation_id_t &) const;
+        bool operator!=(const simulation_id_t &) const;
+        bool operator<(const simulation_id_t &) const;
+        bool operator>(const simulation_id_t &) const;
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -45,12 +50,20 @@ namespace vdis
         uint16_t                application;
         uint16_t                entity;
 
+        bool is_none(void) const;
+        bool is_all(void) const;
+
         inline void clear(void)
         {
             site = 0;
             application = 0;
             entity = 0;
         }
+
+        bool operator==(const entity_id_t &) const;
+        bool operator!=(const entity_id_t &) const;
+        bool operator<(const entity_id_t &) const;
+        bool operator>(const entity_id_t &) const;
 
         void read(byte_stream_t &);
         void write(byte_stream_t &);
@@ -72,11 +85,14 @@ namespace vdis
             event = 0;
         }
 
+        bool operator==(const event_id_t &) const;
+        bool operator!=(const event_id_t &) const;
+        bool operator<(const event_id_t &) const;
+        bool operator>(const event_id_t &) const;
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
-
-    void swap(event_id_t &value, bool force = false);
 
     // ------------------------------------------------------------------------
     struct object_id_t
@@ -84,6 +100,14 @@ namespace vdis
         uint16_t                site;
         uint16_t                application;
         uint16_t                object;
+
+        bool is_none(void) const;
+        bool is_all(void) const;
+
+        bool operator==(const object_id_t &) const;
+        bool operator!=(const object_id_t &) const;
+        bool operator<(const object_id_t &) const;
+        bool operator>(const object_id_t &) const;
 
         inline void clear(void)
         {
@@ -95,8 +119,6 @@ namespace vdis
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
-
-    void swap(object_id_t &value, bool force = false);
 
     // ------------------------------------------------------------------------
     struct entity_type_t
@@ -140,6 +162,11 @@ namespace vdis
 
         std::string description(void) const;
 
+        bool operator==(const entity_type_t &) const;
+        bool operator!=(const entity_type_t &) const;
+        bool operator<(const entity_type_t &) const;
+        bool operator>(const entity_type_t &) const;
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -165,18 +192,26 @@ namespace vdis
         void set(uint32_t value);
         uint32_t get(void) const;
 
+        bool operator==(const object_type_t &) const;
+        bool operator!=(const object_type_t &) const;
+        bool operator<(const object_type_t &) const;
+        bool operator>(const object_type_t &) const;
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
 
     // ------------------------------------------------------------------------
-    struct entity_marking_t
+    struct marking_t
     {
         uint8_t                 character_set;
         char                    characters[VDIS_MARKING_CHARACTERS];
 
-        std::string hex_characters(void) const;
-        std::string ascii_characters(void) const;
+        marking_t(void) { clear(); }
+        ~marking_t(void) { }
+
+        void str(const std::string &name);
+        std::string str(void) const;
 
         inline entity_marking_e marking_type(void) const
         {
@@ -184,6 +219,11 @@ namespace vdis
         }
 
         void clear(void);
+
+        bool operator==(const marking_t &) const;
+        bool operator!=(const marking_t &) const;
+        bool operator<(const marking_t &) const;
+        bool operator>(const marking_t &) const;
 
         void read(byte_stream_t &);
         void write(byte_stream_t &);
@@ -740,7 +780,7 @@ std::ostream &operator<<(std::ostream &, const vdis::event_id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::object_id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::entity_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::object_type_t &);
-std::ostream &operator<<(std::ostream &, const vdis::entity_marking_t &);
+std::ostream &operator<<(std::ostream &, const vdis::marking_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location12_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location24_t &);
 std::ostream &operator<<(std::ostream &, const vdis::orientation_t &);

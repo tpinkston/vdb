@@ -1,5 +1,5 @@
-#ifndef VDIS_VP_RECORDS_H
-#define VDIS_VP_RECORDS_H
+#ifndef VDIS_VARIABLE_PARAMETER_RECORDS_H
+#define VDIS_VARIABLE_PARAMETER_RECORDS_H
 
 #include <cstdint>
 #include <string>
@@ -13,16 +13,19 @@
 
 namespace vdis
 {
-    struct vp_record_t;
+    struct variable_parameter_record_t;
 
     // Returns array with length equal to 'count'
     //
-    vp_record_t **read_vp_records(byte_stream_t &stream, uint32_t count);
+    variable_parameter_record_t **read_variable_parameter_records(
+        byte_stream_t &stream,
+        uint32_t count
+    );
 
     // ------------------------------------------------------------------------
-    struct vp_record_content_t
+    struct variable_parameter_content_t
     {
-        virtual ~vp_record_content_t(void) { }
+        virtual ~variable_parameter_content_t(void) { }
 
         virtual void print(const std::string &, std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
@@ -32,16 +35,16 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct vp_record_t
+    struct variable_parameter_record_t
     {
-        uint8_t                 type;                   // 1 byte
-        vp_record_content_t    *content_ptr;            // 15 bytes
+        uint8_t                          type;               // 1 byte
+        variable_parameter_content_t    *content_ptr;        // 15 bytes
 
-        ~vp_record_t(void);
+        ~variable_parameter_record_t(void);
 
         inline vp_record_type_e record_type(void) const
         {
-            return (vdis::vp_record_type_e)type;
+            return (vp_record_type_e)type;
         }
 
         void clear(void);
@@ -51,7 +54,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct default_variable_content_t : vp_record_content_t
+    struct default_variable_content_t : variable_parameter_content_t
     {
         uint8_t                 buffer[VP_RECORD_DATA_SIZE];
 
@@ -61,7 +64,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct articulated_part_t : vp_record_content_t
+    struct articulated_part_t : variable_parameter_content_t
     {
         uint8_t                 change_indicator;       // 1 byte
         uint16_t                part_id;                // 2 bytes
@@ -85,7 +88,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct entity_association_t : vp_record_content_t
+    struct entity_association_t : variable_parameter_content_t
     {
         uint8_t                 change_indicator;       // 1 byte
         uint8_t                 status;                 // 1 byte
@@ -122,7 +125,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct entity_offset_t : vp_record_content_t
+    struct entity_offset_t : variable_parameter_content_t
     {
         uint8_t                 type;                   // 1 byte
         uint16_t                padding;                // 2 bytes
@@ -139,7 +142,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct legacy_extended_lifeform_appearance_t : vp_record_content_t
+    struct legacy_extended_lifeform_appearance_t : variable_parameter_content_t
     {
         uint8_t                 clothing_scheme;        // 1 byte
         uint8_t                 primary_color;          // 1 byte
@@ -171,7 +174,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct extended_appearance_t : vp_record_content_t
+    struct extended_appearance_t : variable_parameter_content_t
     {
         uint8_t                 status;                 // 1 byte
         uint16_t                equipment;              // 2 bytes

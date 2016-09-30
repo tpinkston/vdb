@@ -2,20 +2,20 @@
 #include "vdis_logger.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
-#include "vdis_sv_records.h"
+#include "vdis_standard_variable_records.h"
 
 // ----------------------------------------------------------------------------
-vdis::sv_record_t **vdis::read_sv_records(
+vdis::standard_variable_record_t **vdis::read_standard_variable_records(
     byte_stream_t &stream,
     uint16_t count)
 {
-    sv_record_t
-        **records = new sv_record_t*[count];
+    standard_variable_record_t
+        **records = new standard_variable_record_t*[count];
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        sv_record_t
-            *record_ptr = new sv_record_t;
+        standard_variable_record_t
+            *record_ptr = new standard_variable_record_t;
 
         LOG_EXTRA_VERBOSE(
             "Reading standard variable record %d/%d with stream at index %d/%d",
@@ -36,7 +36,7 @@ vdis::sv_record_t **vdis::read_sv_records(
 // Reads 2 bytes for record length and checks the byte stream for the needed
 // bytes.  Returns record length in bytes minus 6 bytes for type and length.
 //
-uint16_t vdis::sv_content_t::read_length(byte_stream_t &stream)
+uint16_t vdis::standard_variable_content_t::read_length(byte_stream_t &stream)
 {
     uint16_t
         length = 0;
@@ -79,7 +79,7 @@ uint16_t vdis::sv_content_t::read_length(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::sv_record_t::print(
+void vdis::standard_variable_record_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -92,7 +92,7 @@ void vdis::sv_record_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::sv_record_t::read(byte_stream_t &stream)
+void vdis::standard_variable_record_t::read(byte_stream_t &stream)
 {
     clear();
 
@@ -135,8 +135,8 @@ void vdis::sv_record_t::read(byte_stream_t &stream)
             content_ptr = new stealth_marking_id_t();
             break;
         default:
-            LOG_EXTRA_VERBOSE("Creating record: default_sv_content_t");
-            content_ptr = new default_sv_content_t;
+            LOG_EXTRA_VERBOSE("Creating record: default_standard_variable_content_t");
+            content_ptr = new default_standard_variable_content_t;
     }
 
     // Should read any padding in the record.
@@ -145,7 +145,7 @@ void vdis::sv_record_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::sv_record_t::write(byte_stream_t &stream)
+void vdis::standard_variable_record_t::write(byte_stream_t &stream)
 {
     stream.write(type);
 
@@ -164,7 +164,7 @@ void vdis::sv_record_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_sv_content_t::print(
+void vdis::default_standard_variable_content_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
@@ -174,7 +174,7 @@ void vdis::default_sv_content_t::print(
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_sv_content_t::read(byte_stream_t &stream)
+void vdis::default_standard_variable_content_t::read(byte_stream_t &stream)
 {
     clear();
 
@@ -184,7 +184,7 @@ void vdis::default_sv_content_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_sv_content_t::write(byte_stream_t &stream)
+void vdis::default_standard_variable_content_t::write(byte_stream_t &stream)
 {
     uint16_t record_length = (length() + 6);
 

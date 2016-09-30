@@ -14,8 +14,8 @@ namespace
         color_enabled = true;
 }
 
-vdis::entity_markings::marking_map_t
-    vdis::entity_markings::markings;
+vdis::entity_marking::marking_map_t
+    vdis::entity_marking::markings;
 
 // ----------------------------------------------------------------------------
 void color::set_enabled(bool value)
@@ -190,61 +190,72 @@ uint32_t vdis::padding_length(uint32_t length, uint32_t boundary)
 }
 
 // ----------------------------------------------------------------------------
-const vdis::entity_marking_t *vdis::entity_markings::get(const entity_id_t &id)
+std::string vdis::entity_marking::get_marking(const entity_id_t &id)
 {
-    const entity_marking_t
+    const marking_t
+        *marking_ptr = get(id);
+
+    if (marking_ptr)
+    {
+        return marking_ptr->str();
+    }
+    else if (id.is_none())
+    {
+        return "[NO ENTITY]";
+    }
+    else if (id.is_all())
+    {
+        return "[ALL ENTITIES]";
+    }
+    else
+    {
+        return "[UNKNOWN]";
+    }
+}
+
+// ----------------------------------------------------------------------------
+const vdis::marking_t *vdis::entity_marking::get(const entity_id_t &id)
+{
+    const marking_t
         *marking_ptr = 0;
-    const uint64_t
-        id_value = convert(id.site, id.application, id.entity);
     marking_map_t::const_iterator
-        itor = markings.find(id_value);
+        itor = markings.find(id);
 
     if (itor != markings.end())
     {
-        marking_ptr = itor->second;
+        marking_ptr = &itor->second;
     }
 
     return marking_ptr;
 }
 
 // ----------------------------------------------------------------------------
-// Returns pointer to old marking mapped to this entity ID or null if there
-// was none.  Provided pointer gets stored as is (should not be deallocated).
-// Caller has responsibility for deallocating return if valid.
-//
-const vdis::entity_marking_t *vdis::entity_markings::set(
-    const entity_id_t &id,
-    const entity_marking_t *marking_ptr)
+void vdis::entity_marking::set(const entity_id_t &id, const marking_t &marking)
 {
-    const entity_marking_t
-        *previous_ptr = 0;
-    const uint64_t
-        id_value = convert(id.site, id.application, id.entity);
     marking_map_t::const_iterator
-        itor = markings.find(id_value);
+        itor = markings.find(id);
 
     if (itor == markings.end())
     {
-        if (marking_ptr)
-        {
-            LOG_VERBOSE("Adding marking for entity %s", to_string(id).c_str());
-            markings[id_value] = marking_ptr;
-        }
+        LOG_VERBOSE("Setting marking for entity %s", to_string(id).c_str());
+        markings[id] = marking;
     }
-    else if (marking_ptr)
+    else if (marking != itor->second)
     {
-        LOG_VERBOSE("Replacing marking for entity %s", to_string(id).c_str());
-        markings[id_value] = marking_ptr;
-
-        // Return previous value
-        //
-        previous_ptr = itor->second;
+        LOG_VERBOSE("Resetting marking for entity %s", to_string(id).c_str());
+        markings[id] = marking;
     }
-    else
+}
+
+// ----------------------------------------------------------------------------
+void vdis::entity_marking::unset(const entity_id_t &id)
+{
+    marking_map_t::const_iterator
+        itor = markings.find(id);
+
+    if (itor != markings.end())
     {
-        LOG_VERBOSE("Removing marking for entity %s", to_string(id).c_str());
-        markings.erase(id_value);
+        LOG_VERBOSE("Unsetting marking for entity %s", to_string(id).c_str());
+        markings.erase(id);
     }
-
-    return previous_ptr;
 }
