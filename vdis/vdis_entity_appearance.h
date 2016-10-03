@@ -1,8 +1,6 @@
 #ifndef VDIS_ENTITY_APPEARANCE_H
 #define VDIS_ENTITY_APPEARANCE_H
 
-#include <iostream>
-
 #include "vdis_byte_stream.h"
 
 namespace vdis
@@ -28,7 +26,7 @@ namespace vdis
         uint32_t            concealed_stationary:1; // Bits 30
         uint32_t            concealed_movement:1;   // Bits 31
 
-        void print(const std::string &prefix, std::ostream &out) const;
+        void print(const string_t &prefix, std::ostream &out) const;
     };
 
     // ------------------------------------------------------------------------
@@ -56,7 +54,7 @@ namespace vdis
         uint32_t            interior_lights:1;      // Bit 29
         uint32_t            unused3:2;              // Bits 30-31
 
-        void print(const std::string &prefix, std::ostream &out) const;
+        void print(const string_t &prefix, std::ostream &out) const;
     };
 
     // ------------------------------------------------------------------------
@@ -89,7 +87,7 @@ namespace vdis
         uint32_t            surrendered:1;          // Bit 30
         uint32_t            cloaked:1;              // Bit 31
 
-        void print(const std::string &prefix, std::ostream &out) const;
+        void print(const string_t &prefix, std::ostream &out) const;
     };
 
     // ------------------------------------------------------------------------
@@ -105,7 +103,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const std::string &prefix, std::ostream &out) const
+        void print(const string_t &prefix, std::ostream &out) const
         {
             bits.print(prefix, out);
         }

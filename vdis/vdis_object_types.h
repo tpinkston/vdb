@@ -1,12 +1,7 @@
 #ifndef VDIS_OBJECT_TYPES_H
 #define VDIS_OBJECT_TYPES_H
 
-#include <cstdint>
-#include <iostream>
-#include <map>
-#include <string>
-
-#include "vdis_enums.h"
+#include "vdis_data_types.h"
 
 namespace vdis
 {
@@ -20,12 +15,19 @@ namespace vdis
 
         static void print(std::ostream &stream);
 
-        static void convert(const object_type_t &type, uint32_t &value);
-        static void convert(const uint32_t value, object_type_t &type);
-
-        static const std::string &get_description(uint32_t value);
+        static const string_t &get_description(uint32_t value);
 
         static object_geometry_e get_geometry(uint32_t value);
+
+        static bool get_parent(
+            const object_type_t &child,
+            object_type_t &parent
+        );
+
+        static bool get_valid_parent(
+            const object_type_t &child,
+            object_type_t &parent
+        );
 
       private:
 
@@ -40,7 +42,7 @@ namespace vdis
             const char *geometry_ptr
         );
 
-        static std::map<uint32_t, std::string>
+        static std::map<uint32_t, string_t>
             descriptions;
         static std::map<uint32_t, object_geometry_e>
             geometries;

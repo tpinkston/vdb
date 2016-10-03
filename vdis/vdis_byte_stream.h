@@ -28,6 +28,7 @@ namespace vdis
 
         uint32_t remaining_length(void) const;
 
+        virtual void reset(uint32_t size = 0);
         virtual void reset(const uint8_t *buffer, uint32_t size);
         virtual void reset(const byte_buffer_t &buffer);
 
@@ -59,16 +60,24 @@ namespace vdis
         void write(float32_t value);
         void write(float64_t value);
 
-        void read(byte_buffer_t &buffer, uint32_t size);
-        void write(const byte_buffer_t &buffer);
-        void write(const byte_buffer_t &buffer, uint32_t size);
-
         void read(void *value_ptr, uint32_t size);
         void write(const void *value_ptr, uint32_t size);
 
+        template<typename T>
+        void read(T &value)
+        {
+            value.read(*this);
+        }
+
+        template<typename T>
+        void write(T &value)
+        {
+            value.write(*this);
+        }
+
       protected:
 
-        typedef std::string operation_t;
+        typedef string_t operation_t;
 
         static const operation_t
             BYTE_STREAM_OP_READ,

@@ -1,10 +1,7 @@
 #ifndef VDIS_ENTITY_TYPES_H
 #define VDIS_ENTITY_TYPES_H
 
-#include <cstdint>
-#include <iostream>
-#include <map>
-#include <string>
+#include "vdis_data_types.h"
 
 namespace vdis
 {
@@ -18,11 +15,11 @@ namespace vdis
 
         static void print(std::ostream &stream);
 
-        static const std::string &get_name(uint64_t value);
-        static const std::string &get_description(uint64_t value);
+        static const string_t &get_name(uint64_t value);
+        static const string_t &get_description(uint64_t value);
 
-        static bool get_name(uint64_t value, std::string &name);
-        static bool get_description(uint64_t value, std::string &description);
+        static bool get_name(uint64_t value, string_t &name);
+        static bool get_description(uint64_t value, string_t &description);
 
         static bool get_parent(
             const entity_type_t &child,
@@ -52,7 +49,7 @@ namespace vdis
             const char *description_ptr
         );
 
-        static std::map<uint64_t, std::string>
+        static std::map<uint64_t, string_t>
             names,
             descriptions;
         static bool

@@ -63,7 +63,7 @@ void vdis::variable_parameter_record_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::variable_parameter_record_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "type " << record_type() << std::endl;
@@ -153,7 +153,7 @@ void vdis::variable_parameter_record_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::default_variable_content_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     vdis::byte_buffer_t
@@ -176,7 +176,7 @@ void vdis::default_variable_content_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::articulated_part_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "articulated_part.change_indicator "
@@ -215,7 +215,7 @@ void vdis::articulated_part_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::entity_association_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "entity_association.change_indicator "
@@ -264,7 +264,7 @@ void vdis::entity_association_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::entity_offset_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "entity_offset.offset_type "
@@ -293,7 +293,7 @@ void vdis::entity_offset_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::legacy_extended_lifeform_appearance_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "legacy_ext_lifeform_app.paint_scheme "
@@ -342,14 +342,14 @@ void vdis::legacy_extended_lifeform_appearance_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::extended_appearance_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     vdis::extended_status_t
         default_status;
     vdis::domain_e
         domain = vdis::DOMAIN_OTHER;
-    std::string
+    string_t
         domain_name;
 
     if (entity_type_ptr)
@@ -396,7 +396,7 @@ void vdis::extended_appearance_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::extended_platform_appearance_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (paint != 0)
@@ -493,7 +493,7 @@ void vdis::extended_platform_appearance_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::extended_supply_appearance_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     extended_appearance_t::print((prefix + "ext_supply_app."), out);
@@ -517,7 +517,7 @@ void vdis::extended_supply_appearance_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::extended_cultural_feature_appearance_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     extended_appearance_t::print((prefix + "ext_cult_feat_app."), out);
@@ -541,7 +541,7 @@ void vdis::extended_cultural_feature_appearance_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::extended_status_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "status.value " << to_bin_string(value) << std::endl;
@@ -566,7 +566,7 @@ void vdis::extended_status_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::conditional_materials_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (bits.cleanliness != 0)
@@ -592,7 +592,7 @@ void vdis::conditional_materials_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::extended_equipment_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (sling_loaded != 0)
@@ -608,7 +608,7 @@ void vdis::extended_equipment_bits_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::air_platform_extended_equipment_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (aux_power_plant2 != 0)
@@ -676,7 +676,7 @@ void vdis::air_platform_extended_equipment_bits_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::land_platform_extended_equipment_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (spoiler != 0)

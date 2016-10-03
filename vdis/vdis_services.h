@@ -1,18 +1,18 @@
 #ifndef VDIS_SERVICES_H
 #define VDIS_SERVICES_H
 
-#include <cstdint>
-#include <endian.h>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <string>
-
 #include "vdis_data_types.h"
 #include "vdis_enums.h"
 
 #define RCAST(T, t) *reinterpret_cast<const T *>(t)
 #define SCAST(T, t) *static_cast<const T *>(t)
+
+typedef struct timeval
+    time_value_t;
+typedef struct tm
+    time_struct_t;
+typedef struct timezone
+    time_zone_t;
 
 namespace color
 {
@@ -42,6 +42,8 @@ namespace color
         bold_white = 37
     };
 
+    color_e get(vdis::force_id_e);
+
     void set_enabled(bool value);
 }
 
@@ -50,6 +52,26 @@ std::ostream &operator<<(std::ostream &stream, color::bold_color_e c);
 
 namespace vdis
 {
+    // ------------------------------------------------------------------------
+    // Time functions
+
+    time_struct_t *get_local_time(void);
+    string_t time_to_string(const time_struct_t * = 0);
+
+    uint64_t get_system_time(void);
+    string_t time_to_string(uint64_t time);
+
+    uint64_t get_system_time(const time_value_t &value);
+    time_value_t get_time_value(uint64_t time);
+
+    void parse_time(
+        uint64_t system_time,
+        uint32_t &hours,
+        uint32_t &minutes,
+        uint32_t &seconds,
+        uint32_t &milliseconds
+    );
+
     // ------------------------------------------------------------------------
     // Endian and byte swapping
 
@@ -85,28 +107,24 @@ namespace vdis
 
     // ------------------------------------------------------------------------
     // Entity ID to marking
-
-    struct entity_id_t;
-    struct marking_t;
-
+    //
     class entity_marking
     {
       public:
 
-        entity_marking(const entity_id_t &id) : id(id) { }
+        entity_marking(const id_t &id) : id(id) { }
         ~entity_marking(void) { }
 
-        static std::string get_marking(const entity_id_t &);
-        static const marking_t *get(const entity_id_t &);
-        static void set(const entity_id_t &, const marking_t &);
-        static void unset(const entity_id_t &);
+        static string_t get_marking(const id_t &);
+        static const marking_t *get(const id_t &);
+        static void set(const id_t &, const marking_t &);
+        static void unset(const id_t &);
 
-        const entity_id_t
-            &id;
+        const id_t &id;
 
       private:
 
-        typedef std::map<entity_id_t, marking_t>
+        typedef std::map<id_t, marking_t>
             marking_map_t;
 
         static marking_map_t

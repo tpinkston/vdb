@@ -2,7 +2,7 @@
 
 // ----------------------------------------------------------------------------
 void vdis::lifeform_appearance_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (camouflaged)
@@ -73,7 +73,7 @@ void vdis::lifeform_appearance_bits_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::air_platform_appearance_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (camouflaged)
@@ -169,7 +169,7 @@ void vdis::air_platform_appearance_bits_t::print(
 
 // ----------------------------------------------------------------------------
 void vdis::land_platform_appearance_bits_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (camouflaged)

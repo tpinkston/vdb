@@ -1,5 +1,3 @@
-#include <cstdlib>
-#include <unistd.h>
 
 #include "vdis_data_types.h"
 #include "vdis_logger.h"
@@ -8,6 +6,10 @@
 
 namespace
 {
+    const uint64_t
+        MILLIS_PER_SECOND = 1000,
+        MILLIS_PER_MINUTE = (MILLIS_PER_SECOND * 60),
+        MILLIS_PER_HOUR = (MILLIS_PER_MINUTE * 60);
     bool
         swapping = false;
     bool
@@ -16,6 +18,168 @@ namespace
 
 vdis::entity_marking::marking_map_t
     vdis::entity_marking::markings;
+
+// ----------------------------------------------------------------------------
+time_struct_t *vdis::get_local_time()
+{
+    time_t
+        seconds = std::time(0);
+    time_struct_t
+        *local_ptr = std::localtime(&seconds);
+
+    local_ptr->tm_year += 1900;
+
+    return local_ptr;
+}
+
+// ----------------------------------------------------------------------------
+string_t vdis::time_to_string(const time_struct_t *ts_ptr)
+{
+    std::ostringstream
+        stream;
+    const time_struct_t
+        *local_ptr = ts_ptr;
+
+    if (not local_ptr)
+    {
+        local_ptr = get_local_time();
+    }
+
+    stream << std::setfill('0')
+           << std::setw(2) << local_ptr->tm_mon << "-"
+           << std::setw(2) << local_ptr->tm_mday << "-"
+           << std::setw(4) << local_ptr->tm_year << " "
+           << std::setw(2) << local_ptr->tm_hour << ":"
+           << std::setw(2) << local_ptr->tm_min << ":"
+           << std::setw(2) << local_ptr->tm_sec;
+
+    return stream.str();
+}
+
+// ----------------------------------------------------------------------------
+uint64_t vdis::get_system_time(void)
+{
+    time_value_t
+        time;
+    time_zone_t
+        zone;
+    uint64_t
+        milliseconds = 0;
+
+    if (gettimeofday(&time, &zone) == 0)
+    {
+        milliseconds = (uint64_t)(time.tv_sec * 1000);
+        milliseconds += ((uint64_t)(time.tv_usec) / 1000);
+    }
+
+    return milliseconds;
+}
+
+// ----------------------------------------------------------------------------
+string_t vdis::time_to_string(uint64_t time)
+{
+    string_t
+        time_string;
+    time_t
+        seconds = (time / 1000);
+
+    time_string = string_t(std::ctime(&seconds));
+
+    // Remove trailing new line character.
+    //
+    time_string = time_string.substr(0, (time_string.length() - 1));
+
+    return time_string;
+}
+
+// ----------------------------------------------------------------------------
+uint64_t vdis::get_system_time(const time_value_t &value)
+{
+    uint64_t
+        milliseconds = (value.tv_sec * 1000LL);
+
+    milliseconds += (uint64_t)((float64_t)value.tv_usec / 1000.0);
+
+    return milliseconds;
+}
+
+// ----------------------------------------------------------------------------
+time_value_t vdis::get_time_value(uint64_t time)
+{
+    time_value_t
+        time_value;
+
+    time_value.tv_sec = (time / 1000LL);
+    time_value.tv_usec = (time - (time_value.tv_sec * 1000LL)) * 1000;
+
+    return time_value;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::parse_time(
+    uint64_t system_time,
+    uint32_t &hours,
+    uint32_t &minutes,
+    uint32_t &seconds,
+    uint32_t &milliseconds)
+{
+    hours = (system_time / MILLIS_PER_HOUR);
+    system_time -= (uint64_t)hours * MILLIS_PER_HOUR;
+
+    minutes = (system_time / MILLIS_PER_MINUTE);
+    system_time -= (uint64_t)minutes * MILLIS_PER_MINUTE;
+
+    seconds = (system_time / MILLIS_PER_SECOND);
+    system_time -= (uint64_t)seconds * MILLIS_PER_SECOND;
+
+    milliseconds = system_time;
+}
+
+// ----------------------------------------------------------------------------
+color::color_e color::get(vdis::force_id_e force)
+{
+    switch(force)
+    {
+        case vdis::FORCE_ID_FRIENDLY:
+        case vdis::FORCE_ID_FRIENDLY_2:
+        case vdis::FORCE_ID_FRIENDLY_3:
+        case vdis::FORCE_ID_FRIENDLY_4:
+        case vdis::FORCE_ID_FRIENDLY_5:
+        case vdis::FORCE_ID_FRIENDLY_6:
+        case vdis::FORCE_ID_FRIENDLY_7:
+        case vdis::FORCE_ID_FRIENDLY_8:
+        case vdis::FORCE_ID_FRIENDLY_9:
+        case vdis::FORCE_ID_FRIENDLY_10:
+            return blue;
+
+        case vdis::FORCE_ID_OPPOSING:
+        case vdis::FORCE_ID_OPPOSING_2:
+        case vdis::FORCE_ID_OPPOSING_3:
+        case vdis::FORCE_ID_OPPOSING_4:
+        case vdis::FORCE_ID_OPPOSING_5:
+        case vdis::FORCE_ID_OPPOSING_6:
+        case vdis::FORCE_ID_OPPOSING_7:
+        case vdis::FORCE_ID_OPPOSING_8:
+        case vdis::FORCE_ID_OPPOSING_9:
+        case vdis::FORCE_ID_OPPOSING_10:
+            return red;
+
+        case vdis::FORCE_ID_NEUTRAL:
+        case vdis::FORCE_ID_NEUTRAL_2:
+        case vdis::FORCE_ID_NEUTRAL_3:
+        case vdis::FORCE_ID_NEUTRAL_4:
+        case vdis::FORCE_ID_NEUTRAL_5:
+        case vdis::FORCE_ID_NEUTRAL_6:
+        case vdis::FORCE_ID_NEUTRAL_7:
+        case vdis::FORCE_ID_NEUTRAL_8:
+        case vdis::FORCE_ID_NEUTRAL_9:
+        case vdis::FORCE_ID_NEUTRAL_10:
+            return yellow;
+
+        default:
+            return none;
+    }
+}
 
 // ----------------------------------------------------------------------------
 void color::set_enabled(bool value)
@@ -190,7 +354,7 @@ uint32_t vdis::padding_length(uint32_t length, uint32_t boundary)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::entity_marking::get_marking(const entity_id_t &id)
+string_t vdis::entity_marking::get_marking(const id_t &id)
 {
     const marking_t
         *marking_ptr = get(id);
@@ -214,7 +378,7 @@ std::string vdis::entity_marking::get_marking(const entity_id_t &id)
 }
 
 // ----------------------------------------------------------------------------
-const vdis::marking_t *vdis::entity_marking::get(const entity_id_t &id)
+const vdis::marking_t *vdis::entity_marking::get(const id_t &id)
 {
     const marking_t
         *marking_ptr = 0;
@@ -230,7 +394,7 @@ const vdis::marking_t *vdis::entity_marking::get(const entity_id_t &id)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_marking::set(const entity_id_t &id, const marking_t &marking)
+void vdis::entity_marking::set(const id_t &id, const marking_t &marking)
 {
     marking_map_t::const_iterator
         itor = markings.find(id);
@@ -248,7 +412,7 @@ void vdis::entity_marking::set(const entity_id_t &id, const marking_t &marking)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_marking::unset(const entity_id_t &id)
+void vdis::entity_marking::unset(const id_t &id)
 {
     marking_map_t::const_iterator
         itor = markings.find(id);

@@ -1,7 +1,5 @@
-#include <cstring>
-#include <sstream>
-
 #include "vdis_byte_buffer.h"
+#include "vdis_byte_stream.h"
 #include "vdis_integer.h"
 #include "vdis_string.h"
 
@@ -115,7 +113,7 @@ uint8_t vdis::byte_buffer_t::operator[](uint32_t index) const
 
 // ----------------------------------------------------------------------------
 void vdis::byte_buffer_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     static const uint32_t
@@ -147,7 +145,7 @@ void vdis::byte_buffer_t::print(
 
     for(uint32_t i = 0; i < data_length;)
     {
-        std::string
+        string_t
             header = vdis::to_string(i);
         std::ostringstream
             ascii,
@@ -202,6 +200,78 @@ void vdis::byte_buffer_t::print(
 }
 
 // ----------------------------------------------------------------------------
+void vdis::byte_buffer_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    stream.read(data_length);
+
+    if (stream() and (data_length > 0))
+    {
+        data_buffer = new uint8_t[data_length];
+        data_allocated = true;
+
+        stream.read(data_buffer, data_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_buffer_t::read(byte_stream_t &stream, uint32_t size)
+{
+    clear();
+
+    if (stream() and (size > 0))
+    {
+        data_length = size;
+        data_buffer = new uint8_t[data_length];
+        data_allocated = true;
+
+        stream.read(data_buffer, data_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_buffer_t::write(byte_stream_t &stream)
+{
+    stream.write(data_length);
+
+    if (data_length and data_buffer)
+    {
+        stream.write(data_buffer, data_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_buffer_t::write(byte_stream_t &stream, uint32_t size)
+{
+    if (data_buffer and (data_length > 0) and (size > 0))
+    {
+        if (data_length < size)
+        {
+            stream.write(data_buffer, data_length);
+        }
+        else
+        {
+            stream.write(data_buffer, size);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_buffer_t::reset(uint32_t size)
+{
+    clear();
+
+    if (size > 0)
+    {
+        data_length = size;
+        data_buffer = new uint8_t[data_length];
+        data_allocated = true;
+        std::memset(data_buffer, 0, data_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::byte_buffer_t::reset(
     const uint8_t *buffer,
     uint32_t size,
@@ -244,7 +314,7 @@ void vdis::byte_buffer_t::reset(const byte_buffer_t &buffer)
 // ----------------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &out, const vdis::byte_buffer_t &o)
 {
-    o.print(std::string(), out);
+    o.print(string_t(), out);
 
     return out;
 }

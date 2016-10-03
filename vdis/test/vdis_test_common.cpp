@@ -18,19 +18,19 @@ void vdis::test::test_common(void)
     bool
         absolute;
 
-    timestamp.set(4, 35, true);
+    timestamp.set(4, 35.0f, true);
     timestamp.get(minutes, seconds, absolute);
 
     out << "timestamp " << to_string(timestamp) << std::endl
         << "timestamp.minutes " << to_string(minutes) << std::endl
         << "timestamp.seconds " << to_string(seconds) << std::endl
-        << "timestamp.seconds " << to_string(absolute) << std::endl;
+        << "timestamp.absolute " << to_string(absolute) << std::endl;
 
     TEST_TRUE(2.01, (int)minutes == 4);
     TEST_TRUE(2.02, (int)seconds == 35);
     TEST_TRUE(2.03, absolute);
 
-    entity_id_t
+    id_t
         entity_id = { 1, 2, 3 };
 
     out << "entity_id = " << to_string(entity_id) << std::endl;
@@ -44,5 +44,5 @@ void vdis::test::test_common(void)
     pdu_header_t
         header = { 7, 1, 1, 1, { timestamp.value }, 144, 0, 0 };
 
-    header.print("test", out);
+    header.print("test.", out);
 }

@@ -1,29 +1,11 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
-#include "vdb_byte_stream.h"
-#include "vdb_common.h"
-#include "vdb_hexadecimal.h"
-#include "vdb_logger.h"
 #include "vdb_network.h"
 #include "vdb_options.h"
-#include "vdb_pdu.h"
 #include "vdb_pdu_data.h"
-#include "vdb_services.h"
-#include "vdb_string.h"
-#include "vdb_time.h"
+
+#include "vdis_byte_stream.h"
+#include "vdis_logger.h"
+#include "vdis_pdus.h"
+#include "vdis_services.h"
 
 // ----------------------------------------------------------------------------
 // Returns buffer containing IPv4 or IPv6 address structure.
@@ -39,7 +21,7 @@ const uint8_t *vdb::pdu_data_t::get_address_buffer(void) const
 //
 uint16_t vdb::pdu_data_t::get_hostname_length(void) const
 {
-    return (hostname.length() + get_padding_length(hostname.length(), 4));
+    return (hostname.length() + vdis::padding_length(hostname.length(), 4));
 }
 
 // ----------------------------------------------------------------------------
@@ -78,7 +60,7 @@ void vdb::pdu_data_t::set_source(
 // Returns the source as string (include address, port and hostname
 // if available).
 //
-std::string vdb::pdu_data_t::get_source(void) const
+string_t vdb::pdu_data_t::get_source(void) const
 {
     std::ostringstream
         stream;
@@ -110,57 +92,51 @@ std::string vdb::pdu_data_t::get_source(void) const
 }
 
 // ----------------------------------------------------------------------------
-vdb::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
+vdis::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
 {
     // PDU type is always the 3rd bytes in the PDU buffer.
     //
-    const pdu_type_e
-        pdu_type = (pdu_type_e)get_pdu_type();
-    const std::string
-        pdu_type_string = vdb::enumerations::get_name(ENUM_PDU_TYPE, pdu_type);
+    const vdis::pdu_type_e
+        pdu_type = (vdis::pdu_type_e)get_pdu_type();
+    const string_t
+        pdu_type_string = vdis::enumerations::get_name(ENUM_PDU_TYPE, pdu_type);
+    vdis::pdu_t
+        *pdu_ptr = 0;
 
     // Create serialized buffer and restore the PDU...
     //
-    byte_stream
+    vdis::byte_stream_t
         stream(pdu_buffer, pdu_length);
 
-    // Create the PDU object...
-    //
-    pdu_t
-        *pdu_ptr = new pdu_t();
-
     LOG_EXTRA_VERBOSE(
-        "Reading PDU type %d at index %d with %d bytes...",
+        "Creating PDU type %d at index %d with %d bytes...",
         (int)pdu_type,
         index,
         pdu_length);
 
-    pdu_ptr->read(stream);
+    // Create the PDU object...
+    //
+    pdu_ptr = new vdis::pdu_t(stream);
 
     // Check to see of the amount of bytes read from the buffer does not
     // match the PDU length.  Buffer index should be at the end of the
     // buffer.
     //
-    if (stream.error())
+    if (not stream())
     {
         LOG_ERROR(
             "Read error for PDU %d, type: %s",
             index,
             pdu_type_string.c_str());
     }
-    else if (stream.get_index() != stream.get_length())
+    else if (stream.index() != stream.length())
     {
-        std::string
-            pdu_type_string = vdb::enumerations::get_name(
-                ENUM_PDU_TYPE,
-                pdu_type);
-
         LOG_WARNING(
             "%s[index %d]: read %d bytes out of %d",
             pdu_type_string.c_str(),
             index,
-            stream.get_index(),
-            stream.get_length());
+            stream.index(),
+            stream.length());
     }
 
     return pdu_ptr;
@@ -186,12 +162,12 @@ void vdb::pdu_data_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &stream) const
 {
     stream << prefix << "PDU " << index
            << " received from " << get_source()
-           << " on " << time::to_string(time) << std::endl;
+           << " on " << vdis::time_to_string(time) << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -204,10 +180,10 @@ uint32_t vdb::pdu_data_t::length(void) const
 }
 
 // ----------------------------------------------------------------------------
-void vdb::pdu_data_t::read(byte_stream &stream)
+void vdb::pdu_data_t::read(vdis::byte_stream_t &stream)
 {
     const uint32_t
-        start_index = stream.get_index();
+        start_index = stream.index();
     uint16_t
         hostname_length = 0;
 
@@ -243,12 +219,10 @@ void vdb::pdu_data_t::read(byte_stream &stream)
 
     if (options::flag(OPT_EXTRA_VERBOSE))
     {
-        hexadecimal::stream(
-            "DEBUG_PDU_DATA ",
-            pdu_buffer,
-            pdu_length,
-            16,
-            std::cout);
+        vdis::byte_buffer_t
+            temp_buffer(pdu_buffer, pdu_length, false);
+
+        temp_buffer.print("DEBUG_PDU_DATA ", std::cout);
     }
 
     if (options::flag(OPT_EXTRA_VERBOSE))
@@ -258,7 +232,7 @@ void vdb::pdu_data_t::read(byte_stream &stream)
             "  hostname length: %d\n"
             "  PDU index: %d\n"
             "  PDU length: %d",
-            (stream.get_index() - start_index),
+            (stream.index() - start_index),
             start_index,
             hostname_length,
             index,
@@ -267,10 +241,10 @@ void vdb::pdu_data_t::read(byte_stream &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::pdu_data_t::write(byte_stream &stream) const
+void vdb::pdu_data_t::write(vdis::byte_stream_t &stream) const
 {
     const uint32_t
-        start_index = stream.get_index();
+        start_index = stream.index();
     const uint16_t
         hostname_length = get_hostname_length();
 
@@ -296,7 +270,7 @@ void vdb::pdu_data_t::write(byte_stream &stream) const
     {
         LOG_EXTRA_VERBOSE(
             "Wrote %d bytes in byte data starting at index %d (%d hostname)...",
-            (stream.get_index() - start_index),
+            (stream.index() - start_index),
             start_index,
             hostname_length);
     }

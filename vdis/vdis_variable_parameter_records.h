@@ -1,9 +1,6 @@
 #ifndef VDIS_VARIABLE_PARAMETER_RECORDS_H
 #define VDIS_VARIABLE_PARAMETER_RECORDS_H
 
-#include <cstdint>
-#include <string>
-
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
 #include "vdis_enums.h"
@@ -27,7 +24,7 @@ namespace vdis
     {
         virtual ~variable_parameter_content_t(void) { }
 
-        virtual void print(const std::string &, std::ostream &) const = 0;
+        virtual void print(const string_t &, std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
 
@@ -48,7 +45,7 @@ namespace vdis
         }
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -58,7 +55,7 @@ namespace vdis
     {
         uint8_t                 buffer[VP_RECORD_DATA_SIZE];
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -82,7 +79,7 @@ namespace vdis
             return (articulated_parts_metric_e)(type_metric & 0x1F);
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -93,7 +90,7 @@ namespace vdis
         uint8_t                 change_indicator;       // 1 byte
         uint8_t                 status;                 // 1 byte
         uint8_t                 type;                   // 1 byte
-        entity_id_t             entity_id;              // 6 bytes
+        id_t                    entity_id;              // 6 bytes
         uint16_t                station;                // 2 bytes
         uint8_t                 connection_type;        // 1 byte
         uint8_t                 group_membership;       // 1 byte
@@ -119,7 +116,7 @@ namespace vdis
             return (grp_mem_type_e)group_membership;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -136,7 +133,7 @@ namespace vdis
             return (offset_type_e)type;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -168,7 +165,7 @@ namespace vdis
             return (colors_e)secondary_color;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -179,7 +176,7 @@ namespace vdis
         uint8_t                 status;                 // 1 byte
         uint16_t                equipment;              // 2 bytes
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -214,7 +211,7 @@ namespace vdis
             return (colors_e)secondary_color;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -224,7 +221,7 @@ namespace vdis
     {
         uint8_t                 padding[12];            // 12 bytes
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -234,7 +231,7 @@ namespace vdis
     {
         uint8_t                 padding[12];            // 12 bytes
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -272,7 +269,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -309,7 +306,7 @@ namespace vdis
             return (severity_e)bits.rust;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -321,7 +318,7 @@ namespace vdis
         uint16_t                ied:2;                      // Bits 9-10
         uint16_t                unused3:5;                  // Bits 11-15
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -340,7 +337,7 @@ namespace vdis
         uint16_t                left_door_open:1;           // Bit 14
         uint16_t                countermeasures_active:1;   // Bit 15
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -358,7 +355,7 @@ namespace vdis
         uint16_t                ied:2;                      // Bits 9-10
         uint16_t                unused3:5;                  // Bits 11-15
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------

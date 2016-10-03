@@ -1,8 +1,7 @@
 #ifndef VDIS_LOGGER_H
 #define VDIS_LOGGER_H
 
-#include <map>
-#include <string>
+#include "vdis_system.h"
 
 #define LOG_EXTRA_VERBOSE(format, ...)  logger::log(logger::EXTRA_VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__);
 #define LOG_VERBOSE(format, ...)        logger::log(logger::VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__);
@@ -13,10 +12,9 @@ class logger
 {
   public:
 
-    static logger &instance(void);
-
     enum level_e
     {
+        OFF = 0,
         ERROR = 1,
         WARNING = 2,
         VERBOSE = 3,
@@ -37,11 +35,14 @@ class logger
 
     static logger *get_instance(void);
 
+    static std::ostream &serr(void) { return err; }
+    static std::ostream &sout(void) { return out; }
+
   private:
 
     logger(void);
 
-    static void basename(std::string &file);
+    static void basename(string_t &file);
 
     static void log_message(
         level_e level,
@@ -54,6 +55,9 @@ class logger
         BUFFER_SIZE = 2048;
     static char
         buffer[BUFFER_SIZE];
+    static std::ostream
+        &err,
+        &out;
     static std::map<level_e, bool>
         levels;
     static logger

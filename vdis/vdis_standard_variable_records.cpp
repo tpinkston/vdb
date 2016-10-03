@@ -80,7 +80,7 @@ uint16_t vdis::standard_variable_content_t::read_length(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::standard_variable_record_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "type " << datum_id_enum() << std::endl;
@@ -165,7 +165,7 @@ void vdis::standard_variable_record_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::default_standard_variable_content_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl;
@@ -180,7 +180,7 @@ void vdis::default_standard_variable_content_t::read(byte_stream_t &stream)
 
     uint16_t length = read_length(stream);
 
-    stream.read(buffer, length);
+    buffer.read(stream, length);
 }
 
 // ----------------------------------------------------------------------------
@@ -231,7 +231,7 @@ void vdis::application_state_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::application_state_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -327,7 +327,7 @@ void vdis::application_state_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::application_health_status_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -383,7 +383,7 @@ void vdis::application_health_status_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_spectrum_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -435,7 +435,7 @@ void vdis::stealth_spectrum_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_location_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -483,7 +483,7 @@ void vdis::stealth_location_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_attachment_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -539,7 +539,7 @@ void vdis::stealth_attachment_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_velocity_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -595,7 +595,7 @@ void vdis::stealth_velocity_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_field_of_view_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl
@@ -639,7 +639,7 @@ void vdis::stealth_field_of_view_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::stealth_marking_id_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << (int)length() << std::endl

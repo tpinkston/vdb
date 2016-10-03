@@ -1,6 +1,7 @@
 #ifndef VDIS_PDUS_H
 #define VDIS_PDUS_H
 
+#include "vdis_byte_buffer.h"
 #include "vdis_data_types.h"
 
 // Base lengths of PDUs as defined in specification (includes header but
@@ -36,20 +37,48 @@
 
 namespace vdis
 {
+    class byte_buffer_t;
     class byte_stream_t;
 
-    struct pdu_base_t;
     struct fixed_datum_record_t;
     struct standard_variable_record_t;
     struct variable_datum_record_t;
     struct variable_parameter_record_t;
 
     // ------------------------------------------------------------------------
+    struct pdu_base_t
+    {
+        pdu_header_t                    header;                     // 12 bytes
+
+        virtual ~pdu_base_t(void) { }
+
+        virtual inline const id_t *get_initator(void) const
+        {
+            return 0;
+        }
+
+        virtual inline const uint32_t *get_request_id(void) const
+        {
+            return 0;
+        }
+
+        virtual inline bool contains_id(const id_t &) const
+        {
+            return false;
+        }
+
+        virtual void clear(void) = 0;
+        virtual void print(std::ostream &) const = 0;
+        virtual void read(byte_stream_t &) = 0;
+        virtual void write(byte_stream_t &) = 0;
+    };
+
+    // ------------------------------------------------------------------------
     class pdu_t
     {
       public:
 
-        pdu_t(void) : base_ptr(0) { }
+        pdu_t(void) : base_type(PDU_TYPE_OTHER), base_ptr(0) { }
 
         pdu_t(byte_stream_t &);
 
@@ -60,7 +89,24 @@ namespace vdis
 
         void clear(void);
 
+        inline pdu_type_e type(void) const { return base_type; }
+
         inline const pdu_base_t *base(void) const { return base_ptr; }
+
+        inline const id_t *get_initator(void) const
+        {
+            return (base() ? base()->get_initator() : 0);
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return (base() ? base()->get_request_id() : 0);
+        }
+
+        inline bool contains_id(const id_t &id) const
+        {
+            return (base() ? base()->contains_id(id) : false);
+        }
 
         static bool validate_header(byte_buffer_t &);
 
@@ -72,20 +118,8 @@ namespace vdis
 
       protected:
 
+        pdu_type_e                      base_type;
         pdu_base_t                     *base_ptr;
-    };
-
-    // ------------------------------------------------------------------------
-    struct pdu_base_t
-    {
-        pdu_header_t                    header;                     // 12 bytes
-
-        virtual ~pdu_base_t(void) { }
-
-        virtual void clear(void) = 0;
-        virtual void print(std::ostream &) const = 0;
-        virtual void read(byte_stream_t &) = 0;
-        virtual void write(byte_stream_t &) = 0;
     };
 
     // ------------------------------------------------------------------------
@@ -112,7 +146,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct entity_state_pdu_t : pdu_base_t
     {
-        entity_id_t                     id;                         // 6 bytes
+        id_t                            id;                         // 6 bytes
         uint8_t                         force;                      // 1 byte
         uint8_t                         record_count;               // 1 byte
         entity_type_t                   type;                       // 8 bytes
@@ -134,6 +168,16 @@ namespace vdis
             return (records and (i < record_count)) ? records[i] : 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return id.matches(i);
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -149,10 +193,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct fire_pdu_t : pdu_base_t
     {
-        entity_id_t                     shooter;                    // 6 bytes
-        entity_id_t                     target;                     // 6 bytes
-        munition_id_t                   munition;                   // 6 bytes
-        event_id_t                      event;                      // 6 bytes
+        id_t                            shooter;                    // 6 bytes
+        id_t                            target;                     // 6 bytes
+        id_t                            munition;                   // 6 bytes
+        id_t                            event;                      // 6 bytes
         uint32_t                        fire_mission_index;         // 4 bytes
         location24_t                    world_location;             // 24 bytes
         burst_descriptor_t              burst_descriptor;           // 16 bytes
@@ -160,6 +204,11 @@ namespace vdis
         float32_t                       range;                      // 4 bytes
 
         ~fire_pdu_t(void) { }
+
+        inline const id_t *get_initator(void) const
+        {
+            return &shooter;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -170,10 +219,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct detonation_pdu_t : pdu_base_t
     {
-        entity_id_t                     shooter;                    // 6 bytes
-        entity_id_t                     target;                     // 6 bytes
-        munition_id_t                   munition;                   // 6 bytes
-        event_id_t                      event;                      // 6 bytes
+        id_t                            shooter;                    // 6 bytes
+        id_t                            target;                     // 6 bytes
+        id_t                            munition;                   // 6 bytes
+        id_t                            event;                      // 6 bytes
         velocity_t                      velocity;                   // 12 bytes
         location24_t                    world_location;             // 24 bytes
         burst_descriptor_t              burst_descriptor;           // 16 bytes
@@ -191,6 +240,11 @@ namespace vdis
             return (records and (i < record_count)) ? records[i] : 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &shooter;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -200,9 +254,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct collision_pdu_t : pdu_base_t
     {
-        entity_id_t                     issuing_entity;             // 6 bytes
-        entity_id_t                     colliding_entity;           // 6 bytes
-        event_id_t                      event;                      // 6 bytes
+        id_t                            issuing_entity;             // 6 bytes
+        id_t                            colliding_entity;           // 6 bytes
+        id_t                            event;                      // 6 bytes
         uint8_t                         collision_type;             // 1 byte
         uint8_t                         padding;                    // 1 byte
         velocity_t                      velocity;                   // 12 bytes
@@ -211,6 +265,11 @@ namespace vdis
 
         collision_pdu_t(void);
         ~collision_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &issuing_entity;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -221,12 +280,22 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct create_entity_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         uint32_t                        request_id;                 // 4 bytes
 
         create_entity_pdu_t(void);
         ~create_entity_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -237,12 +306,22 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct remove_entity_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         uint32_t                        request_id;                 // 4 bytes
 
         remove_entity_pdu_t(void);
         ~remove_entity_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -253,14 +332,24 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct start_resume_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         clocktime_t                     real_time;                  // 8 bytes
         clocktime_t                     simulation_time;            // 8 bytes
         uint32_t                        request_id;                 // 4 bytes
 
         start_resume_pdu_t(void);
         ~start_resume_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -271,8 +360,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct stop_freeze_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         clocktime_t                     real_time;                  // 8 bytes
         uint8_t                         reason;                     // 1 byte
         uint8_t                         behavior;                   // 1 byte
@@ -281,6 +370,16 @@ namespace vdis
 
         stop_freeze_pdu_t(void);
         ~stop_freeze_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -291,14 +390,24 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct acknowledge_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         uint16_t                        acknowledge_flag;           // 2 bytes
         uint16_t                        response_flag;              // 2 bytes
         uint32_t                        request_id;                 // 4 bytes
 
         acknowledge_pdu_t(void);
         ~acknowledge_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -309,8 +418,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct abstract_siman_pdu_t : pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         uint32_t                        fixed_count;                // 4 bytes
         uint32_t                        variable_count;             // 4 bytes
         fixed_datum_record_t          **fixed_records;              // Variable
@@ -333,6 +442,11 @@ namespace vdis
                 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void print_fixed_datums(std::ostream &) const;
@@ -351,6 +465,11 @@ namespace vdis
         inline actreq_action_ids_e action_id_enum(void) const
         {
             return (actreq_action_ids_e)action_id;
+        }
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
         }
 
         void clear(void);
@@ -373,6 +492,11 @@ namespace vdis
             return (actres_req_status_e)request_status;
         }
 
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -387,6 +511,11 @@ namespace vdis
 
         data_query_pdu_t(void);
         ~data_query_pdu_t(void);
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -403,6 +532,11 @@ namespace vdis
         set_data_pdu_t(void);
         ~set_data_pdu_t(void);
 
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -417,6 +551,11 @@ namespace vdis
 
         data_pdu_t(void);
         ~data_pdu_t(void);
+
+        inline const uint32_t *get_request_id(void) const
+        {
+            return &request_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -473,10 +612,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct designator_pdu_t : pdu_base_t
     {
-        entity_id_t                     designating_id;             // 6 bytes
+        id_t                            designating_id;             // 6 bytes
         uint8_t                         spot_type;                  // 1 byte
         uint8_t                         system_name;                // 1 byte
-        entity_id_t                     designated_id;              // 6 bytes
+        id_t                            designated_id;              // 6 bytes
         uint16_t                        code;                       // 2 bytes
         float32_t                       power;                      // 4 bytes
         float32_t                       wavelength;                 // 4 bytes
@@ -491,6 +630,11 @@ namespace vdis
         designator_pdu_t(void);
         ~designator_pdu_t(void);
 
+        inline const id_t *get_initator(void) const
+        {
+            return &designating_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -500,7 +644,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct transmitter_pdu_t : pdu_base_t
     {
-        entity_id_t                     entity_id;                  // 6 bytes
+        id_t                            entity_id;                  // 6 bytes
         uint16_t                        radio_id;                   // 2 bytes
         entity_type_t                   radio_type;                 // 8 bytes
         uint8_t                         transmit_state;             // 1 byte
@@ -525,6 +669,11 @@ namespace vdis
         transmitter_pdu_t(void);
         ~transmitter_pdu_t(void);
 
+        inline const id_t *get_initator(void) const
+        {
+            return &entity_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -537,7 +686,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct signal_pdu_t : pdu_base_t
     {
-        entity_id_t                     entity_id;                  // 6 bytes
+        id_t                            entity_id;                  // 6 bytes
         uint16_t                        radio_id;                   // 2 bytes
         uint16_t                        encoding;                   // 2 bytes
         uint16_t                        tdl_type;                   // 2 bytes
@@ -549,6 +698,11 @@ namespace vdis
         signal_pdu_t(void);
         ~signal_pdu_t(void);
 
+        inline const id_t *get_initator(void) const
+        {
+            return &entity_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -558,16 +712,21 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct receiver_pdu_t : pdu_base_t
     {
-        entity_id_t                     entity_id;                  // 6 bytes
+        id_t                            entity_id;                  // 6 bytes
         uint16_t                        radio_id;                   // 2 bytes
         uint16_t                        receiver_state;             // 2 bytes
         uint16_t                        padding;                    // 2 bytes
         float32_t                       power;                      // 4 bytes
-        entity_id_t                     transmitter_entity;         // 2 bytes
+        id_t                            transmitter_entity;         // 2 bytes
         uint16_t                        transmitter_radio;          // 2 bytes
 
         receiver_pdu_t(void);
         ~receiver_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &entity_id;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -589,8 +748,8 @@ namespace vdis
     //
     struct iff_pdu_t : pdu_base_t
     {
-        entity_id_t                     emitter;                    // 6 bytes
-        event_id_t                      event;                      // 6 bytes
+        id_t                            emitter;                    // 6 bytes
+        id_t                            event;                      // 6 bytes
         location12_t                    antenna_location;           // 12 bytes
         iff_system_id_t                 system_id;                  // 6 bytes
         uint8_t                         designator;                 // 1 byte
@@ -600,6 +759,11 @@ namespace vdis
 
         iff_pdu_t(void);
         ~iff_pdu_t(void);
+
+        inline const id_t *get_initator(void) const
+        {
+            return &emitter;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -666,7 +830,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct environmental_process_pdu_t : pdu_base_t
     {
-        entity_id_t                     process_id;                 // 6 bytes
+        id_t                            process_id;                 // 6 bytes
         entity_type_t                   environment_type;           // 8 bytes
         uint8_t                         model_type;                 // 1 byte
         uint8_t                         status;                     // 1 byte
@@ -682,6 +846,11 @@ namespace vdis
             return (records and (i < record_count)) ? records[i] : 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &process_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -691,8 +860,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct point_object_state_pdu_t : pdu_base_t
     {
-        object_id_t                     object_id;                  // 6 bytes
-        object_id_t                     referenced_object_id;       // 6 bytes
+        id_t                            object_id;                  // 6 bytes
+        id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
         uint8_t                         force_id;                   // 1 byte
         uint8_t                         modifications;              // 1 byte
@@ -706,6 +875,11 @@ namespace vdis
         simulation_id_t                 receiver_id;                // 4 bytes
         uint32_t                        padding32;                  // 4 bytes
 
+        inline const id_t *get_initator(void) const
+        {
+            return &object_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -715,8 +889,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct linear_object_state_pdu_t : pdu_base_t
     {
-        object_id_t                     object_id;                  // 6 bytes
-        object_id_t                     referenced_object_id;       // 6 bytes
+        id_t                            object_id;                  // 6 bytes
+        id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
         uint8_t                         force_id;                   // 1 byte
         uint8_t                         segment_count;              // 1 byte
@@ -733,6 +907,11 @@ namespace vdis
             return (segments and (i < segment_count)) ? segments[i] : 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &object_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -742,8 +921,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct areal_object_state_pdu_t : pdu_base_t
     {
-        object_id_t                     object_id;                  // 6 bytes
-        object_id_t                     referenced_object_id;       // 6 bytes
+        id_t                            object_id;                  // 6 bytes
+        id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
         uint8_t                         force_id;                   // 1 byte
         uint8_t                         modifications;              // 1 byte
@@ -763,6 +942,11 @@ namespace vdis
             return (points and (i < point_count)) ? points[i] : 0;
         }
 
+        inline const id_t *get_initator(void) const
+        {
+            return &object_id;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -772,8 +956,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct application_control_pdu_t : public pdu_base_t
     {
-        entity_id_t                     originator;                 // 6 bytes
-        entity_id_t                     recipient;                  // 6 bytes
+        id_t                            originator;                 // 6 bytes
+        id_t                            recipient;                  // 6 bytes
         uint8_t                         reliability_service;        // 1 byte
         uint8_t                         time_interval;              // 1 byte
         uint8_t                         control_type;               // 1 byte
@@ -807,6 +991,11 @@ namespace vdis
         inline const standard_variable_record_t *record(uint32_t i) const
         {
             return (records and (i < record_count)) ? records[i] : 0;
+        }
+
+        inline const id_t *get_initator(void) const
+        {
+            return &originator;
         }
 
         void clear(void);

@@ -1,35 +1,14 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
-#include "vdb_color.h"
-#include "vdb_emission_pdus.h"
-#include "vdb_entity_info_pdus.h"
-#include "vdb_enums.h"
-#include "vdb_environment_pdus.h"
 #include "vdb_file_readers.h"
-#include "vdb_logger.h"
-#include "vdb_pdu.h"
 #include "vdb_pdu_data.h"
 #include "vdb_query.h"
-#include "vdb_radio_pdus.h"
-#include "vdb_services.h"
-#include "vdb_string.h"
+
+#include "vdis_logger.h"
+#include "vdis_services.h"
+#include "vdis_string.h"
 
 namespace
 {
-    const std::string
+    const string_t
         separator = "----------------------------------------------------";
 
     // ------------------------------------------------------------------------
@@ -46,7 +25,7 @@ namespace
 
 vdb::file_reader_t
     *vdb::query::reader_ptr = 0;
-std::string
+string_t
     vdb::query::filename,
     vdb::query::current_source;
 uint64_t
@@ -54,76 +33,76 @@ uint64_t
     vdb::query::last_pdu_time = 0;
 vdb::source_data_node_t
     vdb::query::all_sources;
-std::map<std::string, vdb::source_data_node_t>
+std::map<string_t, vdb::source_data_node_t>
     vdb::query::source_data;
-std::map<vdb::id_t, vdb::entity_data_node_t>
+std::map<vdis::id_t, vdb::entity_data_node_t>
     vdb::query::entity_data;
-std::map<vdb::id_t, vdb::object_data_node_t>
+std::map<vdis::id_t, vdb::object_data_node_t>
     vdb::query::object_data;
 
 // ----------------------------------------------------------------------------
-bool vdb::designator_node_t::matches(const designator_pdu_t &pdu) const
+bool vdb::designator_node_t::matches(const vdis::designator_pdu_t &pdu) const
 {
     return (pdu.designated_id == target) && (pdu.code == code);
 }
 
 // ----------------------------------------------------------------------------
-void vdb::designator_node_t::print(std::ostream &stream) const
+void vdb::designator_node_t::print(std::ostream &out) const
 {
     std::map<uint8_t, uint32_t>::const_iterator
         itor;
-    std::string
+    string_t
         name;
 
-    stream << "      Target: ";
-
-    target.print_full(stream);
-
-    stream << std::endl
-           << "      Code: " << (int)code << ", Count: " << (int)total_count
-           << ", Power: " << float_to_string(minimum_power, 1, 2) << " min, "
-           << float_to_string(maximum_power, 1, 2) << " max, "
-           << float_to_string(average_power, 1, 2) << " average" << std::endl
-           << "      Functions: " << std::endl;
+    out << "      Target: " << vdis::entity_marking(target) << std::endl
+        << "      Code: " << (int)code << ", Count: " << (int)total_count
+        << ", Power: " << vdis::to_string(minimum_power, 1, 2) << " min, "
+        << vdis::to_string(maximum_power, 1, 2) << " max, "
+        << vdis::to_string(average_power, 1, 2) << " average" << std::endl
+        << "      Functions: " << std::endl;
 
     itor = functions.begin();
 
     while(itor != functions.end())
     {
-        name = enumerations::get_name(ENUM_LASER_FUNCTION, itor->first);
+        name = vdis::enumerations::get_name(ENUM_LASER_FUNCTION, itor->first);
 
-        stream << "        " << name << " (count: " << itor->second
-               << ")" << std::endl;
+        out << "        " << name << " (count: " << itor->second
+            << ")" << std::endl;
 
         ++itor;
     }
 
     if (options::flag(OPT_VERBOSE))
     {
-        stream << "      Spot types: " << std::endl;
+        out << "      Spot types: " << std::endl;
 
         itor = spot_types.begin();
 
         while(itor != spot_types.end())
         {
-            name = enumerations::get_name(ENUM_DESIG_SPOT_TYPE, itor->first);
+            name = vdis::enumerations::get_name(
+                ENUM_DESIG_SPOT_TYPE,
+                itor->first);
 
-            stream << "        " << name << " (count: " << itor->second
-                   << ")" << std::endl;
+            out << "        " << name << " (count: " << itor->second
+                << ")" << std::endl;
 
             ++itor;
         }
 
-        stream << "      System names: " << std::endl;
+        out << "      System names: " << std::endl;
 
         itor = system_names.begin();
 
         while(itor != system_names.end())
         {
-            name = enumerations::get_name(ENUM_DESIG_SYSTEM_NAME, itor->first);
+            name = vdis::enumerations::get_name(
+                ENUM_DESIG_SYSTEM_NAME,
+                itor->first);
 
-            stream << "        " << name << " (count: " << itor->second
-                   << ")" << std::endl;
+            out << "        " << name << " (count: " << itor->second
+                << ")" << std::endl;
 
             ++itor;
         }
@@ -131,164 +110,160 @@ void vdb::designator_node_t::print(std::ostream &stream) const
 }
 
 // ----------------------------------------------------------------------------
-void vdb::collision_node_t::print(std::ostream &stream) const
+void vdb::collision_node_t::print(std::ostream &out) const
 {
-    stream << "      Collision: " << event << " ("
-           << enumerations::get_name(ENUM_COLLISION, type) << ")" << std::endl
-           << "      Other entity: ";
-
-    colliding_entity.print_full(stream);
-
-    stream << std::endl;
+    out << "      Collision: " << event << " ("
+        << vdis::enumerations::get_name(ENUM_COLLISION, type) << ")"
+        << std::endl
+        << "      Other entity: " << vdis::entity_marking(colliding_entity)
+        << std::endl;
 
     if (options::flag(OPT_VERBOSE))
     {
-        stream << "      Location: " << location << std::endl
-               << "      Velocity: " << velocity << " ("
-               << float_to_string(velocity.get_length()) << " m/s)"
-               << std::endl;
+        out << "      Location: " << location << std::endl
+            << "      Velocity: " << velocity << " ("
+            << vdis::to_string(velocity.length()) << " m/s)" << std::endl;
     }
 }
 
 // ----------------------------------------------------------------------------
-void vdb::warfare_data_node_t::print(std::ostream &stream) const
+void vdb::warfare_data_node_t::print(std::ostream &out) const
 {
-    std::string
-        result_string = enumerations::get_name(ENUM_DETONATION_RESULT, result);
+    string_t
+        result_string = vdis::enumerations::get_name(
+            ENUM_DETONATION_RESULT,
+            result);
 
-    if (starts_with(result_string, "DET_RESULT_"))
+    if (vdis::starts_with(result_string, "DET_RESULT_"))
     {
         result_string = result_string.substr(11);
     }
 
-    stream << "      Event: " << event << std::endl;
+    out << "      Event: " << event << std::endl;
 
     if (not target.is_none())
     {
-        stream << "      Target: ";
-        target.print_full(stream);
-        stream << std::endl;
+        out << "      Target: " << vdis::entity_marking(target) << std::endl;
     }
 
     if (not munition.is_none())
     {
-        stream << "      Munition Entity: ";
-        munition.print_full(stream);
-        stream << std::endl;
+        out << "      Munition Entity: " << vdis::entity_marking(munition)
+            << std::endl;
     }
 
-    stream << "      Munition: " << burst.munition << " '"
-           << burst.munition.get_description() << "'" << std::endl;
+    out << "      Munition: " << burst.munition << " '"
+        << burst.munition.description() << "'" << std::endl;
 
     if (options::flag(OPT_VERBOSE))
     {
-        stream << "      Fire: ";
+        out << "      Fire: ";
 
         if (fire_time > 0)
         {
-            stream << time::to_string(fire_time) << ", Detonation: ";
+            out << vdis::time_to_string(fire_time) << ", Detonation: ";
         }
         else
         {
-            stream << "N/A, Detonation: ";
+            out << "N/A, Detonation: ";
         }
 
         if (detonation_time > 0)
         {
-            stream << time::to_string(detonation_time);
+            out << vdis::time_to_string(detonation_time);
         }
         else
         {
-            stream << "N/A";
+            out << "N/A";
         }
 
         if ((fire_time > 0) and (detonation_time > 0))
         {
-            stream << ", Duration: " << (detonation_time - fire_time)
+            out << ", Duration: " << (detonation_time - fire_time)
                    << " (ms)" << std::endl;
 
         }
         else
         {
-            stream << std::endl;
+            out << std::endl;
         }
 
-        stream << "      Parameters: " << burst.quantity << "/"
-               << (warhead_burst_desc_e)burst.warhead << "/"
-               << (fuse_burst_desc_e)burst.fuse << "/"
-               << result_string << std::endl;
+        out << "      Parameters: " << burst.quantity << "/"
+            << (vdis::warhead_burst_desc_e)burst.warhead << "/"
+            << (vdis::fuse_burst_desc_e)burst.fuse << "/"
+            << result_string << std::endl;
     }
 }
 
 // ----------------------------------------------------------------------------
-void vdb::entity_data_node_t::print(std::ostream &stream) const
+void vdb::entity_data_node_t::print(std::ostream &out) const
 {
-    stream << "  " << id << ": "
-           << get_color(force_id) << marking << color::none << ", "
-           << type << " '" << type.get_description()  << "'" << std::endl;
+    out << "  " << id << ": "
+           << color::get(force_id) << marking << color::none << ", "
+           << type << " '" << type.description()  << "'" << std::endl;
 
     if (options::flag(OPT_VERBOSE) and not source.empty())
     {
-        stream << "    Source: " << color::bold_cyan << source
+        out << "    Source: " << color::bold_cyan << source
                << color::none << std::endl;
     }
 
     if (query::print(OPT_COLLISIONS) and not collisions.empty())
     {
-        stream << "    Collisions(" << collisions.size() << "):" << std::endl;
+        out << "    Collisions(" << collisions.size() << "):" << std::endl;
 
         for(uint32_t i = 0; i < collisions.size(); ++i)
         {
-            stream << "      " << separator << std::endl;
+            out << "      " << separator << std::endl;
 
-            collisions[i].print(stream);
+            collisions[i].print(out);
         }
 
-        stream << "      " << separator << std::endl;
+        out << "      " << separator << std::endl;
     }
 
     if (query::print(OPT_LASERS) and not designations.empty())
     {
-        stream << "    Designations(" << designations.size() << "):"
+        out << "    Designations(" << designations.size() << "):"
                << std::endl;
 
         for(uint32_t i = 0; i < designations.size(); ++i)
         {
-            stream << "      " << separator << std::endl;
+            out << "      " << separator << std::endl;
 
-            designations[i].print(stream);
+            designations[i].print(out);
         }
 
-        stream << "      " << separator << std::endl;
+        out << "      " << separator << std::endl;
     }
 
     if (query::print(OPT_FIRES) and not fires.empty())
     {
-        std::map<id_t, warfare_data_node_t>::const_iterator
+        std::map<vdis::id_t, warfare_data_node_t>::const_iterator
             fire_itor = fires.begin();
 
-        stream << "    Fires(" << fires.size() << "):" << std::endl;
+        out << "    Fires(" << fires.size() << "):" << std::endl;
 
         while(fire_itor != fires.end())
         {
-            stream << "      " << separator << std::endl;
+            out << "      " << separator << std::endl;
 
-            fire_itor->second.print(stream);
+            fire_itor->second.print(out);
             ++fire_itor;
         }
 
-        stream << "      " << separator << std::endl;
+        out << "      " << separator << std::endl;
     }
 }
 
 // ----------------------------------------------------------------------------
-void vdb::object_data_node_t::print(std::ostream &stream) const
+void vdb::object_data_node_t::print(std::ostream &out) const
 {
 
 }
 
 // ----------------------------------------------------------------------------
-void vdb::source_data_node_t::print(std::ostream &stream) const
+void vdb::source_data_node_t::print(std::ostream &out) const
 {
 
 }
@@ -374,45 +349,44 @@ bool vdb::query::print(option_e o)
 // ----------------------------------------------------------------------------
 bool vdb::query::process_pdu_data(const pdu_data_t &data)
 {
-    const pdu_t
-        *pdu_ptr = data.generate_pdu();
+    const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
     if (pdu_ptr)
     {
-        const pdu_type_e
-            pdu_type = (pdu_type_e)pdu_ptr->header_type;
+        const vdis::pdu_type_e
+            pdu_type = pdu_ptr->type();
 
         current_source = data.get_source();
 
         process_pdu(data, *pdu_ptr, all_sources);
         process_pdu(data, *pdu_ptr, source_data[current_source]);
 
-        #define PDU_CONTENT(T, P) *static_cast<const T*>((P)->content_ptr)
+        #define PDU_CONTENT(T, P) *static_cast<const vdis::T*>((P)->base())
 
         switch(pdu_type)
         {
-            case PDU_TYPE_ENTITY_STATE:
+            case vdis::PDU_TYPE_ENTITY_STATE:
                 process(PDU_CONTENT(entity_state_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_FIRE:
+            case vdis::PDU_TYPE_FIRE:
                 process(data, PDU_CONTENT(fire_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_DETONATION:
+            case vdis::PDU_TYPE_DETONATION:
                 process(data, PDU_CONTENT(detonation_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_COLLISION:
+            case vdis::PDU_TYPE_COLLISION:
                 process(PDU_CONTENT(collision_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_DESIGNATOR:
+            case vdis::PDU_TYPE_DESIGNATOR:
                 process(PDU_CONTENT(designator_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_POINT_OBJECT_STATE:
+            case vdis::PDU_TYPE_POINT_OBJECT_STATE:
                 process(PDU_CONTENT(point_object_state_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_LINEAR_OBJECT_STATE:
+            case vdis::PDU_TYPE_LINEAR_OBJECT_STATE:
                 process(PDU_CONTENT(linear_object_state_pdu_t, pdu_ptr));
                 break;
-            case PDU_TYPE_AREAL_OBJECT_STATE:
+            case vdis::PDU_TYPE_AREAL_OBJECT_STATE:
                 process(PDU_CONTENT(areal_object_state_pdu_t, pdu_ptr));
                 break;
             default:
@@ -429,15 +403,14 @@ bool vdb::query::process_pdu_data(const pdu_data_t &data)
 // ----------------------------------------------------------------------------
 void vdb::query::process_pdu(
     const pdu_data_t &data,
-    const pdu_t &pdu,
+    const vdis::pdu_t &pdu,
     source_data_node_t &source)
 {
-    const pdu_type_e
-        pdu_type = (pdu_type_e)pdu.header_type;
+    const vdis::pdu_type_e pdu_type = pdu.type();
 
     source.total_pdus += 1;
     source.total_bytes += data.get_pdu_length();
-    source.exercises.insert(pdu.header_exercise);
+    source.exercises.insert(data.get_pdu_exercise());
 
     if (source.pdu_types.find(pdu_type) == source.pdu_types.end())
     {
@@ -450,22 +423,22 @@ void vdb::query::process_pdu(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const entity_state_pdu_t &pdu)
+void vdb::query::process(const vdis::entity_state_pdu_t &pdu)
 {
     entity_data_node_t
-        &node = entity_data[pdu.entity_id];
+        &node = entity_data[pdu.id];
 
-    node.id = pdu.entity_id;
+    node.id = pdu.id;
     node.marking = pdu.marking;
-    node.force_id = (force_id_e)pdu.force_id;
-    node.type = pdu.entity_type;
+    node.force_id = (vdis::force_id_e)pdu.force;
+    node.type = pdu.type;
     node.source = current_source;
 }
 
 // ----------------------------------------------------------------------------
 void vdb::query::process(
     const pdu_data_t &data,
-    const fire_pdu_t &pdu)
+    const vdis::fire_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.shooter];
@@ -485,7 +458,7 @@ void vdb::query::process(
 // ----------------------------------------------------------------------------
 void vdb::query::process(
     const pdu_data_t &data,
-    const detonation_pdu_t &pdu)
+    const vdis::detonation_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.shooter];
@@ -499,23 +472,23 @@ void vdb::query::process(
     warfare.munition = pdu.munition;
     warfare.event = pdu.event;
     warfare.burst = pdu.burst_descriptor;
-    warfare.result = (detonation_result_e)pdu.detonation_result;
+    warfare.result = (vdis::detonation_result_e)pdu.result;
     warfare.detonation_time = data.get_time();
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const collision_pdu_t &pdu)
+void vdb::query::process(const vdis::collision_pdu_t &pdu)
 {
     entity_data_node_t
-        &node = entity_data[pdu.issuing_entity_id];
+        &node = entity_data[pdu.issuing_entity];
     collision_node_t
         collision;
 
-    node.id = pdu.issuing_entity_id;
+    node.id = pdu.issuing_entity;
 
-    collision.colliding_entity = pdu.colliding_entity_id;
-    collision.event = pdu.event_id;
-    collision.type = (collision_e)pdu.collision_type;
+    collision.colliding_entity = pdu.colliding_entity;
+    collision.event = pdu.event;
+    collision.type = (vdis::collision_e)pdu.collision_type;
     collision.velocity = pdu.velocity;
     collision.location = pdu.location;
 
@@ -523,7 +496,7 @@ void vdb::query::process(const collision_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const designator_pdu_t &pdu)
+void vdb::query::process(const vdis::designator_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.designating_id];
@@ -583,67 +556,67 @@ void vdb::query::process(const designator_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const point_object_state_pdu_t &pdu)
+void vdb::query::process(const vdis::point_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
 
-    node.force_id = (force_id_e)pdu.force_id;
+    node.force_id = (vdis::force_id_e)pdu.force_id;
     node.type = pdu.object_type;
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const linear_object_state_pdu_t &pdu)
+void vdb::query::process(const vdis::linear_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
 
-    node.force_id = (force_id_e)pdu.force_id;
+    node.force_id = (vdis::force_id_e)pdu.force_id;
     node.type = pdu.object_type;
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const areal_object_state_pdu_t &pdu)
+void vdb::query::process(const vdis::areal_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
 
-    node.force_id = (force_id_e)pdu.force_id;
+    node.force_id = (vdis::force_id_e)pdu.force_id;
     node.type = pdu.object_type;
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::print_results(std::ostream &stream)
+void vdb::query::print_results(std::ostream &out)
 {
     struct stat
         file_stat;
-    std::map<std::string, source_data_node_t>::const_iterator
+    std::map<string_t, source_data_node_t>::const_iterator
         source_itor = source_data.begin();
-    std::map<id_t, entity_data_node_t>::const_iterator
+    std::map<vdis::id_t, entity_data_node_t>::const_iterator
         entity_itor = entity_data.begin();
-    std::map<id_t, object_data_node_t>::const_iterator
+    std::map<vdis::id_t, object_data_node_t>::const_iterator
         object_itor = object_data.begin();
 
-    stream << "File name: " << filename << std::endl
-           << "File size: " << std::fixed;
+    out << "File name: " << filename << std::endl
+        << "File size: " << std::fixed;
 
     if (stat(filename.c_str(), &file_stat) == 0)
     {
-        stream << file_stat.st_size << " bytes" << std::endl;
+        out << file_stat.st_size << " bytes" << std::endl;
     }
     else
     {
-        stream << "[" << strerror(errno) << "]" << std::endl;
+        out << "[" << strerror(errno) << "]" << std::endl;
     }
 
     static_cast<standard_reader_t*>(reader_ptr)->header.print(
-        std::string(),
-        stream);
+        string_t(),
+        out);
 
     if (first_pdu_time > 0)
     {
-        stream << "First PDU time: "
-               << time::to_string(first_pdu_time) << std::endl;
+        out << "First PDU time: "
+            << vdis::time_to_string(first_pdu_time) << std::endl;
     }
 
     if (last_pdu_time > 0)
@@ -654,17 +627,17 @@ void vdb::query::print_results(std::ostream &stream)
             seconds = 0,
             milliseconds = 0;
 
-        time::parse(
+        vdis::parse_time(
             (last_pdu_time - first_pdu_time),
             hours,
             minutes,
             seconds,
             milliseconds);
 
-        stream << "Last PDU time: "
-               << time::to_string(last_pdu_time) << std::endl
-               << "Duration: " << hours << "h " << minutes << "m "
-               << seconds << "s " << milliseconds << "ms" << std::endl;
+        out << "Last PDU time: "
+            << vdis::time_to_string(last_pdu_time) << std::endl
+            << "Duration: " << hours << "h " << minutes << "m "
+            << seconds << "s " << milliseconds << "ms" << std::endl;
     }
 
     if (source_itor != source_data.end())
@@ -673,63 +646,63 @@ void vdb::query::print_results(std::ostream &stream)
         {
             while(source_itor != source_data.end())
             {
-                stream << separator << std::endl
-                       << "Source: " << color::bold_cyan << source_itor->first
-                       << color::none << std::endl;
+                out << separator << std::endl
+                    << "Source: " << color::bold_cyan << source_itor->first
+                    << color::none << std::endl;
 
-                print_results(source_itor->second, stream);
+                print_results(source_itor->second, out);
                 ++source_itor;
             }
 
-            stream << separator << std::endl
-                   << "Source: " << color::bold_cyan << "ALL"
-                   << color::none << std::endl;
+            out << separator << std::endl
+                << "Source: " << color::bold_cyan << "ALL"
+                << color::none << std::endl;
         }
         else
         {
-            stream << "Sources:" << std::endl << color::bold_cyan;
+            out << "Sources:" << std::endl << color::bold_cyan;
 
             while(source_itor != source_data.end())
             {
-                stream << "  " << source_itor->first << std::endl;
+                out << "  " << source_itor->first << std::endl;
                 ++source_itor;
             }
 
-            stream << color::none;
+            out << color::none;
         }
 
-        print_results(all_sources, stream);
+        print_results(all_sources, out);
 
         if (options::flag(OPT_VERBOSE))
         {
-            stream << separator << std::endl;
+            out << separator << std::endl;
         }
     }
 
     if (entity_itor != entity_data.end())
     {
-        stream << "Entities(" << entity_data.size() << "):" << std::endl;
+        out << "Entities(" << entity_data.size() << "):" << std::endl;
 
         while(entity_itor != entity_data.end())
         {
-            entity_itor->second.print(stream);
+            entity_itor->second.print(out);
             ++entity_itor;
         }
     }
 
     if (object_itor != object_data.end())
     {
-        stream << "Object count: " << object_data.size() << std::endl;
+        out << "Object count: " << object_data.size() << std::endl;
 
         while(object_itor != object_data.end())
         {
-            stream << "  " << object_itor->first << ": "
-                   << get_color(object_itor->second.force_id)
-                   << object_itor->second.type.get_description()
-                   << color::none << ", "
-                   << object_itor->second.type << " "
-                   << (object_geometry_e)object_itor->second.type.get_geometry()
-                   << std::endl;
+            const object_data_node_t &node = object_itor->second;
+
+            out << "  " << object_itor->first << ": "
+                << color::get(node.force_id) << node.type.description()
+                << color::none << ", " << node.type << " "
+                << (vdis::object_geometry_e)node.type.geometry()
+                << std::endl;
 
             ++object_itor;
         }
@@ -739,37 +712,37 @@ void vdb::query::print_results(std::ostream &stream)
 // ----------------------------------------------------------------------------
 void vdb::query::print_results(
     const source_data_node_t &source,
-    std::ostream &stream)
+    std::ostream &out)
 {
     std::set<uint8_t>::const_iterator
         exercise_itor = source.exercises.begin();
-    std::map<pdu_type_e, uint32_t>::const_iterator
+    std::map<vdis::pdu_type_e, uint32_t>::const_iterator
         type_itor = source.pdu_types.begin();
 
     if (exercise_itor != source.exercises.end())
     {
-        stream << "Exercise(s): ";
+        out << "Exercise(s): ";
 
         while(exercise_itor != source.exercises.end())
         {
-            stream << (int)*exercise_itor;
+            out << (int)*exercise_itor;
 
             ++exercise_itor;
 
             if (exercise_itor != source.exercises.end())
             {
-                stream << ", ";
+                out << ", ";
             }
         }
     }
 
-    stream << std::endl
-           << "PDUs (" << source.total_pdus << " total, " << source.total_bytes << " bytes):"
-           << std::endl;
+    out << std::endl
+        << "PDUs (" << source.total_pdus
+        << " total, " << source.total_bytes << " bytes):" << std::endl;
 
     while(type_itor != source.pdu_types.end())
     {
-        stream << "  " << color::yellow << type_itor->first
+        out << "  " << color::yellow << type_itor->first
                << color::none << "[" << (int)type_itor->first
                << "]: " << type_itor->second << std::endl;
 

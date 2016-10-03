@@ -31,7 +31,7 @@ namespace vdis
         virtual uint16_t length(void) const = 0;
 
         virtual void clear(void) = 0;
-        virtual void print(const std::string &, std::ostream &) const = 0;
+        virtual void print(const string_t &, std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
 
@@ -68,7 +68,7 @@ namespace vdis
             content_ptr = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -87,7 +87,7 @@ namespace vdis
             buffer.clear();
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -123,7 +123,7 @@ namespace vdis
         uint16_t length(void) const;
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -160,7 +160,7 @@ namespace vdis
             value_float = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -205,7 +205,7 @@ namespace vdis
             padding = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -233,7 +233,7 @@ namespace vdis
             padding32 = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -245,7 +245,7 @@ namespace vdis
     struct stealth_attachment_t : public standard_variable_content_t
     {
         uint16_t                    padding16;              // 2 bytes
-        entity_id_t                 attached_entity;        // 6 bytes
+        id_t                        attached_entity;        // 6 bytes
         uint8_t                     attach_command;         // 1 byte
         uint8_t                     attach_mode;            // 1 byte
         location12_t                relative_location;      // 12 bytes
@@ -275,7 +275,7 @@ namespace vdis
             relative_orientation.clear();
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -317,7 +317,7 @@ namespace vdis
             padding32 = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -343,7 +343,7 @@ namespace vdis
             vertical = 0.0f;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -369,7 +369,7 @@ namespace vdis
             padding32 = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 

@@ -1,24 +1,15 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_PLAYBACK_H
 #define VDB_PLAYBACK_H
 
-namespace vdb
+#include "vdb_system.h"
+
+namespace vdis
 {
     class pdu_t;
+}
+
+namespace vdb
+{
     class playback_socket_t;
 
     class playback
@@ -32,15 +23,15 @@ namespace vdb
         static void open_socket(void);
         static void close_socket(void);
 
-        static bool process_pdu_data(const pdu_data_t &data);
+        static bool process_pdu_data(const pdu_data_t &);
 
-        static void send_pdu(const pdu_data_t &pdu_data, const pdu_t &pdu);
+        static void send_pdu(const pdu_data_t &, const vdis::pdu_t &);
 
         static void register_signal(void);
 
-        static void print_stats(std::ostream &stream);
+        static void print_stats(std::ostream &);
 
-        static void signal_handler(int value);
+        static void signal_handler(int);
 
         static playback_socket_t
             *socket_ptr;

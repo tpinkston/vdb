@@ -1,5 +1,3 @@
-#include <cstdio>
-
 #include "vdis_byte_stream.h"
 #include "vdis_datum_records.h"
 #include "vdis_entity_appearance.h"
@@ -283,6 +281,7 @@ bool
 vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
 {
     uint32_t
+        base_size = 0,
         start_index = stream.index(),
         bytes_read = 0;
 
@@ -301,10 +300,8 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
     }
     else if (valid_headers || validate_header(stream))
     {
-        const pdu_type_e
-            type = (pdu_type_e)stream[2];
-        const uint32_t
-            base_size = BASE_PDU_SIZE[type];
+        base_type = (pdu_type_e)stream[2];
+        base_size = BASE_PDU_SIZE[base_type];
 
         // Verify that stream has enough bytes for base PDU
         //
@@ -312,10 +309,10 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
         {
             LOG_ERROR(
                 "Stream too short for PDU type %s: %d bytes",
-                enumerations::get_name(ENUM_PDU_TYPE, type).c_str(),
+                enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str(),
                 stream.remaining_length());
         }
-        else switch(type)
+        else switch(base_type)
         {
             case PDU_TYPE_ENTITY_STATE:
             {
@@ -346,7 +343,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new default_pdu_t;
                 LOG_WARNING(
                     "PDU type not handled: %s",
-                    enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
+                    enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str());
             }
         }
 
@@ -365,7 +362,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                     "after reading PDU: %s",
                     base_ptr->header.length,
                     bytes_read,
-                    enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
+                    enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str());
             }
         }
     }
@@ -619,7 +616,7 @@ void vdis::entity_state_pdu_t::clear(void)
 // ----------------------------------------------------------------------------
 void vdis::entity_state_pdu_t::print(std::ostream &out) const
 {
-    const std::string
+    const string_t
         prefix = "entity_state.";
 
     header.print((prefix + "header."), out);
@@ -778,7 +775,7 @@ void vdis::fire_pdu_t::clear(void)
 // ----------------------------------------------------------------------------
 void vdis::fire_pdu_t::print(std::ostream &out) const
 {
-    const std::string
+    const string_t
         prefix = "fire.";
 
     header.print((prefix + "header."), out);
@@ -882,7 +879,7 @@ void vdis::detonation_pdu_t::clear(void)
 // ----------------------------------------------------------------------------
 void vdis::detonation_pdu_t::print(std::ostream &out) const
 {
-    const std::string
+    const string_t
         prefix = "detonation.";
 
     header.print((prefix + "header."), out);
@@ -1042,7 +1039,7 @@ void vdis::application_control_pdu_t::clear(void)
 // ----------------------------------------------------------------------------
 void vdis::application_control_pdu_t::print(std::ostream &out) const
 {
-    const std::string
+    const string_t
         prefix = "application_control.";
 
     header.print((prefix + "header."), out);

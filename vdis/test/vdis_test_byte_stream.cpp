@@ -62,7 +62,7 @@ void vdis::test::test_byte_stream(void)
 
     stream.reset_index(0);
 
-    stream.read(buffer, stream.length());
+    buffer.read(stream, stream.length());
 
     out << stream << std::endl;
 }

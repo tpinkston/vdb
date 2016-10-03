@@ -1,32 +1,13 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_NETWORK_H
 #define VDB_NETWORK_H
 
-#include "vdb_common.h"
-#include "vdb_hexadecimal.h"
-#include "vdb_network_types.h"
-#include "vdb_object.h"
+#include "vdb_system.h"
+
+#include "vdis_data_types.h"
 
 namespace vdb
 {
     class pdu_data_t;
-
-    typedef struct pcap_pkthdr
-        pcap_packet_header_t;
 
     typedef struct sockaddr
         socket_address_t;
@@ -45,7 +26,7 @@ namespace vdb
     typedef struct ifreq
         interface_request_t;
 
-    typedef std::map<uint32_t, std::string>
+    typedef std::map<uint32_t, string_t>
         ipv4_address_cache_t;
 
     // ------------------------------------------------------------------------
@@ -86,13 +67,13 @@ namespace vdb
         // family:  is AF_INET or AF_INET6
         // address: pointer to 'inet_address_t' or 'inet6_address_t'
         //
-        static std::string get_address(int family, const void *address_ptr);
+        static string_t get_address(int family, const void *address_ptr);
 
-        static std::string str(const inet_address_t &);
-        static std::string str(const inet6_address_t &);
+        static string_t str(const inet_address_t &);
+        static string_t str(const inet6_address_t &);
 
-        static bool get_hostname(const inet_address_t &, std::string &);
-        static bool get_hostname(const inet6_address_t &, std::string &);
+        static bool get_hostname(const inet_address_t &, string_t &);
+        static bool get_hostname(const inet6_address_t &, string_t &);
 
         static const char
             *ANY,
@@ -103,12 +84,12 @@ namespace vdb
 
         static bool query_hostname(
             const inet_address_t &,
-            std::string &
+            string_t &
         );
 
         static bool query_hostname(
             const inet6_address_t &,
-            std::string &
+            string_t &
         );
 
         static ipv4_address_cache_t

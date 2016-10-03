@@ -1,7 +1,3 @@
-#include <algorithm>
-#include <cstdlib>
-#include <iomanip>
-
 #include "vdis_string.h"
 
 namespace
@@ -23,9 +19,9 @@ namespace
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_lowercase(const std::string &string)
+string_t vdis::to_lowercase(const std::string &string)
 {
-    std::string
+    string_t
         copy = string;
 
     std::transform(copy.begin(), copy.end(), copy.begin(), ::tolower);
@@ -34,9 +30,9 @@ std::string vdis::to_lowercase(const std::string &string)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_uppercase(const std::string &string)
+string_t vdis::to_uppercase(const std::string &string)
 {
-    std::string
+    string_t
         copy = string;
 
     std::transform(copy.begin(), copy.end(), copy.begin(), ::toupper);
@@ -45,25 +41,25 @@ std::string vdis::to_uppercase(const std::string &string)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::trim(const char *buffer)
+string_t vdis::trim(const char *buffer)
 {
     if (buffer)
     {
-        std::string
+        string_t
             string(buffer);
 
         return trim(string);
     }
 
-    return std::string();
+    return string_t();
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::trim(const std::string &string)
+string_t vdis::trim(const std::string &string)
 {
-    std::string
+    string_t
         trimmed(string);
-    std::string::size_type
+    string_t::size_type
         i = 0;
 
     // Strip off leading whitespace.
@@ -92,10 +88,10 @@ std::string vdis::trim(const std::string &string)
 
 // ----------------------------------------------------------------------------
 bool vdis::starts_with(
-    const std::string &string,
-    const std::string &prefix)
+    const string_t &string,
+    const string_t &prefix)
 {
-    const std::string::size_type
+    const string_t::size_type
         string_length = string.length(),
         prefix_length = prefix.length();
     bool
@@ -103,7 +99,7 @@ bool vdis::starts_with(
 
     if (prefix_length <= string_length)
     {
-        std::string::size_type
+        string_t::size_type
             i = 0;
 
         result = true;
@@ -126,8 +122,8 @@ bool vdis::starts_with(
 
 // ----------------------------------------------------------------------------
 bool vdis::ends_with(
-    const std::string &string,
-    const std::string &suffix)
+    const string_t &string,
+    const string_t &suffix)
 {
     const int string_length = string.length();
     const int suffix_length = suffix.length();
@@ -145,8 +141,8 @@ bool vdis::ends_with(
 
 // ----------------------------------------------------------------------------
 bool vdis::contains(
-    const std::string &string,
-    const std::string &substring,
+    const string_t &string,
+    const string_t &substring,
     bool ignore_case)
 {
     if (ignore_case)
@@ -155,18 +151,18 @@ bool vdis::contains(
     }
     else
     {
-        return (string.find(substring, 0) != std::string::npos);
+        return (string.find(substring, 0) != string_t::npos);
     }
 }
 
 // ----------------------------------------------------------------------------
 size_t vdis::tokenize(
-    const std::string &string,
-    std::list<std::string> &tokens)
+    const string_t &string,
+    std::list<string_t> &tokens)
 {
     std::istringstream
         stream(string);
-    std::string
+    string_t
         token;
 
     tokens.clear();
@@ -186,12 +182,12 @@ size_t vdis::tokenize(
 
 // ----------------------------------------------------------------------------
 size_t vdis::tokenize(
-    const std::string &string,
-    std::vector<std::string> &tokens)
+    const string_t &string,
+    std::vector<string_t> &tokens)
 {
     std::istringstream
         stream(string);
-    std::string
+    string_t
         token;
 
     tokens.clear();
@@ -211,16 +207,16 @@ size_t vdis::tokenize(
 
 // ----------------------------------------------------------------------------
 size_t vdis::tokenize_csv(
-    const std::string &string,
-    std::list<std::string> &tokens)
+    const string_t &string,
+    std::list<string_t> &tokens)
 {
-    std::string
+    string_t
         modified_string = string;
     bool
         in_single_quote = false,
         in_double_quote = false;
 
-    for(std::string::size_type i = 0; i < modified_string.length(); ++i)
+    for(string_t::size_type i = 0; i < modified_string.length(); ++i)
     {
         switch(modified_string[i])
         {
@@ -244,16 +240,16 @@ size_t vdis::tokenize_csv(
 
 // ----------------------------------------------------------------------------
 size_t vdis::tokenize_csv(
-    const std::string &string,
-    std::vector<std::string> &tokens)
+    const string_t &string,
+    std::vector<string_t> &tokens)
 {
-    std::string
+    string_t
         modified_string = string;
     bool
         in_single_quote = false,
         in_double_quote = false;
 
-    for(std::string::size_type i = 0; i < modified_string.length(); ++i)
+    for(string_t::size_type i = 0; i < modified_string.length(); ++i)
     {
         switch(modified_string[i])
         {
@@ -277,13 +273,13 @@ size_t vdis::tokenize_csv(
 
 // ----------------------------------------------------------------------------
 void vdis::parse_entry(
-    const std::string &line,
-    std::string &key,
-    std::string &value)
+    const string_t &line,
+    string_t &key,
+    string_t &value)
 {
-    std::string::size_type i = line.find_first_of('=');
+    string_t::size_type i = line.find_first_of('=');
 
-    if (i == std::string::npos)
+    if (i == string_t::npos)
     {
         // The whole line is the key.
         //
@@ -301,9 +297,9 @@ void vdis::parse_entry(
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::is_integer(const std::string &string)
+bool vdis::is_integer(const string_t &string)
 {
-    std::string
+    string_t
         trimmed = trim(string);
 
     if (trimmed.empty())
@@ -316,7 +312,7 @@ bool vdis::is_integer(const std::string &string)
         trimmed = trimmed.substr(1);
     }
 
-    for(std::string::size_type i = 0; i < trimmed.length(); ++i)
+    for(string_t::size_type i = 0; i < trimmed.length(); ++i)
     {
         switch(trimmed[i])
         {
@@ -341,9 +337,9 @@ bool vdis::is_integer(const std::string &string)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_int8(const std::string &string, int8_t &value)
+bool vdis::to_int8(const string_t &string, int8_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -356,9 +352,9 @@ bool vdis::to_int8(const std::string &string, int8_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_uint8(const std::string &string, uint8_t &value)
+bool vdis::to_uint8(const string_t &string, uint8_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -371,9 +367,9 @@ bool vdis::to_uint8(const std::string &string, uint8_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_int16(const std::string &string, int16_t &value)
+bool vdis::to_int16(const string_t &string, int16_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -386,9 +382,9 @@ bool vdis::to_int16(const std::string &string, int16_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_uint16(const std::string &string, uint16_t &value)
+bool vdis::to_uint16(const string_t &string, uint16_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -401,9 +397,9 @@ bool vdis::to_uint16(const std::string &string, uint16_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_int32(const std::string &string, int32_t &value)
+bool vdis::to_int32(const string_t &string, int32_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -416,9 +412,9 @@ bool vdis::to_int32(const std::string &string, int32_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_uint32(const std::string &string, uint32_t &value)
+bool vdis::to_uint32(const string_t &string, uint32_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -431,9 +427,9 @@ bool vdis::to_uint32(const std::string &string, uint32_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_int64(const std::string &string, int64_t &value)
+bool vdis::to_int64(const string_t &string, int64_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -446,9 +442,9 @@ bool vdis::to_int64(const std::string &string, int64_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_uint64(const std::string &string, uint64_t &value)
+bool vdis::to_uint64(const string_t &string, uint64_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -461,9 +457,9 @@ bool vdis::to_uint64(const std::string &string, uint64_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_float32(const std::string &string, float32_t &value)
+bool vdis::to_float32(const string_t &string, float32_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -476,9 +472,9 @@ bool vdis::to_float32(const std::string &string, float32_t &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::to_float64(const std::string &string, float64_t &value)
+bool vdis::to_float64(const string_t &string, float64_t &value)
 {
-    std::string
+    string_t
         string_value = trim(string);
 
     if (is_integer(string_value))
@@ -491,21 +487,21 @@ bool vdis::to_float64(const std::string &string, float64_t &value)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_string(float32_t f, uint32_t min, uint32_t max)
+string_t vdis::to_string(float32_t f, uint32_t min, uint32_t max)
 {
     std::ostringstream
         stream;
 
     stream << std::fixed << std::setprecision(max) << f;
 
-    std::string
+    string_t
         string = stream.str();
-    std::string::size_type
+    string_t::size_type
         point = string.find('.', 0);
 
-    if (point != std::string::npos)
+    if (point != string_t::npos)
     {
-        std::string::size_type
+        string_t::size_type
             size = string.size();
 
         while((string[size - 1]) == '0' and ((size - point - 1) > min))
@@ -519,21 +515,21 @@ std::string vdis::to_string(float32_t f, uint32_t min, uint32_t max)
 }
 
 // -----------------------------------------------------------------------------
-std::string vdis::to_string(float64_t f, uint32_t min, uint32_t max)
+string_t vdis::to_string(float64_t f, uint32_t min, uint32_t max)
 {
     std::ostringstream
         stream;
 
     stream << std::fixed << std::setprecision(max) << f;
 
-    std::string
+    string_t
         string = stream.str();
-    std::string::size_type
+    string_t::size_type
         point = string.find('.', 0);
 
-    if (point != std::string::npos)
+    if (point != string_t::npos)
     {
-        std::string::size_type
+        string_t::size_type
             size = string.size();
 
         while((string[size - 1]) == '0' and ((size - point - 1) > min))

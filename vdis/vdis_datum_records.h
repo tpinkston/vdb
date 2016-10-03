@@ -1,8 +1,6 @@
 #ifndef VDIS_DATUM_RECORDS_H
 #define VDIS_DATUM_RECORDS_H
 
-#include <cstdint>
-
 #include "vdis_byte_buffer.h"
 #include "vdis_data_types.h"
 
@@ -44,7 +42,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -59,7 +57,7 @@ namespace vdis
         virtual uint32_t length(void) const = 0;
 
         virtual void clear(void) = 0;
-        virtual void print(const std::string &, std::ostream &) const = 0;
+        virtual void print(const string_t &, std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
 
@@ -97,7 +95,7 @@ namespace vdis
             content_ptr = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -119,7 +117,7 @@ namespace vdis
             buffer.clear();
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -130,7 +128,7 @@ namespace vdis
         uint16_t                    casualties;             // 2 bytes
         uint8_t                     cause;                  // 1 byte
         uint8_t                     padding1;               // 1 byte
-        event_id_t                  event_id;               // 6 bytes
+        id_t                        event_id;               // 6 bytes
         uint16_t                    extent;                 // 2 bytes
         uint32_t                    padding2;               // 4 bytes
 
@@ -158,7 +156,7 @@ namespace vdis
             padding2 = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -169,8 +167,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct sling_load_capability_t : variable_datum_content_t
     {
-        entity_id_t                 payload;                // 6 bytes
-        entity_id_t                 carrier;                // 6 bytes
+        id_t                        payload;                // 6 bytes
+        id_t                        carrier;                // 6 bytes
         float32_t                   drag_coeffficient;      // 4 bytes
         float32_t                   current_mass;           // 4 bytes
         uint16_t                    padding;                // 2 bytes
@@ -193,7 +191,7 @@ namespace vdis
         uint32_t length(void) const;
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
@@ -218,14 +216,14 @@ namespace vdis
             return (force_id_e)force;
         }
 
-        std::string force_name(void) const;
+        string_t force_name(void) const;
 
         // Returns datum length in bits
         //
         uint32_t length(void) const;
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 

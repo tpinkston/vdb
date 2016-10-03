@@ -13,7 +13,7 @@ void add_entity_marking(
     uint16_t application,
     uint16_t entity)
 {
-    vdis::entity_id_t id = { site, application, entity };
+    vdis::id_t id = { site, application, entity };
     vdis::marking_t marking;
 
     marking.str(name);

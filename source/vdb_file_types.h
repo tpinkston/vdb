@@ -1,23 +1,14 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_FILE_TYPES_H
 #define VDB_FILE_TYPES_H
 
-#include "vdb_common.h"
-#include "vdb_object.h"
+#include "vdb_system.h"
+
+#include "vdis_data_types.h"
+
+namespace vdis
+{
+    class byte_stream_t;
+}
 
 namespace vdb
 {
@@ -28,30 +19,30 @@ namespace vdb
     // Class defining parameters for the file header that starts all files
     // written and read by this program.
     //
-    class file_header_t : public record_t
+    class file_header_t
     {
       public:
 
         file_header_t(void);
-        virtual ~file_header_t(void);
+        ~file_header_t(void);
 
         std::ostream &print_comment(
-            const std::string &prefix,
+            const string_t &prefix,
             uint32_t index,
             std::ostream &stream
         ) const;
 
         bool invalid_title(void) const;
 
-        virtual void print(const std::string &prefix, std::ostream &) const;
+        void print(const string_t &prefix, std::ostream &) const;
 
-        virtual void clear(void);
+        void clear(void);
 
-        virtual uint32_t length(void) const;
-        virtual uint32_t comments_length(void) const;
+        uint32_t length(void) const;
+        uint32_t comments_length(void) const;
 
-        virtual void read(byte_stream &stream);
-        virtual void write(byte_stream &stream) const;
+        void read(vdis::byte_stream_t &stream);
+        void write(vdis::byte_stream_t &stream) const;
 
         uint8_t
             title[10];
@@ -76,26 +67,26 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class file_header_comment_t : public record_t
+    class file_header_comment_t
     {
       public:
 
         file_header_comment_t(void);
         file_header_comment_t(const file_header_comment_t &copy);
-        virtual ~file_header_comment_t(void);
+        ~file_header_comment_t(void);
 
-        virtual void print(const std::string &prefix, std::ostream &) const;
+        void print(const string_t &prefix, std::ostream &) const;
 
-        virtual void clear(void);
+        void clear(void);
 
-        virtual uint32_t length(void) const;
+        uint32_t length(void) const;
 
-        virtual void read(byte_stream &stream);
-        virtual void write(byte_stream &stream) const;
+        void read(vdis::byte_stream_t &stream);
+        void write(vdis::byte_stream_t &stream) const;
 
         uint64_t
             time;
-        std::string
+        string_t
             value;
 
       protected:
@@ -106,22 +97,22 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class file_header_record_t : public record_t
+    class file_header_record_t
     {
       public:
 
         file_header_record_t(void);
         file_header_record_t(const file_header_record_t &copy);
-        virtual ~file_header_record_t(void);
+        ~file_header_record_t(void);
 
-        virtual void print(const std::string &prefix, std::ostream &) const;
+        void print(const string_t &prefix, std::ostream &) const;
 
-        virtual void clear(void);
+        void clear(void);
 
-        virtual uint32_t length(void) const { return RECORD_SIZE; }
+        uint32_t length(void) const { return RECORD_SIZE; }
 
-        virtual void read(byte_stream &stream);
-        virtual void write(byte_stream &stream) const;
+        void read(vdis::byte_stream_t &stream);
+        void write(vdis::byte_stream_t &stream) const;
 
         uint32_t
             type,

@@ -1,36 +1,22 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
-#include "vdb_hexadecimal.h"
-#include "vdb_ids.h"
-#include "vdb_logger.h"
 #include "vdb_options.h"
-#include "vdb_pdu.h"
-#include "vdb_string.h"
+
+#include "vdis_data_types.h"
+#include "vdis_integer.h"
+#include "vdis_logger.h"
+#include "vdis_pdus.h"
+#include "vdis_string.h"
 
 namespace vdb
 {
     std::vector<option_definition_t>
         options::option_definitions;
-    std::map<user_command_e, std::string>
+    std::map<user_command_e, string_t>
         options::command_names;
     std::map<user_command_e, option_set_t>
         options::command_options;
-    std::vector<std::string>
+    std::vector<string_t>
         options::command_arguments;
-    std::map<option_e, std::string>
+    std::map<option_e, string_t>
         options::string_options;
     std::map<option_e, uint32_t>
         options::integer_options;
@@ -38,9 +24,9 @@ namespace vdb
         options::integer_set_options;
     std::set<option_e>
         options::flags;
-    std::vector<id_t>
+    std::vector<vdis::id_t>
         options::entity_ids;
-    std::string
+    string_t
         options::terminal_command;
     user_command_e
         options::command = USER_COMMAND_NONE;
@@ -62,7 +48,6 @@ void vdb::options::configure(void)
     command_names[USER_COMMAND_ENUMS] = "enums";
     command_names[USER_COMMAND_ENTITIES] = "entities";
     command_names[USER_COMMAND_OBJECTS] = "objects";
-    command_names[USER_COMMAND_TEST] = "test";
 
     add("all", 'A', OPT_ALL, OPT_ARG_NONE);
     add("address", 'a', OPT_NET_ADDRESS, OPT_ARG_REQUIRED);
@@ -182,11 +167,6 @@ void vdb::options::configure(void)
     command_options[USER_COMMAND_OBJECTS].insert(OPT_VERBOSE);
     command_options[USER_COMMAND_OBJECTS].insert(OPT_WARNINGS);
     command_options[USER_COMMAND_OBJECTS].insert(OPT_HELP);
-
-    command_options[USER_COMMAND_TEST].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_TEST].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_TEST].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_TEST].insert(OPT_HELP);
 }
 
 // ----------------------------------------------------------------------------
@@ -217,11 +197,11 @@ bool vdb::options::initialize(int argc, char *argv[])
 
         LOG_VERBOSE("Current argument '%s'...", current_argument);
 
-        if (starts_with(current_argument, "--"))
+        if (vdis::starts_with(current_argument, "--"))
         {
             success = parse_long_option(current_argument);
         }
-        else if (starts_with(current_argument, "-"))
+        else if (vdis::starts_with(current_argument, "-"))
         {
             advance = false;
 
@@ -246,7 +226,7 @@ bool vdb::options::initialize(int argc, char *argv[])
         }
         else
         {
-            command_arguments.push_back(std::string(current_argument));
+            command_arguments.push_back(string_t(current_argument));
         }
     }
 
@@ -273,7 +253,7 @@ bool vdb::options::verify(void)
         const option_set_t
             &set = options_itor->second;
 
-        std::map<option_e, std::string>::const_iterator
+        std::map<option_e, string_t>::const_iterator
             string_itor = string_options.begin();
         std::map<option_e, uint32_t>::const_iterator
             integer_itor = integer_options.begin();
@@ -345,9 +325,9 @@ void vdb::options::print_option_error(option_e option)
 }
 
 // ----------------------------------------------------------------------------
-const std::string *vdb::options::string(option_e o)
+const string_t *vdb::options::string(option_e o)
 {
-    std::map<option_e, std::string>::const_iterator
+    std::map<option_e, string_t>::const_iterator
         itor = string_options.find(o);
 
     return (itor != string_options.end()) ? &(itor->second) : 0;
@@ -372,17 +352,17 @@ const uint32_set_t *vdb::options::integer_set(option_e o)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::entity_id_match(const pdu_t &pdu)
+bool vdb::options::entity_id_match(const vdis::pdu_t &pdu)
 {
     if (entity_ids.empty())
     {
         return true;
     }
-    else if (pdu.content_ptr)
+    else if (pdu.base())
     {
         for(uint32_t i = 0; i < entity_ids.size(); ++i)
         {
-            if (pdu.content_ptr->contains(&entity_ids[i]))
+            if (pdu.contains_id(entity_ids[i]))
             {
                 return true;
             }
@@ -397,7 +377,7 @@ bool vdb::options::entity_id_match(const pdu_t &pdu)
 // ----------------------------------------------------------------------------
 void vdb::options::parse_terminal_command(const char *current_argument)
 {
-    std::string::size_type
+    string_t::size_type
         index;
 
     terminal_command = current_argument;
@@ -406,7 +386,7 @@ void vdb::options::parse_terminal_command(const char *current_argument)
     //
     index = terminal_command.find_last_of('/', terminal_command.length());
 
-    if (index != std::string::npos)
+    if (index != string_t::npos)
     {
         terminal_command = terminal_command.substr(
             (index + 1),
@@ -423,7 +403,7 @@ void vdb::options::parse_terminal_command(const char *current_argument)
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_command(const char *current_argument)
 {
-    std::map<user_command_e, std::string>::const_iterator
+    std::map<user_command_e, string_t>::const_iterator
         itor = command_names.begin();
     bool
         success = false;
@@ -468,11 +448,11 @@ bool vdb::options::parse_long_option(const char *current_argument)
 {
     const option_definition_t
         *option_ptr = 0;
-    std::string
-        argument = std::string(current_argument).substr(2),
+    string_t
+        argument = string_t(current_argument).substr(2),
         key,
         value;
-    std::string::size_type
+    string_t::size_type
         index = argument.find_first_of('=');
     bool
         success = false;
@@ -482,7 +462,7 @@ bool vdb::options::parse_long_option(const char *current_argument)
         std::cout << "DEBUG: parse_long_option: index: " << index << std::endl;
     }
 
-    if ((index == std::string::npos) or (index < 2))
+    if ((index == string_t::npos) or (index < 2))
     {
         key = argument;
     }
@@ -535,8 +515,8 @@ bool vdb::options::parse_short_options(
 {
     const option_definition_t
         *option_ptr = 0;
-    std::string
-        argument = std::string(current_argument).substr(1);
+    string_t
+        argument = string_t(current_argument).substr(1);
     bool
         success = true;
 
@@ -547,9 +527,9 @@ bool vdb::options::parse_short_options(
                   << "'" << std::endl;
     }
 
-    for(std::string::size_type i = 0; success and (i < argument.length()); ++i)
+    for(string_t::size_type i = 0; success and (i < argument.length()); ++i)
     {
-        std::string
+        string_t
             name = "-";
 
         name += argument[i];
@@ -596,8 +576,8 @@ bool vdb::options::parse_short_options(
 // ----------------------------------------------------------------------------
 bool vdb::options::process_option(
     option_e option,
-    const std::string &name,
-    const std::string &value)
+    const string_t &name,
+    const string_t &value)
 {
     bool
         success = false;
@@ -634,7 +614,7 @@ bool vdb::options::process_option(
                       << std::endl;
         }
 
-        if (string_to_uint32(value, int_value))
+        if (vdis::to_uint32(value, int_value))
         {
             integer_options[option] = int_value;
             success = true;
@@ -666,30 +646,42 @@ bool vdb::options::process_option(
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::process_flag(option_e option, const std::string &name)
+bool vdb::options::process_flag(option_e option, const string_t &name)
 {
     bool
         success = false;
 
     if ((option & OPT_FLAG_MASK) == OPT_FLAG_MASK)
     {
-        if ((option == OPT_WARNINGS) and flag(OPT_VERBOSE))
+        if (option == OPT_WARNINGS)
         {
-            std::cout << "Warning messages turned on..." << std::endl;
+            logger::set_enabled(logger::WARNING, true);
+
+            if (flag(OPT_VERBOSE))
+            {
+                std::cout << "Warning messages turned on..." << std::endl;
+            }
         }
         else if ((option == OPT_ERRORS_OFF) and flag(OPT_VERBOSE))
         {
-            std::cout << "Error messages turned off..." << std::endl;
+            logger::set_enabled(logger::ERROR, false);
+
+            if (flag(OPT_VERBOSE))
+            {
+                std::cout << "Error messages turned off..." << std::endl;
+            }
         }
         else if (option == OPT_VERBOSE)
         {
             if (not flag(OPT_VERBOSE))
             {
                 std::cout << "Verboseness turned on..." << std::endl;
+                logger::set_enabled(logger::VERBOSE, true);
             }
             else if (not flag(OPT_EXTRA_VERBOSE))
             {
                 std::cout << "Extra verboseness turned on..." << std::endl;
+                logger::set_enabled(logger::EXTRA_VERBOSE, true);
 
                 option = OPT_EXTRA_VERBOSE;
             }
@@ -713,14 +705,14 @@ bool vdb::options::process_flag(option_e option, const std::string &name)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_ids(const std::string &value)
+bool vdb::options::parse_entity_ids(const string_t &value)
 {
-    std::vector<std::string>
+    std::vector<string_t>
         values;
     bool
         success = true;
 
-    tokenize_csv(value, values);
+    vdis::tokenize_csv(value, values);
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
@@ -731,9 +723,9 @@ bool vdb::options::parse_entity_ids(const std::string &value)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_id(std::string &value)
+bool vdb::options::parse_entity_id(string_t &value)
 {
-    std::vector<std::string>
+    std::vector<string_t>
         tokens;
     uint32_t
         id[3];
@@ -747,7 +739,7 @@ bool vdb::options::parse_entity_id(std::string &value)
         value[i] = (value[i] == '.') ? ' ' : value[i];
     }
 
-    if (tokenize(value, tokens) == 3)
+    if (vdis::tokenize(value, tokens) == 3)
     {
         // Convert wildcards to the 'ALL' value
         //
@@ -759,9 +751,9 @@ bool vdb::options::parse_entity_id(std::string &value)
             }
         }
 
-        if (string_to_uint32(tokens[0], id[0]) and
-            string_to_uint32(tokens[1], id[1]) and
-            string_to_uint32(tokens[2], id[2]))
+        if (vdis::to_uint32(tokens[0], id[0]) and
+            vdis::to_uint32(tokens[1], id[1]) and
+            vdis::to_uint32(tokens[2], id[2]))
         {
             if ((id[0] >= 0) and (id[0] <= 65535) and
                 (id[1] >= 0) and (id[1] <= 65535) and
@@ -774,15 +766,14 @@ bool vdb::options::parse_entity_id(std::string &value)
 
     if (success)
     {
-        id_t
-            entity_id(id[0], id[1], id[2]);
+        vdis::id_t
+            entity_id = { (uint16_t)id[0], (uint16_t)id[1], (uint16_t)id[2] };
 
         entity_ids.push_back(entity_id);
 
         if (flag(OPT_VERBOSE))
         {
-            std::cout << "Filtering on entity ID: " << entity_id.str()
-                      << std::endl;
+            std::cout << "Filtering on entity ID: " << entity_id << std::endl;
         }
     }
     else
@@ -797,10 +788,10 @@ bool vdb::options::parse_entity_id(std::string &value)
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_integer_set(
     option_e option,
-    const std::string &name,
-    const std::string &value)
+    const string_t &name,
+    const string_t &value)
 {
-    std::vector<std::string>
+    std::vector<string_t>
         values,
         subvalues;
     uint32_set_t
@@ -814,7 +805,7 @@ bool vdb::options::parse_integer_set(
                   << value << "'" << std::endl;
     }
 
-    tokenize_csv(value, values);
+    vdis::tokenize_csv(value, values);
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
@@ -826,12 +817,12 @@ bool vdb::options::parse_integer_set(
 
         // Is this token a range "N-M" or a single value N
         //
-        if (values[i].find('-') == std::string::npos)
+        if (values[i].find('-') == string_t::npos)
         {
             int64_t
                 index = 0;
 
-            if (string_to_int64(values[i], index))
+            if (vdis::to_int64(values[i], index))
             {
                 if (index < 0)
                 {
@@ -852,7 +843,7 @@ bool vdb::options::parse_integer_set(
                 values[i][j] = (values[i][j] == '-') ? ',' : values[i][j];
             }
 
-            success = (tokenize_csv(values[i], subvalues) == 2);
+            success = (vdis::tokenize_csv(values[i], subvalues) == 2);
 
             if (success)
             {
@@ -860,8 +851,8 @@ bool vdb::options::parse_integer_set(
                     index0 = 0,
                     index1 = 0;
 
-                if (string_to_int64(subvalues[0], index0) and
-                    string_to_int64(subvalues[1], index1))
+                if (vdis::to_int64(subvalues[0], index0) and
+                    vdis::to_int64(subvalues[1], index1))
                 {
                     if ((index0 < 0) or (index1 < 0) or (index0 >= index1))
                     {
@@ -928,7 +919,7 @@ const vdb::option_definition_t *vdb::options::get_short_option(
 
 // ----------------------------------------------------------------------------
 const vdb::option_definition_t *vdb::options::get_long_option(
-    const std::string &value)
+    const string_t &value)
 {
     for(uint32_t i = 0; i < option_definitions.size(); ++i)
     {

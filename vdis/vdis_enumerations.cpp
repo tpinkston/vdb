@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "vdis_enumerations.h"
 #include "vdis_integer.h"
 #include "vdis_string.h"
@@ -7,7 +5,7 @@
 namespace
 {
     // ------------------------------------------------------------------------
-    std::string parse_name(std::string enum_name, std::string value_name)
+    string_t parse_name(std::string enum_name, std::string value_name)
     {
         if (vdis::starts_with(value_name, (enum_name + "_")))
         {
@@ -61,7 +59,7 @@ void vdis::enumerations::print(std::ostream &stream)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::enumerations::valid(const std::string &enumeration, int value)
+bool vdis::enumerations::valid(const string_t &enumeration, int value)
 {
     enum_definitions_t::const_iterator
         definition_itor = definitions.find(enumeration);
@@ -80,13 +78,13 @@ bool vdis::enumerations::valid(const std::string &enumeration, int value)
 
 // ----------------------------------------------------------------------------
 std::ostream &vdis::enumerations::print(
-    const std::string &enumeration,
+    const string_t &enumeration,
     int value,
     std::ostream &out)
 {
     std::ostringstream
         stream;
-    std::string
+    string_t
         string = get_name(enumeration, value);
 
     stream << std::hex << value;
@@ -98,8 +96,8 @@ std::ostream &vdis::enumerations::print(
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::enumerations::get_name(
-    const std::string &enumeration,
+string_t vdis::enumerations::get_name(
+    const string_t &enumeration,
     int value)
 {
     enum_definitions_t::const_iterator
@@ -125,7 +123,7 @@ void vdis::enumerations::add(
     int value,
     const char *name_ptr)
 {
-    const std::string
+    const string_t
         enumeration = enum_ptr;
     enum_entries_t
         &entries = definitions[enumeration];

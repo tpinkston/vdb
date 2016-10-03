@@ -1,22 +1,9 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_CAPTURE_H
 #define VDB_CAPTURE_H
 
-#include "vdb_common.h"
+#include "vdb_system.h"
+
+#include "vdis_data_types.h"
 
 namespace vdb
 {
@@ -34,8 +21,8 @@ namespace vdb
         static void open_socket(void);
         static void close_socket(void);
 
-        static bool open_output_file(const std::string &filename);
-        static bool close_output_file(const std::string &filename);
+        static bool open_output_file(const string_t &filename);
+        static bool close_output_file(const string_t &filename);
 
         static void write_pdu_data(const pdu_data_t &data);
 

@@ -1,31 +1,17 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #include "vdb_capture.h"
 #include "vdb_comments.h"
-#include "vdb_entity_type.h"
-#include "vdb_enumerations.h"
 #include "vdb_git.h"
 #include "vdb_list.h"
-#include "vdb_logger.h"
-#include "vdb_object_type.h"
 #include "vdb_options.h"
 #include "vdb_playback.h"
 #include "vdb_query.h"
-#include "vdb_test.h"
 #include "vdb_version.h"
+
+#include "vdis_entity_types.h"
+#include "vdis_enums.h"
+#include "vdis_logger.h"
+#include "vdis_object_types.h"
+#include "vdis_services.h"
 
 void print_version(void);
 void print_usage(void);
@@ -63,11 +49,11 @@ int main(int argc, char *argv[])
         }
         else
         {
-            vdb::set_byteswapping();
+            vdis::set_byteswapping();
 
-            vdb::enumerations::load();
-            vdb::entity_type_data::load();
-            vdb::object_type_data::load();
+            vdis::enumerations::load();
+            vdis::entity_types::load();
+            vdis::object_types::load();
 
             switch(vdb::options::get_command())
             {
@@ -90,16 +76,13 @@ int main(int argc, char *argv[])
                     result = vdb::comments::remove();
                     break;
                 case vdb::USER_COMMAND_ENUMS:
-                    vdb::enumerations::print(std::cout);
+                    vdis::enumerations::print(std::cout);
                     break;
                 case vdb::USER_COMMAND_ENTITIES:
-                    vdb::entity_type_data::print(std::cout);
+                    vdis::entity_types::print(std::cout);
                     break;
                 case vdb::USER_COMMAND_OBJECTS:
-                    vdb::object_type_data::print(std::cout);
-                    break;
-                case vdb::USER_COMMAND_TEST:
-                    vdb::test::run();
+                    vdis::object_types::print(std::cout);
                     break;
                 default:
                     if (not vdb::options::flag(vdb::OPT_VERSION))

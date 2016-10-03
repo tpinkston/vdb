@@ -1,29 +1,16 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #include "vdb_common.h"
 #include "vdb_file_readers.h"
 #include "vdb_filter.h"
-#include "vdb_logger.h"
 #include "vdb_network.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
-#include "vdb_pdu.h"
 #include "vdb_playback.h"
 #include "vdb_print.h"
-#include "vdb_string.h"
+
+#include "vdis_logger.h"
+#include "vdis_pdus.h"
+#include "vdis_services.h"
+#include "vdis_string.h"
 
 vdb::playback_socket_t
     *vdb::playback::socket_ptr;
@@ -67,7 +54,7 @@ int vdb::playback::playback_pdus(void)
 
         result = 1;
     }
-    else if (not string_to_int32(*options::get_command_argument(0), port))
+    else if (not vdis::to_int32(*options::get_command_argument(0), port))
     {
         std::cerr << options::get_terminal_command()
                   << " playback: invalid port argument '"
@@ -77,7 +64,7 @@ int vdb::playback::playback_pdus(void)
     }
     else
     {
-        const std::string
+        const string_t
             filename = *options::get_command_argument(1);
 
         LOG_EXTRA_VERBOSE("Starting playback...");
@@ -151,8 +138,7 @@ bool vdb::playback::process_pdu_data(const pdu_data_t &data)
     {
         if (filter::filter_by_header(data))
         {
-            const pdu_t
-                *pdu_ptr = data.generate_pdu();
+            const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
             if (pdu_ptr)
             {
@@ -171,20 +157,22 @@ bool vdb::playback::process_pdu_data(const pdu_data_t &data)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::send_pdu(const pdu_data_t &pdu_data, const pdu_t &pdu)
+void vdb::playback::send_pdu(
+    const pdu_data_t &pdu_data,
+    const vdis::pdu_t &pdu)
 {
     if (not started)
     {
         // First PDU to send marks the start times.
         //
         capture_start_time = pdu_data.get_time();
-        playback_start_time = time::get_system();
+        playback_start_time = vdis::get_system_time();
     }
     else
     {
         const uint64_t
             capture_elapsed = (pdu_data.get_time() - capture_start_time),
-            playback_elapsed = (time::get_system() - playback_start_time);
+            playback_elapsed = (vdis::get_system_time() - playback_start_time);
         int32_t
             delay_time = (int32_t)(capture_elapsed - playback_elapsed);
 

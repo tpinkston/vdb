@@ -1,21 +1,7 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #include "vdb_file_stream.h"
-#include "vdb_logger.h"
 #include "vdb_options.h"
+
+#include "vdis_logger.h"
 
 // ----------------------------------------------------------------------------
 vdb::file_stream::file_stream(void)
@@ -24,13 +10,8 @@ vdb::file_stream::file_stream(void)
 }
 
 // ----------------------------------------------------------------------------
-vdb::file_stream::file_stream(uint32_t length) : byte_stream(length)
-{
-
-}
-
-// ----------------------------------------------------------------------------
-vdb::file_stream::file_stream(const file_stream &copy) : byte_stream(copy)
+vdb::file_stream::file_stream(uint32_t length) :
+    vdis::byte_stream_t(length)
 {
 
 }
@@ -42,7 +23,7 @@ vdb::file_stream::~file_stream(void)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::file_stream::read_file(const std::string &filename)
+bool vdb::file_stream::read_file(const string_t &filename)
 {
     std::ifstream
         stream;
@@ -51,7 +32,7 @@ bool vdb::file_stream::read_file(const std::string &filename)
     bool
         success = false;
 
-    reset();
+    clear();
 
     LOG_VERBOSE("Opening file %s...", filename.c_str());
 
@@ -68,7 +49,7 @@ bool vdb::file_stream::read_file(const std::string &filename)
         //
         stream.seekg(0, std::ios::end);
 
-        buffer_length = stream.tellg();
+        data_length = stream.tellg();
 
         if (stream.fail())
         {
@@ -77,14 +58,14 @@ bool vdb::file_stream::read_file(const std::string &filename)
         }
         else
         {
-            buffer = new uint8_t[buffer_length];
+            data_buffer = new uint8_t[data_length];
 
-            LOG_VERBOSE("Allocated buffer with %d bytes...", buffer_length);
+            LOG_VERBOSE("Allocated buffer with %d bytes...", data_length);
 
             // Go back to the beginning and read the entire file.
             //
             stream.seekg(0, std::ios::beg);
-            stream.read((char *)buffer, buffer_length);
+            stream.read((char *)data_buffer, data_length);
 
             if (stream.fail())
             {
@@ -96,11 +77,11 @@ bool vdb::file_stream::read_file(const std::string &filename)
             {
                 bytes_read = stream.gcount();
 
-                if (bytes_read != buffer_length)
+                if (bytes_read != data_length)
                 {
                     std::cerr << options::get_terminal_command()
                               << ": failed to read (" << bytes_read
-                              << " of " << buffer_length
+                              << " of " << data_length
                               << " bytes) from file: "
                               << filename << std::endl;
                 }
@@ -121,7 +102,7 @@ bool vdb::file_stream::read_file(const std::string &filename)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::file_stream::write_file(const std::string &filename)
+void vdb::file_stream::write_file(const string_t &filename)
 {
     std::ofstream
         stream;
@@ -139,25 +120,26 @@ void vdb::file_stream::write_file(const std::string &filename)
         exit(1);
     }
 
-    if (buffer and (buffer_length > 0))
+    if (data_buffer and (data_length > 0))
     {
-        stream.write((char *)buffer, buffer_length);
+        stream.write((char *)data_buffer, data_length);
 
         if (stream.fail())
         {
             std::cerr << options::get_terminal_command()
-                      << ": failed to write to file: " << filename << std::endl;
+                      << ": failed to write to file: " << filename
+                      << std::endl;
             exit(1);
         }
     }
 
     bytes_written = stream.tellp();
 
-    if (bytes_written != buffer_length)
+    if (bytes_written != data_length)
     {
         std::cerr << options::get_terminal_command()
                   << ": failed to write (" << bytes_written
-                  << " of " << buffer_length << " bytes) from file: "
+                  << " of " << data_length << " bytes) from file: "
                   << filename << std::endl;
         exit(1);
     }

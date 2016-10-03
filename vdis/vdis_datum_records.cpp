@@ -62,7 +62,7 @@ vdis::variable_datum_record_t **vdis::read_variable_datum_records(
 
 // ----------------------------------------------------------------------------
 void vdis::fixed_datum_record_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "datum_id " << datum_id_enum() << std::endl
@@ -134,7 +134,7 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::variable_datum_record_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "datum_id " << datum_id_enum() << std::endl;
@@ -199,7 +199,7 @@ void vdis::variable_datum_record_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::default_variable_datum_content_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     if (buffer.length() > 0)
@@ -217,7 +217,7 @@ void vdis::default_variable_datum_content_t::read(byte_stream_t &stream)
 {
     const uint32_t length = read_length(stream);
 
-    stream.read(buffer, length);
+    buffer.read(stream, length);
 }
 
 // ----------------------------------------------------------------------------
@@ -231,7 +231,7 @@ void vdis::default_variable_datum_content_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::damage_status_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "damage_status.casualties "
@@ -315,7 +315,7 @@ void vdis::sling_load_capability_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::sling_load_capability_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "sling_load_capability.payload "
@@ -393,7 +393,7 @@ void vdis::sling_load_capability_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::force_id_affiliation_t::force_name(void) const
+string_t vdis::force_id_affiliation_t::force_name(void) const
 {
     if (name.length())
     {
@@ -423,7 +423,7 @@ void vdis::force_id_affiliation_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::force_id_affiliation_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "force_id_affiliation.force " << force_enum() << std::endl
@@ -447,7 +447,7 @@ void vdis::force_id_affiliation_t::read(byte_stream_t &stream)
 
     if (name_length > 0)
     {
-        stream.read(name, name_length);
+        name.read(stream, name_length);
     }
 }
 

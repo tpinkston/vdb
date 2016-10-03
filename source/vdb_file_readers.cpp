@@ -1,27 +1,11 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or (at your option) any later
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #include "vdb_file_readers.h"
-#include "vdb_hexadecimal.h"
-#include "vdb_logger.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
-#include "vdb_time.h"
+
+#include "vdis_logger.h"
 
 // ----------------------------------------------------------------------------
-vdb::file_reader_t::file_reader_t(const std::string &filename) :
+vdb::file_reader_t::file_reader_t(const string_t &filename) :
     filename(filename),
     error_condition(false)
 {
@@ -47,7 +31,7 @@ bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
     if (callback)
     {
         const uint64_t
-            start_time = time::get_system();
+            start_time = vdis::get_system_time();
         pdu_data_t
             data;
         bool
@@ -65,7 +49,7 @@ bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
 
         LOG_VERBOSE(
             "Parsing completed in %d milliseconds...",
-            (time::get_system() - start_time));
+            (vdis::get_system_time() - start_time));
     }
     else
     {
@@ -77,7 +61,7 @@ bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
 }
 
 // ----------------------------------------------------------------------------
-vdb::standard_reader_t::standard_reader_t(const std::string &filename) :
+vdb::standard_reader_t::standard_reader_t(const string_t &filename) :
     file_reader_t(filename)
 {
     if (not stream.read_file(filename))
@@ -88,7 +72,7 @@ vdb::standard_reader_t::standard_reader_t(const std::string &filename) :
     {
         header.read(stream);
 
-        if (stream.error() || header.invalid_title())
+        if (header.invalid_title() or not stream())
         {
             std::cerr << options::get_terminal_command()
                       << ": invalid capture file: " << filename << std::endl;
@@ -110,22 +94,22 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
     bool
         valid_entry = false;
 
-    if (good() and (stream.get_length_remaining() > 0))
+    if (good() and (stream.remaining_length() > 0))
     {
         LOG_EXTRA_VERBOSE(
             "Reading PDU data at index %d of %d...",
-            stream.get_index(),
-            stream.get_length());
+            stream.index(),
+            stream.length());
 
         data.read(stream);
 
-        if (stream.error())
+        if (stream())
         {
-            error_condition = true;
+            valid_entry = true;
         }
         else
         {
-            valid_entry = true;
+            error_condition = true;
         }
     }
 
@@ -133,7 +117,7 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
 }
 
 // ----------------------------------------------------------------------------
-vdb::pcap_reader_t::pcap_reader_t(const std::string &filename) :
+vdb::pcap_reader_t::pcap_reader_t(const string_t &filename) :
     file_reader_t(filename),
     pcap_ptr(0),
     index_counter(0)
@@ -173,15 +157,15 @@ bool vdb::pcap_reader_t::next_entry(pdu_data_t &data)
     if (good())
     {
         pcap_packet_header_t
-            *header_ptr;
+            *header_ptr = 0;
         const uint8_t
-            *data_ptr;
+            *data_ptr = 0;
 
         valid_entry = (pcap_next_ex(pcap_ptr, &header_ptr, &data_ptr) > -1);
 
         if (valid_entry)
         {
-            byte_stream
+            vdis::byte_stream_t
                 stream(data_ptr, header_ptr->caplen);
 
             valid_entry = read_pcap_entry(
@@ -197,7 +181,7 @@ bool vdb::pcap_reader_t::next_entry(pdu_data_t &data)
 // ----------------------------------------------------------------------------
 bool vdb::pcap_reader_t::read_pcap_entry(
     const pcap_packet_header_t &header,
-    byte_stream &stream,
+    vdis::byte_stream_t &stream,
     pdu_data_t &data)
 {
     uint16_t
@@ -225,7 +209,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
     stream.skip(12);
     stream.read(ethernet_type);
 
-    if (not stream.error())
+    if (stream())
     {
         LOG_EXTRA_VERBOSE("Ethernet type is 0x%04X...", ethernet_type)
 
@@ -265,9 +249,9 @@ bool vdb::pcap_reader_t::read_pcap_entry(
             LOG_WARNING("Unexpected ethernet type: 0x%04X", ethernet_type)
         }
 
-        if (address_ptr and not stream.error())
+        if (address_ptr and stream())
         {
-            if (options::flag(OPT_EXTRA_VERBOSE) and not stream.error())
+            if (options::flag(OPT_EXTRA_VERBOSE))
             {
                 if (address_ptr == &address_ipv4)
                 {
@@ -302,7 +286,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
                 stream.read(destination_port);
                 stream.skip(4);
 
-                if (not stream.error())
+                if (stream())
                 {
                     LOG_EXTRA_VERBOSE(
                         "Source port %d...",
@@ -312,13 +296,13 @@ bool vdb::pcap_reader_t::read_pcap_entry(
                         destination_port);
 
                     data.set_index(index_counter++);
-                    data.set_time(time::get_system(header.ts));
+                    data.set_time(vdis::get_system_time(header.ts));
 
                     // Remaining bytes in the stream are the PDU itself...
                     //
                     data.set_pdu_buffer(
-                        (uint8_t *)(stream.get_buffer() + stream.get_index()),
-                        stream.get_length_remaining());
+                        (uint8_t *)(stream.buffer() + stream.index()),
+                        stream.remaining_length());
 
                     if (ethernet_type == ETHERTYPE_IP)
                     {

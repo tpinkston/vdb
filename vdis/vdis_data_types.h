@@ -1,26 +1,14 @@
 #ifndef VDIS_DATA_TYPES_H
 #define VDIS_DATA_TYPES_H
 
-#include <cstdint>
-#include <iostream>
-
 #include "vdis_enums.h"
 
 #define VDIS_MARKING_CHARACTERS 11
 #define VDIS_DR_PARAMETERS_SIZE 15
 
-typedef float   float32_t;
-typedef double  float64_t;
-
 namespace vdis
 {
     class byte_stream_t;
-
-    // Utility methods for converting entity, object and event ID values
-    // to a single 64-bit unsigned integer and back.
-    //
-    uint64_t convert(uint16_t, uint16_t, uint16_t);
-    void convert(uint64_t, uint16_t &, uint16_t &, uint16_t &);
 
     // ------------------------------------------------------------------------
     struct simulation_id_t
@@ -44,11 +32,11 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct entity_id_t
+    struct id_t
     {
         uint16_t                site;
         uint16_t                application;
-        uint16_t                entity;
+        uint16_t                identity;
 
         bool is_none(void) const;
         bool is_all(void) const;
@@ -57,67 +45,24 @@ namespace vdis
         {
             site = 0;
             application = 0;
-            entity = 0;
+            identity = 0;
         }
 
-        bool operator==(const entity_id_t &) const;
-        bool operator!=(const entity_id_t &) const;
-        bool operator<(const entity_id_t &) const;
-        bool operator>(const entity_id_t &) const;
+        void set(uint64_t value);
+        uint64_t get(void) const;
+
+        bool matches(const id_t &) const;
+
+        bool operator==(const id_t &) const;
+        bool operator!=(const id_t &) const;
+        bool operator<(const id_t &) const;
+        bool operator>(const id_t &) const;
 
         void read(byte_stream_t &);
         void write(byte_stream_t &);
-    };
 
-    typedef entity_id_t munition_id_t;
-
-    // ------------------------------------------------------------------------
-    struct event_id_t
-    {
-        uint16_t                site;
-        uint16_t                application;
-        uint16_t                event;
-
-        inline void clear(void)
-        {
-            site = 0;
-            application = 0;
-            event = 0;
-        }
-
-        bool operator==(const event_id_t &) const;
-        bool operator!=(const event_id_t &) const;
-        bool operator<(const event_id_t &) const;
-        bool operator>(const event_id_t &) const;
-
-        void read(byte_stream_t &);
-        void write(byte_stream_t &);
-    };
-
-    // ------------------------------------------------------------------------
-    struct object_id_t
-    {
-        uint16_t                site;
-        uint16_t                application;
-        uint16_t                object;
-
-        bool is_none(void) const;
-        bool is_all(void) const;
-
-        bool operator==(const object_id_t &) const;
-        bool operator!=(const object_id_t &) const;
-        bool operator<(const object_id_t &) const;
-        bool operator>(const object_id_t &) const;
-
-        inline void clear(void)
-        {
-            site = 0;
-            application = 0;
-            object = 0;
-        }
-
-        void read(byte_stream_t &);
-        void write(byte_stream_t &);
+        static const uint16_t   NONE = 0;
+        static const uint16_t   ALL = 65535;
     };
 
     // ------------------------------------------------------------------------
@@ -160,7 +105,7 @@ namespace vdis
         void set(uint64_t value);
         uint64_t get(void) const;
 
-        std::string description(void) const;
+        string_t description(void) const;
 
         bool operator==(const entity_type_t &) const;
         bool operator!=(const entity_type_t &) const;
@@ -192,6 +137,10 @@ namespace vdis
         void set(uint32_t value);
         uint32_t get(void) const;
 
+        string_t description(void) const;
+
+        object_geometry_e geometry(void) const;
+
         bool operator==(const object_type_t &) const;
         bool operator!=(const object_type_t &) const;
         bool operator<(const object_type_t &) const;
@@ -210,8 +159,8 @@ namespace vdis
         marking_t(void) { clear(); }
         ~marking_t(void) { }
 
-        void str(const std::string &name);
-        std::string str(void) const;
+        void str(const string_t &name);
+        string_t str(void) const;
 
         inline entity_marking_e marking_type(void) const
         {
@@ -250,7 +199,7 @@ namespace vdis
         bits_t              bits;
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -316,6 +265,16 @@ namespace vdis
         float32_t               y;
         float32_t               z;
 
+        inline float32_t length(void) const
+        {
+            return std::sqrt(length_squared());
+        }
+
+        inline float32_t length_squared(void) const
+        {
+            return (x * x) + (y * y) + (z * z);
+        }
+
         inline void clear(void)
         {
             x = 0;
@@ -341,7 +300,7 @@ namespace vdis
         }
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -417,7 +376,7 @@ namespace vdis
             padding = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -434,7 +393,7 @@ namespace vdis
             line_length = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -467,7 +426,7 @@ namespace vdis
             rate = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -488,7 +447,7 @@ namespace vdis
             radio_system = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -496,7 +455,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_target_t
     {
-        entity_id_t             entity;                    // 6 bytes
+        id_t                    entity;                    // 6 bytes
         uint8_t                 emitter;                // 1 byte
         uint8_t                 beam;                   // 1 byte
 
@@ -507,7 +466,7 @@ namespace vdis
             beam = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -539,7 +498,7 @@ namespace vdis
         ~emitter_beam_t(void);
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -560,7 +519,7 @@ namespace vdis
         ~emitter_system_t(void);
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -581,7 +540,7 @@ namespace vdis
             options = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -614,7 +573,7 @@ namespace vdis
             parameter_6 = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -646,7 +605,7 @@ namespace vdis
             system_specific_data[2] = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -676,7 +635,7 @@ namespace vdis
         ~iff_layer2_data_t(void);
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -694,7 +653,7 @@ namespace vdis
         ~environment_record_t(void);
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -730,7 +689,7 @@ namespace vdis
             requested_state = 0;
         }
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -768,16 +727,14 @@ namespace vdis
         inline float32_t depth(void) const { return segment_depth; }
 
         void clear(void);
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
 }
 
 std::ostream &operator<<(std::ostream &, const vdis::simulation_id_t &);
-std::ostream &operator<<(std::ostream &, const vdis::entity_id_t &);
-std::ostream &operator<<(std::ostream &, const vdis::event_id_t &);
-std::ostream &operator<<(std::ostream &, const vdis::object_id_t &);
+std::ostream &operator<<(std::ostream &, const vdis::id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::entity_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::object_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::marking_t &);

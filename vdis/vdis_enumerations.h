@@ -1,8 +1,7 @@
 #ifndef VDIS_ENUMERATIONS_H
 #define VDIS_ENUMERATIONS_H
 
-#include <map>
-#include <string>
+#include "vdis_system.h"
 
 namespace vdis
 {
@@ -17,7 +16,7 @@ namespace vdis
         // Returns true if the provided value is a valid value for the
         // provided enumeration.
         //
-        static bool valid(const std::string &enumeration, int value);
+        static bool valid(const string_t &enumeration, int value);
 
         // Streams with format "%s [%d (%h)]" where:
         //   %s - String name of enumeration value
@@ -25,21 +24,21 @@ namespace vdis
         //   %h - Hexadecimal enumeration value
         //
         static std::ostream &print(
-            const std::string &enumeration,
+            const string_t &enumeration,
             int value,
             std::ostream &out
         );
 
         // Returns just the string name of the enumeration value.
         //
-        static std::string get_name(
-            const std::string &enumeration,
+        static string_t get_name(
+            const string_t &enumeration,
             int value
         );
 
-        typedef std::map<int, std::string>
+        typedef std::map<int, string_t>
             enum_entries_t;
-        typedef std::map<std::string, enum_entries_t>
+        typedef std::map<string_t, enum_entries_t>
             enum_definitions_t;
 
       private:

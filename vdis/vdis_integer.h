@@ -1,35 +1,33 @@
 #ifndef VDIS_INTEGER_H
 #define VDIS_INTEGER_H
 
-#include <string>
-
 #include "vdis_data_types.h"
 
 namespace vdis
 {
-    std::string to_bin_string(int8_t value);
-    std::string to_bin_string(uint8_t value);
+    string_t to_bin_string(int8_t value);
+    string_t to_bin_string(uint8_t value);
 
-    std::string to_bin_string(int16_t value, bool separated = false);
-    std::string to_bin_string(uint16_t value, bool separated = false);
+    string_t to_bin_string(int16_t value, bool separated = false);
+    string_t to_bin_string(uint16_t value, bool separated = false);
 
-    std::string to_bin_string(int32_t value, bool separated = false);
-    std::string to_bin_string(uint32_t value, bool separated = false);
+    string_t to_bin_string(int32_t value, bool separated = false);
+    string_t to_bin_string(uint32_t value, bool separated = false);
 
-    std::string to_bin_string(int64_t value, bool separated = false);
-    std::string to_bin_string(uint64_t value, bool separated = false);
+    string_t to_bin_string(int64_t value, bool separated = false);
+    string_t to_bin_string(uint64_t value, bool separated = false);
 
-    std::string to_hex_string(int8_t value);
-    std::string to_hex_string(uint8_t value);
+    string_t to_hex_string(int8_t value);
+    string_t to_hex_string(uint8_t value);
 
-    std::string to_hex_string(int16_t value, bool separated = false);
-    std::string to_hex_string(uint16_t value, bool separated = false);
+    string_t to_hex_string(int16_t value, bool separated = false);
+    string_t to_hex_string(uint16_t value, bool separated = false);
 
-    std::string to_hex_string(int32_t value, bool separated = false);
-    std::string to_hex_string(uint32_t value, bool separated = false);
+    string_t to_hex_string(int32_t value, bool separated = false);
+    string_t to_hex_string(uint32_t value, bool separated = false);
 
-    std::string to_hex_string(int64_t value, bool separated = false);
-    std::string to_hex_string(uint64_t value, bool separated = false);
+    string_t to_hex_string(int64_t value, bool separated = false);
+    string_t to_hex_string(uint64_t value, bool separated = false);
 
     float32_t to_float32(uint32_t value);
     float64_t to_float64(uint64_t value);

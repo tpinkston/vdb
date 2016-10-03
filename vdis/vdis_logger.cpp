@@ -1,11 +1,12 @@
-#include <cstdarg>
-
 #include "vdis_logger.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
 
 char
     logger::buffer[BUFFER_SIZE];
+std::ostream
+    &logger::err = std::cerr,
+    &logger::out = std::cout;
 std::map<logger::level_e, bool>
     logger::levels;
 logger
@@ -75,12 +76,12 @@ logger *logger::get_instance(void)
 }
 
 // ----------------------------------------------------------------------------
-void logger::basename(std::string &file)
+void logger::basename(string_t &file)
 {
-    std::string::size_type
+    string_t::size_type
         index = file.find_last_of('/', (file.length() - 1));
 
-    if (index != std::string::npos)
+    if (index != string_t::npos)
     {
         file = file.substr((index + 1), file.length() - index);
     }
@@ -94,13 +95,13 @@ void logger::log_message(
     int line)
 {
     std::ostream
-        &stream = (level == logger::ERROR) ? std::cout : std::cerr;
+        &stream = (level == logger::ERROR) ? out : err;
 
     // Print file and line number only on error level
     //
     if (level == ERROR)
     {
-        std::string
+        string_t
             filename(file);
 
         basename(filename);

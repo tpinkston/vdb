@@ -11,14 +11,14 @@ namespace
 
     // ------------------------------------------------------------------------
     template<typename T>
-    std::string get_hexadecimal(T t, unsigned size)
+    string_t get_hexadecimal(T t, unsigned size)
     {
         std::ostringstream
             stream;
 
         stream << std::hex << (uint64_t)t;
 
-        std::string
+        string_t
             s = stream.str();
 
         if ((s == "0") or (s.size() <= size))
@@ -32,9 +32,9 @@ namespace
     }
 
     // ------------------------------------------------------------------------
-    std::string fill(const std::string &s, unsigned length)
+    string_t fill(const std::string &s, unsigned length)
     {
-        std::string
+        string_t
             copy = s;
 
         while(copy.size() < length)
@@ -47,9 +47,9 @@ namespace
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(int8_t value)
+string_t vdis::to_bin_string(int8_t value)
 {
-    std::string
+    string_t
         s("00000000");
 
     for(unsigned j = 0; j < 8; ++j)
@@ -64,15 +64,15 @@ std::string vdis::to_bin_string(int8_t value)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(uint8_t value)
+string_t vdis::to_bin_string(uint8_t value)
 {
     return to_bin_string((int8_t)value);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(int16_t value, bool separated)
+string_t vdis::to_bin_string(int16_t value, bool separated)
 {
-    std::string
+    string_t
         s("0000000000000000");
 
     for(unsigned j = 0; j < 16; ++j) {
@@ -92,15 +92,15 @@ std::string vdis::to_bin_string(int16_t value, bool separated)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(uint16_t value, bool separated)
+string_t vdis::to_bin_string(uint16_t value, bool separated)
 {
     return to_bin_string((int16_t)value, separated);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(int32_t value, bool separated)
+string_t vdis::to_bin_string(int32_t value, bool separated)
 {
-    std::string
+    string_t
         s("00000000000000000000000000000000");
 
     for(unsigned j = 0; j < 32; ++j)
@@ -122,16 +122,16 @@ std::string vdis::to_bin_string(int32_t value, bool separated)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(uint32_t value, bool separated)
+string_t vdis::to_bin_string(uint32_t value, bool separated)
 {
     return to_bin_string((int32_t)value, separated);
 }
 
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(int64_t value, bool separated)
+string_t vdis::to_bin_string(int64_t value, bool separated)
 {
-    std::string
+    string_t
         s("0000000000000000000000000000000000000000000000000000000000000000");
 
     long_union
@@ -170,28 +170,28 @@ std::string vdis::to_bin_string(int64_t value, bool separated)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_bin_string(uint64_t value, bool separated)
+string_t vdis::to_bin_string(uint64_t value, bool separated)
 {
     return to_bin_string((int64_t)value, separated);
 }
 
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(int8_t value) {
+string_t vdis::to_hex_string(int8_t value) {
 
     return fill(get_hexadecimal(value, 2), 2);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(uint8_t value) {
+string_t vdis::to_hex_string(uint8_t value) {
 
     return to_hex_string((int8_t)value);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(int16_t value, bool separated) {
+string_t vdis::to_hex_string(int16_t value, bool separated) {
 
-    std::string
+    string_t
         s = fill(get_hexadecimal(value, 4), 4);
 
     if (separated) {
@@ -203,15 +203,15 @@ std::string vdis::to_hex_string(int16_t value, bool separated) {
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(uint16_t value, bool separated) {
+string_t vdis::to_hex_string(uint16_t value, bool separated) {
 
     return to_hex_string((int16_t)value, separated);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(int32_t value, bool separated) {
+string_t vdis::to_hex_string(int32_t value, bool separated) {
 
-    std::string
+    string_t
         s = fill(get_hexadecimal(value, 8), 8);
 
     if (separated) {
@@ -225,15 +225,15 @@ std::string vdis::to_hex_string(int32_t value, bool separated) {
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(uint32_t value, bool separated) {
+string_t vdis::to_hex_string(uint32_t value, bool separated) {
 
     return to_hex_string((int32_t)value, separated);
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(int64_t value, bool separated) {
+string_t vdis::to_hex_string(int64_t value, bool separated) {
 
-    std::string
+    string_t
         s = fill(get_hexadecimal(value, 16), 16);
 
     if (separated) {
@@ -251,7 +251,7 @@ std::string vdis::to_hex_string(int64_t value, bool separated) {
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::to_hex_string(uint64_t i, bool separated) {
+string_t vdis::to_hex_string(uint64_t i, bool separated) {
 
     return to_hex_string(int64_t(i), separated);
 }

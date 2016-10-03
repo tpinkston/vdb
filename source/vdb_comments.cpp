@@ -1,25 +1,11 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #include "vdb_comments.h"
 #include "vdb_common.h"
 #include "vdb_file_readers.h"
-#include "vdb_logger.h"
 #include "vdb_options.h"
-#include "vdb_string.h"
-#include "vdb_time.h"
+
+#include "vdis_logger.h"
+#include "vdis_services.h"
+#include "vdis_string.h"
 
 namespace
 {
@@ -47,12 +33,12 @@ int vdb::comments::add(void)
     }
     else
     {
-        const std::string
+        const string_t
             filename = *options::get_command_argument(0);
         file_header_comment_t
             comment;
 
-        comment.time = time::get_system();
+        comment.time = vdis::get_system_time();
 
         if (options::get_command_argument(1))
         {
@@ -72,11 +58,11 @@ int vdb::comments::add(void)
             std::memset(text, 0, text_size);
             std::cin.read(text, text_size);
             comment.value = text;
-            comment.value = trim(comment.value);
+            comment.value = vdis::trim(comment.value);
             std::cout << std::endl << std::endl;
         }
 
-        comment.value = trim(comment.value);
+        comment.value = vdis::trim(comment.value);
 
         if (comment.value.empty())
         {
@@ -90,7 +76,7 @@ int vdb::comments::add(void)
         {
             const uint32_t
                 comment_length = comment.length(),
-                new_length = (reader.stream.get_length() + comment_length);
+                new_length = (reader.stream.length() + comment_length);
             file_stream
                 &input = reader.stream;
             file_stream
@@ -106,18 +92,18 @@ int vdb::comments::add(void)
             reader.header.write(output);
 
             uint32_t
-                remainder = input.get_length_remaining();
+                remainder = input.remaining_length();
 
             LOG_VERBOSE(
                 "Input buffer is at %d/%d",
-                input.get_index(),
-                input.get_length());
+                input.index(),
+                input.length());
             LOG_VERBOSE(
                 "Output buffer is at %d/%d",
-                output.get_index(),
-                output.get_length());
+                output.index(),
+                output.length());
 
-            while((remainder > 0) and not output.error())
+            while((remainder > 0) and output())
             {
                 if (copy_buffer_length > remainder)
                 {
@@ -132,12 +118,12 @@ int vdb::comments::add(void)
                 LOG_VERBOSE("Bytes remaining is %d", remainder);
             }
 
-            if (not output.error())
+            if (output())
             {
                 // Overwrite the file with new stream.
                 //
                 output.write_file(filename);
-                result = output.error() ? 1 : 0;
+                result = output() ? 0 : 1;
 
                 std::cout << "Comment (" << comment.value.length()
                           << " bytes) added to file '" << filename
@@ -171,7 +157,7 @@ int vdb::comments::remove(void)
     }
     else
     {
-        const std::string
+        const string_t
             filename = *options::get_command_argument(0);
 
         standard_reader_t
@@ -196,12 +182,12 @@ int vdb::comments::remove(void)
                 // User provided a number for the comment to remove.
                 // Numbers start at 1 so it must be decremented to an index.
                 //
-                const std::string
+                const string_t
                     value(*options::get_command_argument(1));
                 int32_t
                     number = 0;
 
-                if (not string_to_int32(value, number))
+                if (not vdis::to_int32(value, number))
                 {
                     std::cout << options::get_terminal_command()
                               << " uncomment: invalid comment number '"
@@ -253,7 +239,7 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 
     // Print comment and get user confirmation
     //
-    reader.header.print_comment(std::string(), index, std::cout);
+    reader.header.print_comment(string_t(), index, std::cout);
     std::cout << "Delete this comment (y/n)? ";
 
     if (not user_confirmation())
@@ -264,18 +250,18 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
     {
         const uint32_t
             comment_length = reader.header.comments[index].length(),
-            new_length = (input.get_length() - comment_length);
+            new_length = (input.length() - comment_length);
         file_stream
             output(new_length);
 
         LOG_VERBOSE(
             "Input buffer is at %d/%d",
-            input.get_index(),
-            input.get_length());
+            input.index(),
+            input.length());
         LOG_VERBOSE(
             "Output buffer is at %d/%d",
-            output.get_index(),
-            output.get_length());
+            output.index(),
+            output.length());
         LOG_VERBOSE(
             "Size of all comments before removal is %d...",
             reader.header.comments_length());
@@ -293,18 +279,18 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
         uint8_t
             copy_buffer[copy_buffer_length];
         uint32_t
-            remainder = input.get_length_remaining();
+            remainder = input.remaining_length();
 
         LOG_VERBOSE(
             "Input buffer is at %d/%d",
-            input.get_index(),
-            input.get_length());
+            input.index(),
+            input.length());
         LOG_VERBOSE(
             "Output buffer is at %d/%d",
-            output.get_index(),
-            output.get_length());
+            output.index(),
+            output.length());
 
-        while((remainder > 0) and not output.error())
+        while((remainder > 0) and output())
         {
             if (copy_buffer_length > remainder)
             {
@@ -319,11 +305,7 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
             LOG_VERBOSE("Bytes remaining is %d", remainder);
         }
 
-        if (input.error() or output.error())
-        {
-            result = 1;
-        }
-        else
+        if (input() and output())
         {
             // Overwrite the file with new stream.
             //
@@ -331,6 +313,10 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 
             std::cout << "Comment #" << (index + 1)
                       << " removed." << std::endl;
+        }
+        else
+        {
+            result = 1;
         }
     }
 
@@ -351,7 +337,7 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
     {
         const uint32_t
             new_length =
-                input.get_length() -
+                input.length() -
                 reader.header.comments_length();
         file_stream
             output(new_length);
@@ -364,9 +350,9 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
         uint8_t
             copy_buffer[copy_buffer_length];
         uint32_t
-            remainder = input.get_length_remaining();
+            remainder = input.remaining_length();
 
-        while((remainder > 0) and not output.error())
+        while((remainder > 0) and output())
         {
             if (copy_buffer_length > remainder)
             {
@@ -379,17 +365,17 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
             remainder -= copy_buffer_length;
         }
 
-        if (input.error() or output.error())
-        {
-            result = 1;
-        }
-        else
+        if (input() or output())
         {
             // Overwrite the file with new stream.
             //
             output.write_file(reader.get_filename());
 
             std::cout << "All comments removed." << std::endl;
+        }
+        else
+        {
+            result = 1;
         }
      }
 

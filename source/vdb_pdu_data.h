@@ -1,30 +1,18 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_PDU_DATA_H
 #define VDB_PDU_DATA_H
 
-#include "vdb_common.h"
+#include <cstring>
+
 #include "vdb_network.h"
-#include "vdb_object.h"
+
+namespace vdis
+{
+    class byte_stream_t;
+    class pdu_t;
+}
 
 namespace vdb
 {
-    class byte_stream;
-    class pdu_t;
-
     // 16-bit status record
     //
     // Bits  Description
@@ -35,12 +23,12 @@ namespace vdb
     typedef uint16_t
         pdu_data_status_t;
 
-    class pdu_data_t : public record_t
+    class pdu_data_t
     {
       public:
 
         pdu_data_t(void);
-        virtual ~pdu_data_t(void);
+        ~pdu_data_t(void);
 
         bool has_pdu(void) const { return (pdu_length > 0); }
 
@@ -64,7 +52,7 @@ namespace vdb
             uint16_t socket_port
         );
 
-        std::string get_source(void) const;
+        string_t get_source(void) const;
 
         void set_pdu_buffer(uint8_t *buffer, uint32_t length);
 
@@ -81,18 +69,18 @@ namespace vdb
         // Generates new PDU object from data, it's the caller's responsibility
         // to free memory (delete).
         //
-        pdu_t *generate_pdu(void) const;
+        vdis::pdu_t *generate_pdu(void) const;
 
         // Clears all PDU data on this object.
         //
         void clear(void);
 
-        void print(const std::string &prefix, std::ostream &stream) const;
+        void print(const string_t &prefix, std::ostream &stream) const;
 
-        virtual uint32_t length(void) const;
+        uint32_t length(void) const;
 
-        virtual void read(byte_stream &stream);
-        virtual void write(byte_stream &stream) const;
+        void read(vdis::byte_stream_t &stream);
+        void write(vdis::byte_stream_t &stream) const;
 
         // "PDUD" in ASCII (4 bytes)
         static const uint32_t
@@ -105,49 +93,22 @@ namespace vdb
         static const uint32_t
             PDU_BUFFER_LENGTH = 0x800; // 2 KB
 
-        // In save/restore order:
-        //
-        // header                   4
-        // index                    4
-        // time                     8
-        // padding                  4
-        // status                   2
-        // host name length         2
-        // ------- (host name) ------
-        // address                 16
-        // port                     2
-        // ip_version               2
-        // pdu_length               4
-        // ------ (PDU buffer) ------
-        // ==========================
-        // total                   48
-        //
         static const uint32_t
             BASE_LENGTH = 0x30; // 48 bytes
 
       protected:
 
-        uint32_t
-            header,
-            index;
-        uint64_t
-            time;
-        uint32_t
-            padding;
-        pdu_data_status_t
-            status;
-        std::string
-            hostname;
-        uint8_t
-            address[ADDRESS_LENGTH];
-        uint16_t
-            port;
-        uint16_t
-            ip_version;
-        uint32_t
-            pdu_length;
-        uint8_t
-            pdu_buffer[PDU_BUFFER_LENGTH];
+        uint32_t                header;                         // 4 bytes
+        uint32_t                index;                          // 4 bytes
+        uint64_t                time;                           // 8 bytes
+        uint32_t                padding;                        // 4 bytes
+        pdu_data_status_t       status;                         // 2 bytes
+        string_t             hostname;                       // 2+ bytes
+        uint8_t                 address[ADDRESS_LENGTH];        // 16 bytes
+        uint16_t                port;                           // 2 bytes
+        uint16_t                ip_version;                     // 2 bytes
+        uint32_t                pdu_length;                     // 4 bytes
+        uint8_t                 pdu_buffer[PDU_BUFFER_LENGTH];  // Variable
     };
 }
 
@@ -185,6 +146,14 @@ inline void vdb::pdu_data_t::set_pdu_buffer(uint8_t *buffer, uint32_t length)
 inline void vdb::pdu_data_t::set_pdu_length(uint32_t length)
 {
     pdu_length = length;
+}
+
+// ----------------------------------------------------------------------------
+inline std::ostream &operator<<(std::ostream &out, const vdb::pdu_data_t &data)
+{
+    data.print(string_t(), out);
+
+    return out;
 }
 
 #endif

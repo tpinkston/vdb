@@ -1,25 +1,10 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or (at your option) any later
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_FILE_READERS_H
 #define VDB_FILE_READERS_H
 
-#include "vdb_common.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
 #include "vdb_network.h"
+#include "vdb_system.h"
 
 namespace vdb
 {
@@ -32,10 +17,10 @@ namespace vdb
     {
       public:
 
-        file_reader_t(const std::string &filename);
+        file_reader_t(const string_t &filename);
         virtual ~file_reader_t(void);
 
-        const std::string &get_filename(void) const { return filename; }
+        const string_t &get_filename(void) const { return filename; }
 
         // Returns true if no errors have occurred.
         //
@@ -55,7 +40,7 @@ namespace vdb
         //
         virtual bool next_entry(pdu_data_t &data) = 0;
 
-        const std::string
+        const string_t
             filename;
         bool
             error_condition;
@@ -68,7 +53,7 @@ namespace vdb
     {
       public:
 
-        standard_reader_t(const std::string &filename);
+        standard_reader_t(const string_t &filename);
         virtual ~standard_reader_t(void);
 
         file_header_t
@@ -80,7 +65,15 @@ namespace vdb
 
         virtual bool next_entry(pdu_data_t &data);
     };
+}
 
+#ifdef lib_pcap_pcap_h
+
+typedef struct pcap_pkthdr
+    pcap_packet_header_t;
+
+namespace vdb
+{
     // ------------------------------------------------------------------------
     // Reader for PCAP format capture files
     //
@@ -88,7 +81,7 @@ namespace vdb
     {
       public:
 
-        pcap_reader_t(const std::string &filename);
+        pcap_reader_t(const string_t &filename);
         virtual ~pcap_reader_t(void);
 
       protected:
@@ -99,7 +92,7 @@ namespace vdb
 
         bool read_pcap_entry(
             const pcap_packet_header_t &header,
-            byte_stream &stream,
+            vdis::byte_stream_t &stream,
             pdu_data_t &data
         );
 
@@ -109,5 +102,7 @@ namespace vdb
             index_counter;
     };
 }
+
+#endif // lib_pcap_pcap_h
 
 #endif

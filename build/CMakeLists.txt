@@ -41,5 +41,6 @@ TARGET_INCLUDE_DIRECTORIES(
     vdb PUBLIC
     ${PCAP_PATH}
     ${VDB_SOURCE_PATH}
-    ${VDB_SOURCE_PATH}/enumerations
+    ${VDIS_SOURCE_PATH}
+    ${VDIS_SOURCE_PATH}/enumerations
 )

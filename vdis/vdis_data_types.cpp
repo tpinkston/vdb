@@ -1,43 +1,15 @@
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
 #include "vdis_entity_types.h"
+#include "vdis_object_types.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
 
 namespace
 {
-    const uint16_t
-        NONE = 0,
-        ALL = 65535;
     const float32_t
         TIME_UNIT_TO_SECONDS = (3600.0 / 2147483647.0),
         SECONDS_TO_TIME_UNITS = (1.0 / TIME_UNIT_TO_SECONDS);
-}
-
-// ----------------------------------------------------------------------------
-uint64_t vdis::convert(uint16_t v1, uint16_t v2, uint16_t v3)
-{
-    uint64_t value = 0;
-
-    value = (uint16_t)(v1 & 0xFFFF);
-    value <<= 16;
-    value |= (uint16_t)(v2 & 0xFFFF);
-    value <<= 16;
-    value |= (uint16_t)(v3 & 0xFFFF);
-
-    return value;
-}
-
-// ----------------------------------------------------------------------------
-void vdis::convert(uint64_t v, uint16_t &v1, uint16_t &v2, uint16_t &v3)
-{
-    uint64_t value = v;
-
-    v3 = (uint16_t)(value & 0xFFFF);
-    value >>= 16;
-    v2 = (uint16_t)(value & 0xFFFF);
-    value >>= 16;
-    v1 = (uint16_t)(value & 0xFFFF);
 }
 
 // ----------------------------------------------------------------------------
@@ -55,33 +27,82 @@ void vdis::simulation_id_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::is_none(void) const
+bool vdis::id_t::is_none(void) const
 {
-    return (site == NONE) and (application == NONE) and (entity == NONE);
+    return (site == NONE) and (application == NONE) and (identity == NONE);
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::is_all(void) const
+bool vdis::id_t::is_all(void) const
 {
-    return (site == ALL) and (application == ALL) and (entity == ALL);
+    return (site == ALL) and (application == ALL) and (identity == ALL);
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::operator==(const entity_id_t &other) const
+void vdis::id_t::set(uint64_t value)
+{
+    uint64_t bits = value;
+
+    identity = (uint16_t)(bits & 0xFFFF);
+    bits >>= 16;
+    application = (uint16_t)(bits & 0xFFFF);
+    bits >>= 16;
+    site = (uint16_t)(bits & 0xFFFF);
+}
+
+// ----------------------------------------------------------------------------
+uint64_t vdis::id_t::get(void) const
+{
+    uint64_t value = 0;
+
+    value = (uint16_t)(site & 0xFFFF);
+    value <<= 16;
+    value |= (uint16_t)(application & 0xFFFF);
+    value <<= 16;
+    value |= (uint16_t)(identity & 0xFFFF);
+
+    return value;
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::id_t::matches(const id_t &other) const
+{
+    bool match = true;
+
+    if ((site != ALL) and (other.site != ALL))
+    {
+        match = (site == other.site);
+    }
+
+    if (match and (application != ALL) and (other.application != ALL))
+    {
+        match = (application == other.application);
+    }
+
+    if (match and (identity != ALL) and (other.identity != ALL))
+    {
+        match = (identity == other.identity);
+    }
+
+    return match;
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::id_t::operator==(const id_t &other) const
 {
     return (site == other.site) and
            (application == other.application) and
-           (entity == other.entity);
+           (identity == other.identity);
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::operator!=(const entity_id_t &other) const
+bool vdis::id_t::operator!=(const id_t &other) const
 {
     return not (*this == other);
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::operator<(const entity_id_t &other) const
+bool vdis::id_t::operator<(const id_t &other) const
 {
     if (site < other.site)
     {
@@ -99,11 +120,11 @@ bool vdis::entity_id_t::operator<(const entity_id_t &other) const
     {
         return false;
     }
-    else if (entity < other.entity)
+    else if (identity < other.identity)
     {
         return true;
     }
-    else if (entity > other.entity)
+    else if (identity > other.identity)
     {
         return false;
     }
@@ -114,7 +135,7 @@ bool vdis::entity_id_t::operator<(const entity_id_t &other) const
 }
 
 // ----------------------------------------------------------------------------
-bool vdis::entity_id_t::operator>(const entity_id_t &other) const
+bool vdis::id_t::operator>(const id_t &other) const
 {
     if (site > other.site)
     {
@@ -132,11 +153,11 @@ bool vdis::entity_id_t::operator>(const entity_id_t &other) const
     {
         return false;
     }
-    else if (entity > other.entity)
+    else if (identity > other.identity)
     {
         return true;
     }
-    else if (entity < other.entity)
+    else if (identity < other.identity)
     {
         return false;
     }
@@ -147,63 +168,19 @@ bool vdis::entity_id_t::operator>(const entity_id_t &other) const
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_id_t::read(byte_stream_t &stream)
+void vdis::id_t::read(byte_stream_t &stream)
 {
     stream.read(site);
     stream.read(application);
-    stream.read(entity);
+    stream.read(identity);
 }
 
 // ----------------------------------------------------------------------------
-void vdis::entity_id_t::write(byte_stream_t &stream)
+void vdis::id_t::write(byte_stream_t &stream)
 {
     stream.write(site);
     stream.write(application);
-    stream.write(entity);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::event_id_t::read(byte_stream_t &stream)
-{
-    stream.read(site);
-    stream.read(application);
-    stream.read(event);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::event_id_t::write(byte_stream_t &stream)
-{
-    stream.write(site);
-    stream.write(application);
-    stream.write(event);
-}
-
-// ----------------------------------------------------------------------------
-bool vdis::object_id_t::is_none(void) const
-{
-    return (site == NONE) and (application == NONE) and (object == NONE);
-}
-
-// ----------------------------------------------------------------------------
-bool vdis::object_id_t::is_all(void) const
-{
-    return (site == ALL) and (application == ALL) and (object == ALL);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::object_id_t::read(byte_stream_t &stream)
-{
-    stream.read(site);
-    stream.read(application);
-    stream.read(object);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::object_id_t::write(byte_stream_t &stream)
-{
-    stream.write(site);
-    stream.write(application);
-    stream.write(object);
+    stream.write(identity);
 }
 
 // ----------------------------------------------------------------------------
@@ -250,11 +227,11 @@ uint64_t vdis::entity_type_t::get(void) const
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::entity_type_t::description(void) const
+string_t vdis::entity_type_t::description(void) const
 {
     std::ostringstream
         stream;
-    std::string
+    string_t
         description = entity_types::get_description(get());
 
     if (description.empty())
@@ -313,7 +290,6 @@ void vdis::object_type_t::set(uint32_t value)
     bits >>= 8;
     kind = (uint8_t)(bits & 0xFF);
     bits >>= 8;
-
     domain = (uint8_t)(bits & 0xFF);
 }
 
@@ -331,6 +307,41 @@ uint32_t vdis::object_type_t::get(void) const
     value |= (uint8_t)(subcategory & 0xFF);
 
     return value;
+}
+
+// ----------------------------------------------------------------------------
+string_t vdis::object_type_t::description(void) const
+{
+    std::ostringstream
+        stream;
+    string_t
+        description = object_types::get_description(get());
+
+    if (description.empty())
+    {
+        object_type_t
+            parent;
+
+        if (object_types::get_valid_parent(*this, parent))
+        {
+            description = entity_types::get_description(parent.get());
+            description += " (Parent)";
+        }
+        else
+        {
+            description = "(Undefined)";
+        }
+    }
+
+    stream << *this << " '" << description << "'";
+
+    return stream.str();
+}
+
+// ----------------------------------------------------------------------------
+vdis::object_geometry_e vdis::object_type_t::geometry(void) const
+{
+    return object_types::get_geometry(get());
 }
 
 // ----------------------------------------------------------------------------
@@ -352,7 +363,7 @@ void vdis::object_type_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::marking_t::str(const std::string &name)
+void vdis::marking_t::str(const string_t &name)
 {
     character_set = ENTITY_MARKING_ASCII;
 
@@ -363,11 +374,11 @@ void vdis::marking_t::str(const std::string &name)
 }
 
 // ----------------------------------------------------------------------------
-std::string vdis::marking_t::str(void) const
+string_t vdis::marking_t::str(void) const
 {
     const bool
         ASCII = is_printable_character(character_set);
-    std::string
+    string_t
         string;
     uint32_t
         sum = 0;
@@ -485,7 +496,7 @@ void vdis::entity_capabilities_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::entity_capabilities_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "capabilities.value "
@@ -624,7 +635,7 @@ void vdis::dead_reckoning_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::dead_reckoning_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "dead_reckoning.algorithm "
@@ -721,7 +732,7 @@ void vdis::clocktime_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::pdu_header_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "protocol " << protocol_enum() << std::endl
@@ -762,7 +773,7 @@ void vdis::pdu_header_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::sling_line_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << to_string(line_length, 1, 2) << std::endl
@@ -785,7 +796,7 @@ void vdis::sling_line_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::burst_descriptor_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "munition " << munition.description() << std::endl
@@ -835,7 +846,7 @@ void vdis::modulation_type_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::exercise_state_t::print(
-    const std::string &prefix,
+    const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "id " << (int)id << std::endl
@@ -871,31 +882,11 @@ std::ostream &operator<<(std::ostream &out, const vdis::simulation_id_t &o)
 }
 
 // ----------------------------------------------------------------------------
-std::ostream &operator<<(std::ostream &out, const vdis::entity_id_t &o)
+std::ostream &operator<<(std::ostream &out, const vdis::id_t &o)
 {
     out << (int)o.site << "."
         << (int)o.application << "."
-        << (int)o.entity;
-
-    return out;
-}
-
-// ----------------------------------------------------------------------------
-std::ostream &operator<<(std::ostream &out, const vdis::event_id_t &o)
-{
-    out << (int)o.site << "."
-        << (int)o.application << "."
-        << (int)o.event;
-
-    return out;
-}
-
-// ----------------------------------------------------------------------------
-std::ostream &operator<<(std::ostream &out, const vdis::object_id_t &o)
-{
-    out << (int)o.site << "."
-        << (int)o.application << "."
-        << (int)o.object;
+        << (int)o.identity;
 
     return out;
 }

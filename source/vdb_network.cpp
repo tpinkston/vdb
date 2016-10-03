@@ -1,26 +1,11 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
-#include "vdb_byte_stream.h"
-#include "vdb_hexadecimal.h"
-#include "vdb_logger.h"
 #include "vdb_network.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
-#include "vdb_string.h"
-#include "vdb_time.h"
+
+#include "vdis_byte_buffer.h"
+#include "vdis_logger.h"
+#include "vdis_services.h"
+#include "vdis_string.h"
 
 namespace
 {
@@ -87,8 +72,8 @@ void vdb::network::set_address(
     bool &broadcast,
     bool fail_on_error)
 {
-    const std::string
-        address_string = to_lowercase(address);
+    const string_t
+        address_string = vdis::to_lowercase(address);
 
     std::memset(&inet_address, 0, sizeof(inet_address));
 
@@ -133,18 +118,18 @@ void vdb::network::set_address(
             }
         }
 
-        broadcast = ends_with(address_string, ".255");
+        broadcast = vdis::ends_with(address_string, ".255");
 
         if (options::flag(OPT_VERBOSE))
         {
+            vdis::byte_buffer_t
+                temp_buffer(
+                    (const uint8_t *)&inet_address,
+                    sizeof(inet_address_t));
+
             LOG_VERBOSE("Converted %s to IPv4 address:", address);
 
-            hexadecimal::stream(
-                "IPv4: ",
-                (const uint8_t *)&inet_address,
-                sizeof(inet_address_t),
-                sizeof(inet_address_t),
-                std::cout);
+            temp_buffer.print(string_t(), std::cout);
         }
     }
 }
@@ -179,8 +164,8 @@ void vdb::network::set_address(
     inet6_address_t &inet6_address,
     bool fail_on_error)
 {
-    const std::string
-        address_string = to_lowercase(address);
+    const string_t
+        address_string = vdis::to_lowercase(address);
 
     if (address_string == ANY)
     {
@@ -226,22 +211,22 @@ void vdb::network::set_address(
 
         if (options::flag(OPT_VERBOSE))
         {
+            vdis::byte_buffer_t
+                temp_buffer(
+                    (const uint8_t *)&inet6_address,
+                    sizeof(inet6_address_t));
+
             LOG_VERBOSE("Converted %s to IPv6 address:", address);
 
-            hexadecimal::stream(
-                "IPv6: ",
-                (const uint8_t *)&inet6_address,
-                sizeof(inet6_address_t),
-                sizeof(inet6_address_t),
-                std::cout);
+            temp_buffer.print(string_t(), std::cout);
         }
     }
 }
 
 // ----------------------------------------------------------------------------
-std::string vdb::network::get_address(int family, const void *address_ptr)
+string_t vdb::network::get_address(int family, const void *address_ptr)
 {
-    std::string
+    string_t
         source;
     char
         buffer[64];
@@ -305,7 +290,7 @@ std::string vdb::network::get_address(int family, const void *address_ptr)
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
     const inet_address_t &address,
-    std::string &host)
+    string_t &host)
 {
     const uint32_t
         ip = address.s_addr;
@@ -341,7 +326,7 @@ bool vdb::network::get_hostname(
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
     const inet_address_t &address,
-    std::string &host)
+    string_t &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
@@ -376,7 +361,7 @@ bool vdb::network::query_hostname(
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
     const inet6_address_t &address,
-    std::string &host)
+    string_t &host)
 {
     // TODO: Cache hostname from IPv6 address
     //
@@ -386,7 +371,7 @@ bool vdb::network::get_hostname(
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
     const inet6_address_t &address,
-    std::string &host)
+    string_t &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
@@ -586,7 +571,7 @@ void vdb::capture_socket_t::receive(pdu_data_t &data)
     }
     else
     {
-        data.set_time(time::get_system());
+        data.set_time(vdis::get_system_time());
         data.set_pdu_length(result);
 
         if (ipv6)

@@ -6,9 +6,16 @@
 
 namespace
 {
-    const std::string
-        description_undefined = "Undefined";
+    const string_t
+        empty_string;
 }
+
+std::map<uint32_t, string_t>
+    vdis::object_types::descriptions;
+std::map<uint32_t, vdis::object_geometry_e>
+    vdis::object_types::geometries;
+bool
+    vdis::object_types::loaded = false;
 
 // ----------------------------------------------------------------------------
 void vdis::object_types::load(void)
@@ -25,7 +32,7 @@ void vdis::object_types::load(void)
 // ----------------------------------------------------------------------------
 void vdis::object_types::print(std::ostream &stream)
 {
-    std::map<uint32_t, std::string>::const_iterator
+    std::map<uint32_t, string_t>::const_iterator
         description = descriptions.begin();
     std::map<uint32_t, object_geometry_e>::const_iterator
         geometry;
@@ -36,7 +43,7 @@ void vdis::object_types::print(std::ostream &stream)
     {
         geometry = geometries.find(description->first);
 
-        convert(description->first, object_type);
+        object_type.set(description->first);
 
         stream << object_type << ",";
 
@@ -56,39 +63,9 @@ void vdis::object_types::print(std::ostream &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::object_types::convert(const object_type_t &type, uint32_t &value)
+const string_t &vdis::object_types::get_description(uint32_t value)
 {
-    value = 0;
-    value = (uint8_t)(type.domain & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.kind & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.category & 0xFF);
-    value <<= 8;
-    value |= (uint8_t)(type.subcategory & 0xFF);
-}
-
-// ----------------------------------------------------------------------------
-void vdis::object_types::convert(const uint32_t value, object_type_t &type)
-{
-    uint32_t bits = value;
-
-    type.subcategory = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.category = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.kind = (uint8_t)(bits & 0xFF);
-    bits >>= 8;
-
-    type.domain = (uint8_t)(bits & 0xFF);
-}
-
-// ----------------------------------------------------------------------------
-const std::string &vdis::object_types::get_description(uint32_t value)
-{
-    std::map<uint32_t, std::string>::const_iterator
+    std::map<uint32_t, string_t>::const_iterator
         search_itor = descriptions.find(value);
 
     if (search_itor != descriptions.end())
@@ -96,7 +73,7 @@ const std::string &vdis::object_types::get_description(uint32_t value)
         return search_itor->second;
     }
 
-    return description_undefined;
+    return empty_string;
 }
 
 // ----------------------------------------------------------------------------
@@ -111,6 +88,70 @@ vdis::object_geometry_e vdis::object_types::get_geometry(uint32_t value)
     }
 
     return OBJECT_GEOMETRY_UNKNOWN;
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::object_types::get_parent(
+    const object_type_t &child,
+    object_type_t &parent)
+{
+    bool success = false;
+
+    parent = child;
+
+    if (parent.subcategory > 0)
+    {
+        parent.subcategory = 0;
+        success = true;
+    }
+    else if (parent.category > 0)
+    {
+        parent.category = 0;
+        success = true;
+    }
+    else if (parent.kind > 0)
+    {
+        parent.kind = 0;
+        success = true;
+    }
+    else if (parent.domain > 0)
+    {
+        parent.domain = 0;
+        success = true;
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::object_types::get_valid_parent(
+    const object_type_t &child,
+    object_type_t &parent)
+{
+    std::map<uint32_t, string_t>::const_iterator
+        search_itor;
+    object_type_t
+        temp_child = child,
+        temp_parent;
+    bool
+        success = false;
+
+    while(get_parent(temp_child, temp_parent) and not success)
+    {
+        search_itor = descriptions.find(temp_parent.get());
+
+        if (search_itor != descriptions.end())
+        {
+            parent = temp_parent;
+            success = true;
+        }
+        else
+        {
+            temp_child = temp_parent;
+        }
+    }
+
+    return success;
 }
 
 // ----------------------------------------------------------------------------
@@ -132,7 +173,7 @@ void vdis::object_types::add(
     type.category = (uint8_t)category;
     type.subcategory = (uint8_t)subcategory;
 
-    convert(value, type);
+    value = type.get();
 
     if (description_ptr)
     {
@@ -141,7 +182,7 @@ void vdis::object_types::add(
 
     if (geometry_ptr)
     {
-        std::string
+        string_t
             geometry = to_lowercase(geometry_ptr);
 
         if (geometry == "point")

@@ -1,7 +1,3 @@
-#include <algorithm>
-#include <cstring>
-#include <limits>
-
 #include "vdis_byte_stream.h"
 #include "vdis_logger.h"
 
@@ -65,6 +61,15 @@ vdis::byte_stream_t::byte_stream_t(const byte_stream_t &copy) :
 vdis::byte_stream_t::~byte_stream_t(void)
 {
 
+}
+
+// ----------------------------------------------------------------------------
+void vdis::byte_stream_t::reset(uint32_t size)
+{
+    byte_buffer_t::reset(size);
+
+    buffer_index = 0;
+    buffer_status = (length() > 0);
 }
 
 // ----------------------------------------------------------------------------
@@ -161,42 +166,6 @@ void vdis::byte_stream_t::resize(uint32_t size)
 
         delete[] new_buffer;
         new_buffer = 0;
-    }
-}
-
-// ----------------------------------------------------------------------------
-void vdis::byte_stream_t::read(byte_buffer_t &buffer, uint32_t size)
-{
-    if (read_ready(size))
-    {
-        uint8_t *temp_buffer = new uint8_t[size];
-
-        read(temp_buffer, size);
-
-        buffer.reset(temp_buffer, size, false);
-    }
-}
-
-// ----------------------------------------------------------------------------
-void vdis::byte_stream_t::write(const byte_buffer_t &buffer)
-{
-    if ((buffer.length() > 0) and write_ready(buffer.length()))
-    {
-        write(buffer.buffer(), buffer.length());
-    }
-}
-
-// ----------------------------------------------------------------------------
-void vdis::byte_stream_t::write(const byte_buffer_t &buffer, uint32_t size)
-{
-    if (size > buffer.length())
-    {
-        size = buffer.length();
-    }
-
-    if ((size > 0) and write_ready(size))
-    {
-        write(buffer.buffer(), size);
     }
 }
 

@@ -1,23 +1,10 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_OPTIONS_H
 #define VDB_OPTIONS_H
 
-#include "vdb_common.h"
-#include "vdb_enums.h"
+#include "vdb_system.h"
+
+#include "vdis_data_types.h"
+#include "vdis_enums.h"
 
 #define OPT_STRING_MASK         0x0100
 #define OPT_INTEGER_MASK        0x0200
@@ -25,11 +12,13 @@
 #define OPT_FLAG_MASK           0x0800
 #define OPT_COMPLEX_MASK        0x1000
 
+namespace vdis
+{
+    class pdu_t;
+}
+
 namespace vdb
 {
-    class id_t;
-    class pdu_t;
-
     // ------------------------------------------------------------------------
     typedef enum
     {
@@ -42,8 +31,7 @@ namespace vdb
         USER_COMMAND_UNCOMMENT,
         USER_COMMAND_ENUMS,
         USER_COMMAND_ENTITIES,
-        USER_COMMAND_OBJECTS,
-        USER_COMMAND_TEST
+        USER_COMMAND_OBJECTS
 
     } user_command_e;
 
@@ -141,7 +129,7 @@ namespace vdb
 
         // Returns string option value or null if not provided
         //
-        static const std::string *string(option_e o);
+        static const string_t *string(option_e o);
 
         // Returns integer option value or null if not provided
         //
@@ -153,7 +141,7 @@ namespace vdb
 
         // Returns the terminal command
         //
-        static const std::string &get_terminal_command(void);
+        static const string_t &get_terminal_command(void);
 
         // Returns the specified user command
         //
@@ -161,7 +149,7 @@ namespace vdb
 
         // Returns true if there's no entity ID filters or if PDU matches one
         //
-        static bool entity_id_match(const pdu_t &pdu);
+        static bool entity_id_match(const vdis::pdu_t &pdu);
 
         // Returns true is value is in specified integer set, false if set is
         // empty (use provided(option) first)
@@ -175,11 +163,11 @@ namespace vdb
 
         // Returns all arguments for the specified command
         //
-        static const std::vector<std::string> get_command_arguments(void);
+        static const std::vector<string_t> &get_command_arguments(void);
 
         // Returns indexed argument for the specified command, null if N/A
         //
-        static const std::string *get_command_argument(uint32_t index);
+        static const string_t *get_command_argument(uint32_t index);
 
       private:
 
@@ -206,20 +194,20 @@ namespace vdb
 
         static bool process_option(
             option_e option,
-            const std::string &name,
-            const std::string &value
+            const string_t &name,
+            const string_t &value
         );
 
-        static bool process_flag(option_e option, const std::string &name);
+        static bool process_flag(option_e option, const string_t &name);
 
-        static bool parse_entity_ids(const std::string &value);
+        static bool parse_entity_ids(const string_t &value);
 
-        static bool parse_entity_id(std::string &value);
+        static bool parse_entity_id(string_t &value);
 
         static bool parse_integer_set(
             option_e,
-            const std::string &name,
-            const std::string &value
+            const string_t &name,
+            const string_t &value
         );
 
         static void add(
@@ -231,7 +219,7 @@ namespace vdb
 
         static const option_definition_t *get_option(option_e);
         static const option_definition_t *get_short_option(char);
-        static const option_definition_t *get_long_option(const std::string &);
+        static const option_definition_t *get_long_option(const string_t &);
 
         // Option definitions
         //
@@ -240,7 +228,7 @@ namespace vdb
 
         // Names for command enumerations
         //
-        static std::map<user_command_e, std::string>
+        static std::map<user_command_e, string_t>
             command_names;
 
         // Array of valid options for each command
@@ -250,12 +238,12 @@ namespace vdb
 
         // All command-line arguments after the command
         //
-        static std::vector<std::string>
+        static std::vector<string_t>
             command_arguments;
 
         // Values for string options
         //
-        static std::map<option_e, std::string>
+        static std::map<option_e, string_t>
             string_options;
 
         // Values for integer options
@@ -275,11 +263,11 @@ namespace vdb
 
         // ID specified for 'OPT_ENTITY_ID' option
         //
-        static std::vector<id_t>
+        static std::vector<vdis::id_t>
             entity_ids;
 
         // The program name as executed from command line (argv[0])
-        static std::string
+        static string_t
             terminal_command;
 
         // The command to execute
@@ -304,7 +292,7 @@ inline bool vdb::options::provided(option_e o)
     {
         return not entity_ids.empty();
     }
-    else if (flag(o) or string(o) || integer(o) || integer_set(o))
+    else if (flag(o) or string(o) or integer(o) or integer_set(o))
     {
         return true;
     }
@@ -324,7 +312,7 @@ inline bool vdb::options::flag(option_e o)
 }
 
 // ----------------------------------------------------------------------------
-inline const std::string &vdb::options::get_terminal_command(void)
+inline const string_t &vdb::options::get_terminal_command(void)
 {
     return terminal_command;
 }
@@ -373,13 +361,13 @@ inline bool vdb::options::pdu_index_in_range(uint32_t index, bool &past_end)
 }
 
 // ----------------------------------------------------------------------------
-inline const std::vector<std::string> vdb::options::get_command_arguments(void)
+inline const std::vector<string_t> &vdb::options::get_command_arguments(void)
 {
     return command_arguments;
 }
 
 // ----------------------------------------------------------------------------
-inline const std::string *vdb::options::get_command_argument(uint32_t index)
+inline const string_t *vdb::options::get_command_argument(uint32_t index)
 {
     if (index < command_arguments.size())
     {

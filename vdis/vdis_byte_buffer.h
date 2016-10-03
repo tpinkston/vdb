@@ -1,11 +1,12 @@
 #ifndef VDIS_BYTE_BUFFER_H
 #define VDIS_BYTE_BUFFER_H
 
-#include <cstdint>
-#include <iostream>
+#include "vdis_data_types.h"
 
 namespace vdis
 {
+    class byte_stream_t;
+
     class byte_buffer_t
     {
       public:
@@ -24,8 +25,14 @@ namespace vdis
 
         uint32_t length(void) const;
 
-        void print(const std::string &, std::ostream &) const;
+        void print(const string_t &, std::ostream &) const;
 
+        void read(byte_stream_t &);
+        void read(byte_stream_t &, uint32_t size);
+        void write(byte_stream_t &);
+        void write(byte_stream_t &, uint32_t size);
+
+        virtual void reset(uint32_t size = 0);
         virtual void reset(const uint8_t *buffer, uint32_t size, bool allocate = true);
         virtual void reset(const byte_buffer_t &buffer);
 
@@ -36,8 +43,9 @@ namespace vdis
 
       private:
 
-        // true: 'data_buffer' will be deallocated in deconstructor
-        // false: bytes in 'data_buffer' get deallocated elsewhere
+        // When true the 'data_buffer' will be deallocated in deconstructor,
+        // false implies that this buffer is just a reference to another
+        // buffer.
         //
         bool        data_allocated;
     };

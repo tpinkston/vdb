@@ -1,30 +1,13 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
-#include "vdb_enums.h"
 #include "vdb_file_readers.h"
 #include "vdb_filter.h"
-#include "vdb_ids.h"
 #include "vdb_list.h"
-#include "vdb_logger.h"
-#include "vdb_marking.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
-#include "vdb_pdu.h"
 #include "vdb_print.h"
-#include "vdb_string.h"
+
+#include "vdis_enums.h"
+#include "vdis_pdus.h"
+#include "vdis_logger.h"
 
 uint32_t
     vdb::list::pdus_listed = 0,
@@ -54,7 +37,7 @@ int vdb::list::list_pdus(void)
     }
     else
     {
-        const std::string
+        const string_t
             filename = *options::get_command_argument(0);
 
         LOG_EXTRA_VERBOSE("Starting list...");
@@ -103,7 +86,7 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
     {
         if (filter::filter_by_header(data))
         {
-            const pdu_t
+            const vdis::pdu_t
                 *pdu_ptr = data.generate_pdu();
 
             if (pdu_ptr)
@@ -120,25 +103,25 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
         }
         else
         {
-            const pdu_type_e
-                pdu_type = (pdu_type_e)data.get_pdu_type();
+            const vdis::pdu_type_e
+                pdu_type = (vdis::pdu_type_e)data.get_pdu_type();
 
-            if (pdu_type == PDU_TYPE_ENTITY_STATE)
+            if (pdu_type == vdis::PDU_TYPE_ENTITY_STATE)
             {
-                id_t
+                vdis::id_t
                     id;
-                entity_marking_t
+                vdis::marking_t
                     marking;
-                byte_stream
+                vdis::byte_stream_t
                     bio(data.get_pdu_buffer(), data.get_pdu_length());
 
                 bio.skip(12); // header, up to 'id'
-                bio.read(id);
+                id.read(bio);
 
                 bio.skip(110); // up to 'marking'
-                bio.read(marking);
+                marking.read(bio);
 
-                id_mappings::set_marking(id, marking);
+                vdis::entity_marking::set(id, marking);
             }
         }
     }

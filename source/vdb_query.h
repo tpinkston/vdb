@@ -1,43 +1,14 @@
-// ============================================================================
-// VDB (VDIS Debugger)
-// Tony Pinkston (git@github.com:tpinkston/vdb.git)
-//
-// VDB is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software 
-// Foundation, either version 3 of the License, or (at your option) any later 
-// version.
-//
-// VDB is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
-// details (http://www.gnu.org/licenses).
-// ============================================================================
-
 #ifndef VDB_QUERY_H
 #define VDB_QUERY_H
 
-#include "vdb_common.h"
-#include "vdb_entity_type.h"
-#include "vdb_enums.h"
-#include "vdb_ids.h"
-#include "vdb_marking.h"
 #include "vdb_options.h"
-#include "vdb_warfare_pdus.h"
+#include "vdb_system.h"
+
+#include "vdis_pdus.h"
 
 namespace vdb
 {
-    class entity_state_pdu_t;
-    class collision_pdu_t;
-    class designator_pdu_t;
-    class em_emission_pdu_t;
     class file_reader_t;
-    class transmitter_pdu_t;
-    class signal_pdu_t;
-    class receiver_pdu_t;
-    class iff_pdu_t;
-    class point_object_state_pdu_t;
-    class linear_object_state_pdu_t;
-    class areal_object_state_pdu_t;
 
     // ------------------------------------------------------------------------
     class collision_node_t
@@ -48,16 +19,16 @@ namespace vdb
         collision_node_t(const collision_node_t &copy);
         ~collision_node_t(void);
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
-        id_t
+        vdis::id_t
             colliding_entity,
             event;
-        collision_e
+        vdis::collision_e
             type;
-        velocity_t
+        vdis::velocity_t
             velocity;
-        location12_t
+        vdis::location12_t
             location;
     };
 
@@ -70,11 +41,11 @@ namespace vdb
     	designator_node_t(const designator_node_t &copy);
         ~designator_node_t(void);
 
-        bool matches(const designator_pdu_t &pdu) const;
+        bool matches(const vdis::designator_pdu_t &pdu) const;
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
-        id_t
+        vdis::id_t
             target;
         uint16_t
             code,
@@ -98,16 +69,16 @@ namespace vdb
         warfare_data_node_t(const warfare_data_node_t &copy);
         ~warfare_data_node_t(void);
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
-        id_t
+        vdis::id_t
             shooter,
             target,
             munition,
             event;
-        burst_descriptor_t
+        vdis::burst_descriptor_t
             burst;
-        detonation_result_e
+        vdis::detonation_result_e
             result;
         uint64_t
             fire_time,
@@ -123,23 +94,23 @@ namespace vdb
         entity_data_node_t(const entity_data_node_t &copy);
         ~entity_data_node_t(void);
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
-        id_t
+        vdis::id_t
             id;
-        entity_marking_t
+        vdis::marking_t
             marking;
-        force_id_e
+        vdis::force_id_e
             force_id;
-        entity_type_t
+        vdis::entity_type_t
             type;
-        std::string
+        string_t
             source;
         std::vector<collision_node_t>
             collisions;
         std::vector<designator_node_t>
             designations;
-        std::map<id_t, warfare_data_node_t>
+        std::map<vdis::id_t, warfare_data_node_t>
             fires;
     };
 
@@ -152,11 +123,11 @@ namespace vdb
         object_data_node_t(const object_data_node_t &copy);
         ~object_data_node_t(void);
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
-        force_id_e
+        vdis::force_id_e
             force_id;
-        object_type_t
+        vdis::object_type_t
             type;
     };
 
@@ -169,12 +140,12 @@ namespace vdb
         source_data_node_t(const source_data_node_t &copy);
         ~source_data_node_t(void);
 
-        void print(std::ostream &stream) const;
+        void print(std::ostream &out) const;
 
         uint32_t
             total_pdus,
             total_bytes;
-        std::map<pdu_type_e, uint32_t>
+        std::map<vdis::pdu_type_e, uint32_t>
             pdu_types;
         std::set<uint8_t>
             exercises;
@@ -195,18 +166,18 @@ namespace vdb
 
         static void process_pdu(
             const pdu_data_t &,
-            const pdu_t &,
+            const vdis::pdu_t &,
             source_data_node_t &
         );
 
-        static void process(const entity_state_pdu_t &);
-        static void process(const pdu_data_t &, const fire_pdu_t &);
-        static void process(const pdu_data_t &, const detonation_pdu_t &);
-        static void process(const collision_pdu_t &);
-        static void process(const designator_pdu_t &);
-        static void process(const point_object_state_pdu_t &);
-        static void process(const linear_object_state_pdu_t &);
-        static void process(const areal_object_state_pdu_t &);
+        static void process(const vdis::entity_state_pdu_t &);
+        static void process(const pdu_data_t &, const vdis::fire_pdu_t &);
+        static void process(const pdu_data_t &, const vdis::detonation_pdu_t &);
+        static void process(const vdis::collision_pdu_t &);
+        static void process(const vdis::designator_pdu_t &);
+        static void process(const vdis::point_object_state_pdu_t &);
+        static void process(const vdis::linear_object_state_pdu_t &);
+        static void process(const vdis::areal_object_state_pdu_t &);
 
         static void print_results(std::ostream &);
 
@@ -217,7 +188,7 @@ namespace vdb
 
         static file_reader_t
             *reader_ptr;
-        static std::string
+        static string_t
             filename,
             current_source;
         static uint64_t
@@ -225,18 +196,18 @@ namespace vdb
             last_pdu_time;
         static source_data_node_t
             all_sources;
-        static std::map<std::string, source_data_node_t>
+        static std::map<string_t, source_data_node_t>
             source_data;
-        static std::map<id_t, entity_data_node_t>
+        static std::map<vdis::id_t, entity_data_node_t>
             entity_data;
-        static std::map<id_t, object_data_node_t>
+        static std::map<vdis::id_t, object_data_node_t>
             object_data;
     };
 }
 
 // ----------------------------------------------------------------------------
 inline vdb::collision_node_t::collision_node_t(void) :
-    type(COLLISION_INELASTIC)
+    type(vdis::COLLISION_INELASTIC)
 {
 
 }
@@ -296,7 +267,7 @@ inline vdb::designator_node_t::~designator_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::warfare_data_node_t::warfare_data_node_t(void) :
-    result(DETONATION_RESULT_DET_RESULT_OTHER),
+    result(vdis::DETONATION_RESULT_DET_RESULT_OTHER),
     fire_time(0),
     detonation_time(0)
 {
@@ -327,7 +298,7 @@ inline vdb::warfare_data_node_t::~warfare_data_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::entity_data_node_t::entity_data_node_t(void) :
-    force_id(FORCE_ID_OTHER)
+    force_id(vdis::FORCE_ID_OTHER)
 {
 
 }
@@ -356,7 +327,7 @@ inline vdb::entity_data_node_t::~entity_data_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::object_data_node_t::object_data_node_t(void) :
-    force_id(vdb::FORCE_ID_OTHER)
+    force_id(vdis::FORCE_ID_OTHER)
 {
 
 }
