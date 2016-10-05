@@ -1,6 +1,7 @@
 #include "vdb_file_readers.h"
+#include "vdb_filter.h"
 #include "vdb_pdu_data.h"
-#include "vdb_query.h"
+#include "vdb_summary.h"
 
 #include "vdis_logger.h"
 #include "vdis_services.h"
@@ -24,21 +25,21 @@ namespace
 }
 
 vdb::file_reader_t
-    *vdb::query::reader_ptr = 0;
+    *vdb::summary::reader_ptr = 0;
 string_t
-    vdb::query::filename,
-    vdb::query::current_source;
+    vdb::summary::filename,
+    vdb::summary::current_source;
 uint64_t
-    vdb::query::first_pdu_time = 0,
-    vdb::query::last_pdu_time = 0;
+    vdb::summary::first_pdu_time = 0,
+    vdb::summary::last_pdu_time = 0;
 vdb::source_data_node_t
-    vdb::query::all_sources;
+    vdb::summary::all_sources;
 std::map<string_t, vdb::source_data_node_t>
-    vdb::query::source_data;
+    vdb::summary::source_data;
 std::map<vdis::id_t, vdb::entity_data_node_t>
-    vdb::query::entity_data;
+    vdb::summary::entity_data;
 std::map<vdis::id_t, vdb::object_data_node_t>
-    vdb::query::object_data;
+    vdb::summary::object_data;
 
 // ----------------------------------------------------------------------------
 bool vdb::designator_node_t::matches(const vdis::designator_pdu_t &pdu) const
@@ -73,7 +74,7 @@ void vdb::designator_node_t::print(std::ostream &out) const
         ++itor;
     }
 
-    if (options::flag(OPT_VERBOSE))
+    if (options::summary_extra)
     {
         out << "      Spot types: " << std::endl;
 
@@ -118,7 +119,7 @@ void vdb::collision_node_t::print(std::ostream &out) const
         << "      Other entity: " << vdis::entity_marking(colliding_entity)
         << std::endl;
 
-    if (options::flag(OPT_VERBOSE))
+    if (options::summary_extra)
     {
         out << "      Location: " << location << std::endl
             << "      Velocity: " << velocity << " ("
@@ -155,7 +156,7 @@ void vdb::warfare_data_node_t::print(std::ostream &out) const
     out << "      Munition: " << burst.munition << " '"
         << burst.munition.description() << "'" << std::endl;
 
-    if (options::flag(OPT_VERBOSE))
+    if (options::summary_extra)
     {
         out << "      Fire: ";
 
@@ -200,15 +201,15 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
 {
     out << "  " << id << ": "
            << color::get(force_id) << marking << color::none << ", "
-           << type << " '" << type.description()  << "'" << std::endl;
+           << type << " '" << type.description() << "'" << std::endl;
 
-    if (options::flag(OPT_VERBOSE) and not source.empty())
+    if (options::summary_extra and not source.empty())
     {
         out << "    Source: " << color::bold_cyan << source
                << color::none << std::endl;
     }
 
-    if (query::print(OPT_COLLISIONS) and not collisions.empty())
+    if (options::summary_collisions and not collisions.empty())
     {
         out << "    Collisions(" << collisions.size() << "):" << std::endl;
 
@@ -222,7 +223,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (query::print(OPT_LASERS) and not designations.empty())
+    if (options::summary_lasers and not designations.empty())
     {
         out << "    Designations(" << designations.size() << "):"
                << std::endl;
@@ -237,7 +238,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (query::print(OPT_FIRES) and not fires.empty())
+    if (options::summary_fires and not fires.empty())
     {
         std::map<vdis::id_t, warfare_data_node_t>::const_iterator
             fire_itor = fires.begin();
@@ -269,34 +270,32 @@ void vdb::source_data_node_t::print(std::ostream &out) const
 }
 
 // ----------------------------------------------------------------------------
-int vdb::query::query_pdus(void)
+int vdb::summary::summarize_pdus(void)
 {
     int
         result = 0;
 
     // File argument required
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " query: missing file argument" << std::endl;
+        std::cerr << "vdb summary: missing file argument" << std::endl;
 
         result = 1;
     }
-    else if (options::get_command_arguments().size() > 1)
+    else if (options::command_arguments.size() > 1)
     {
-        std::cerr << options::get_terminal_command()
-                  << " query: too many arguments" << std::endl;
+        std::cerr << "vdb summary: too many arguments" << std::endl;
 
         result = 1;
     }
     else
     {
-        LOG_EXTRA_VERBOSE("Starting query...");
+        LOG_EXTRA_VERBOSE("Starting summary...");
 
-        filename = *options::get_command_argument(0);
+        filename = options::command_arguments[0];
 
-        if (options::flag(OPT_PCAP))
+        if (options::use_pcap)
         {
             reader_ptr = new pcap_reader_t(filename);
         }
@@ -326,28 +325,41 @@ int vdb::query::query_pdus(void)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::query::print(option_e o)
+bool vdb::summary::process_pdu_data(const pdu_data_t &data)
 {
-    switch(o)
+    bool
+        past_end = false;
+
+    if (filter::filter_by_range(data.get_index(), past_end))
     {
-        case OPT_COLLISIONS:
-        case OPT_EMISSIONS:
-        case OPT_FIRES:
-        case OPT_LASERS:
-        case OPT_RADIOS:
-        case OPT_OBJECTS:
-            return (options::flag(o) || options::flag(OPT_ALL));
-            break;
-        default:
-            LOG_ERROR("Invalid option: %d", o);
-            break;
+        if (filter::filter_by_header(data) and
+            filter::filter_by_metadata(data))
+        {
+            const vdis::pdu_t
+                *pdu_ptr = data.generate_pdu();
+
+            if (pdu_ptr)
+            {
+                if (filter::filter_by_content(*pdu_ptr))
+                {
+                    process_pdu_data(data, *pdu_ptr);
+                }
+
+                delete pdu_ptr;
+                pdu_ptr = 0;
+            }
+        }
     }
 
-    return false;
+    return not past_end;
 }
 
+#define PDU_BASE(T, P) *static_cast<const vdis::T*>((P)->base())
+
 // ----------------------------------------------------------------------------
-bool vdb::query::process_pdu_data(const pdu_data_t &data)
+bool vdb::summary::process_pdu_data(
+    const pdu_data_t &data,
+    const vdis::pdu_t &pdu)
 {
     const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
@@ -361,33 +373,31 @@ bool vdb::query::process_pdu_data(const pdu_data_t &data)
         process_pdu(data, *pdu_ptr, all_sources);
         process_pdu(data, *pdu_ptr, source_data[current_source]);
 
-        #define PDU_CONTENT(T, P) *static_cast<const vdis::T*>((P)->base())
-
         switch(pdu_type)
         {
             case vdis::PDU_TYPE_ENTITY_STATE:
-                process(PDU_CONTENT(entity_state_pdu_t, pdu_ptr));
+                process(PDU_BASE(entity_state_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_FIRE:
-                process(data, PDU_CONTENT(fire_pdu_t, pdu_ptr));
+                process(data, PDU_BASE(fire_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_DETONATION:
-                process(data, PDU_CONTENT(detonation_pdu_t, pdu_ptr));
+                process(data, PDU_BASE(detonation_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_COLLISION:
-                process(PDU_CONTENT(collision_pdu_t, pdu_ptr));
+                process(PDU_BASE(collision_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_DESIGNATOR:
-                process(PDU_CONTENT(designator_pdu_t, pdu_ptr));
+                process(PDU_BASE(designator_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_POINT_OBJECT_STATE:
-                process(PDU_CONTENT(point_object_state_pdu_t, pdu_ptr));
+                process(PDU_BASE(point_object_state_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_LINEAR_OBJECT_STATE:
-                process(PDU_CONTENT(linear_object_state_pdu_t, pdu_ptr));
+                process(PDU_BASE(linear_object_state_pdu_t, pdu_ptr));
                 break;
             case vdis::PDU_TYPE_AREAL_OBJECT_STATE:
-                process(PDU_CONTENT(areal_object_state_pdu_t, pdu_ptr));
+                process(PDU_BASE(areal_object_state_pdu_t, pdu_ptr));
                 break;
             default:
                 break;
@@ -400,8 +410,10 @@ bool vdb::query::process_pdu_data(const pdu_data_t &data)
     return true;
 }
 
+#undef PDU_BASE
+
 // ----------------------------------------------------------------------------
-void vdb::query::process_pdu(
+void vdb::summary::process_pdu(
     const pdu_data_t &data,
     const vdis::pdu_t &pdu,
     source_data_node_t &source)
@@ -423,7 +435,7 @@ void vdb::query::process_pdu(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::entity_state_pdu_t &pdu)
+void vdb::summary::process(const vdis::entity_state_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.id];
@@ -436,7 +448,7 @@ void vdb::query::process(const vdis::entity_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(
+void vdb::summary::process(
     const pdu_data_t &data,
     const vdis::fire_pdu_t &pdu)
 {
@@ -456,7 +468,7 @@ void vdb::query::process(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(
+void vdb::summary::process(
     const pdu_data_t &data,
     const vdis::detonation_pdu_t &pdu)
 {
@@ -477,7 +489,7 @@ void vdb::query::process(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::collision_pdu_t &pdu)
+void vdb::summary::process(const vdis::collision_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.issuing_entity];
@@ -496,7 +508,7 @@ void vdb::query::process(const vdis::collision_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::designator_pdu_t &pdu)
+void vdb::summary::process(const vdis::designator_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.designating_id];
@@ -556,7 +568,7 @@ void vdb::query::process(const vdis::designator_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::point_object_state_pdu_t &pdu)
+void vdb::summary::process(const vdis::point_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -566,7 +578,7 @@ void vdb::query::process(const vdis::point_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::linear_object_state_pdu_t &pdu)
+void vdb::summary::process(const vdis::linear_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -576,7 +588,7 @@ void vdb::query::process(const vdis::linear_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::process(const vdis::areal_object_state_pdu_t &pdu)
+void vdb::summary::process(const vdis::areal_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -586,7 +598,7 @@ void vdb::query::process(const vdis::areal_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::print_results(std::ostream &out)
+void vdb::summary::print_results(std::ostream &out)
 {
     struct stat
         file_stat;
@@ -642,7 +654,7 @@ void vdb::query::print_results(std::ostream &out)
 
     if (source_itor != source_data.end())
     {
-        if (options::flag(OPT_VERBOSE))
+        if (options::summary_extra)
         {
             while(source_itor != source_data.end())
             {
@@ -673,7 +685,7 @@ void vdb::query::print_results(std::ostream &out)
 
         print_results(all_sources, out);
 
-        if (options::flag(OPT_VERBOSE))
+        if (options::summary_extra)
         {
             out << separator << std::endl;
         }
@@ -710,7 +722,7 @@ void vdb::query::print_results(std::ostream &out)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::query::print_results(
+void vdb::summary::print_results(
     const source_data_node_t &source,
     std::ostream &out)
 {
@@ -742,9 +754,10 @@ void vdb::query::print_results(
 
     while(type_itor != source.pdu_types.end())
     {
-        out << "  " << color::yellow << type_itor->first
-               << color::none << "[" << (int)type_itor->first
-               << "]: " << type_itor->second << std::endl;
+        out << "  " << color::yellow
+            << vdis::enumerations::get_name(ENUM_PDU_TYPE, type_itor->first)
+            << "(" << (int)type_itor->first << "): "
+            << color::none << type_itor->second << std::endl;
 
         ++type_itor;
     }

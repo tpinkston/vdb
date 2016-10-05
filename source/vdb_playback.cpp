@@ -33,39 +33,35 @@ int vdb::playback::playback_pdus(void)
 
     // Port argument (1st) required, file argument (2nd) required
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " playback: missing playback arguments" << std::endl;
+        std::cerr << "vdb playback: missing playback arguments" << std::endl;
 
         result = 1;
     }
-    else if (options::get_command_arguments().size() < 2)
+    else if (options::command_arguments.size() < 2)
     {
-        std::cerr << options::get_terminal_command()
-                  << " playback: too few arguments" << std::endl;
+        std::cerr << "vdb playback: too few arguments" << std::endl;
 
         result = 1;
     }
-    else if (options::get_command_arguments().size() > 2)
+    else if (options::command_arguments.size() > 2)
     {
-        std::cerr << options::get_terminal_command()
-                  << " playback: too many arguments" << std::endl;
+        std::cerr << "vdb playback: too many arguments" << std::endl;
 
         result = 1;
     }
-    else if (not vdis::to_int32(*options::get_command_argument(0), port))
+    else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << options::get_terminal_command()
-                  << " playback: invalid port argument '"
-                  << *options::get_command_argument(0) << "'" << std::endl;
+        std::cerr << "vdb playback: invalid port argument '"
+                  << options::command_arguments[0] << "'" << std::endl;
 
         result = 1;
     }
     else
     {
         const string_t
-            filename = *options::get_command_argument(1);
+            filename = options::command_arguments[1];
 
         LOG_EXTRA_VERBOSE("Starting playback...");
 
@@ -108,15 +104,15 @@ void vdb::playback::open_socket(void)
     const char
         *address_ptr = 0;
 
-    if (options::string(OPT_NET_ADDRESS))
+    if (not options::network_address.empty())
     {
-        address_ptr = options::string(OPT_NET_ADDRESS)->c_str();
+        address_ptr = options::network_address.c_str();
     }
 
     socket_ptr = new playback_socket_t(
         address_ptr,
         port,
-        options::flag(OPT_IPV6));
+        options::use_ipv6);
 }
 
 // ----------------------------------------------------------------------------
@@ -134,7 +130,7 @@ bool vdb::playback::process_pdu_data(const pdu_data_t &data)
     bool
         past_end = false;
 
-    if (options::pdu_index_in_range(data.get_index(), past_end))
+    if (filter::filter_by_range(data.get_index(), past_end))
     {
         if (filter::filter_by_header(data))
         {

@@ -35,25 +35,22 @@ int vdb::capture::capture_pdus(void)
 
     // Port argument (1st) required, file argument (2nd) optional
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " capture: missing port argument" << std::endl;
+        std::cerr << "vdb capture: missing port argument" << std::endl;
 
         result = 1;
     }
-    else if (options::get_command_arguments().size() > 2)
+    else if (options::command_arguments.size() > 2)
     {
-        std::cerr << options::get_terminal_command()
-                  << " capture: too many arguments" << std::endl;
+        std::cerr << "vdb capture: too many arguments" << std::endl;
 
         result = 1;
     }
-    else if (not vdis::to_int32(*options::get_command_argument(0), port))
+    else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << options::get_terminal_command()
-                  << " capture: invalid port argument '"
-                  << *options::get_command_argument(0) << "'" << std::endl;
+        std::cerr << "vdb capture: invalid port argument '"
+                  << options::command_arguments[0] << "'" << std::endl;
 
         result = 1;
     }
@@ -67,12 +64,12 @@ int vdb::capture::capture_pdus(void)
         // Was filename provided?  If so check overwrite and open it for
         // output.
         //
-        if (options::get_command_argument(1))
+        if (options::options::command_arguments.size() < 2)
         {
             struct stat
                 file_stat;
 
-            filename = *options::get_command_argument(1);
+            filename = options::command_arguments[1];
 
             LOG_VERBOSE("Checking file '%s'...", filename.c_str());
 
@@ -109,15 +106,15 @@ void vdb::capture::open_socket(void)
     const char
         *address_ptr = 0;
 
-    if (options::string(OPT_NET_ADDRESS))
+    if (not options::network_address.empty())
     {
-        address_ptr = options::string(OPT_NET_ADDRESS)->c_str();
+        address_ptr = options::network_address.c_str();
     }
 
     socket_ptr = new capture_socket_t(
         address_ptr,
         port,
-        options::flag(OPT_IPV6));
+        options::use_ipv6);
 }
 
 // ----------------------------------------------------------------------------
@@ -205,7 +202,7 @@ void vdb::capture::write_pdu_data(const pdu_data_t &data)
 
         data.write(stream);
 
-        if (stream())
+        if (not stream.error())
         {
             uint32_t bytes_written = fwrite(
                 stream.buffer(),

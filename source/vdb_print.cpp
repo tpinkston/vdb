@@ -12,11 +12,11 @@ void vdb::print::print_pdu(
     const vdis::pdu_t &pdu,
     std::ostream &out)
 {
-    if (options::flag(OPT_DUMP))
+    if (options::show_pdu_dump)
     {
         print_pdu_hex_dump(data, out);
     }
-    else if (options::flag(OPT_EXTRACT))
+    else if (options::show_pdu_extracted)
     {
         print_pdu_extracted(data, pdu, out);
     }
@@ -74,7 +74,7 @@ void vdb::print::print_pdu_hex_dump(
                 ENUM_PDU_TYPE,
                 data.get_pdu_type());
 
-        temp_buffer.print((pdu_type + ": "), out);
+        temp_buffer.print((pdu_type + ":"), out);
     }
     else
     {
@@ -105,7 +105,7 @@ void vdb::print::print_pdu_normal(
 
     // On playback print the current system time instead of source.
     //
-    if (options::get_command() == USER_COMMAND_PLAYBACK)
+    if (options::command == USER_COMMAND_PLAYBACK)
     {
         time = vdis::get_system_time();
     }
@@ -116,7 +116,10 @@ void vdb::print::print_pdu_normal(
 
     out << color::green << (int)data.get_pdu_exercise()
         << color::none << "; " << vdis::time_to_string(time) << "; "
-        << color::yellow << vdis::enumerations::get_name(ENUM_PDU_TYPE, data.get_pdu_type());
+        << color::yellow << vdis::enumerations::get_name(
+            ENUM_PDU_TYPE,
+            data.get_pdu_type())
+        << "(" << (int)data.get_pdu_type() << ")";
 
     if (intiator_ptr)
     {
@@ -130,7 +133,7 @@ void vdb::print::print_pdu_normal(
 
     out << color::none << std::endl;
 
-    if (pdu.base() and options::flag(OPT_SUMMARIZE))
+    if (pdu.base() and options::show_pdu_summary)
     {
         out << color::purple;
 
@@ -146,5 +149,5 @@ void vdb::print::print_pdu_summary(
     const vdis::pdu_t &pdu,
     std::ostream &out)
 {
-
+    // TODO: print_pdu_summary
 }

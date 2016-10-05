@@ -273,7 +273,7 @@ namespace
 }
 
 bool
-    vdis::pdu_t::valid_headers = true;
+    vdis::pdu_t::validate_headers = true;
 bool
     vdis::entity_state_pdu_t::set_entity_markings = true;
 
@@ -298,7 +298,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
             "Stream too short for PDU: %d bytes",
             stream.remaining_length());
     }
-    else if (valid_headers || validate_header(stream))
+    else if (validate_headers || validate_header(stream))
     {
         base_type = (pdu_type_e)stream[2];
         base_size = BASE_PDU_SIZE[base_type];
@@ -342,7 +342,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
             {
                 base_ptr = new default_pdu_t;
                 LOG_WARNING(
-                    "PDU type not handled: %s",
+                    "No base class for PDU type: %s",
                     enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str());
             }
         }
@@ -533,9 +533,10 @@ bool vdis::pdu_t::validate_header(byte_buffer_t &buffer)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::default_pdu_t::print(std::ostream &) const
+void vdis::default_pdu_t::print(std::ostream &out) const
 {
-
+    header.print("pdu.header.", out);
+    content.print("pdu.content.", out);
 }
 
 // ----------------------------------------------------------------------------
@@ -624,8 +625,10 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
     out << prefix << "id " << id << std::endl
         << prefix << "force " << (force_id_e)force << std::endl
         << prefix << "marking " << marking << std::endl
-        << prefix << "type " << type.description() << std::endl
-        << prefix << "alternate_type " << alternate_type.description() << std::endl
+        << prefix << "type " << type
+        << " '" << type.description() << "'" << std::endl
+        << prefix << "alternate_type " << alternate_type
+        << " '" << alternate_type.description() << "'" << std::endl
         << prefix << "velocity " << velocity << std::endl
         << prefix << "location " << location << std::endl
         << prefix << "orientation " << orientation << std::endl
@@ -1152,15 +1155,15 @@ void vdis::application_control_pdu_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-std::ostream &operator<<(std::ostream &out, const vdis::pdu_t &o)
+std::ostream &operator<<(std::ostream &out, const vdis::pdu_t &pdu)
 {
-    if (not o.base())
+    if (pdu.base())
     {
-        out << "NULL" << std::endl;
+        pdu.base()->print(out);
     }
     else
     {
-        o.base()->print(out);
+        out << "No PDU base object available..." << std::endl;
     }
 
     return out;

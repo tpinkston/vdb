@@ -121,7 +121,7 @@ void vdb::file_header_t::read(vdis::byte_stream_t &stream)
     stream.read(record_count);
     stream.read(comment_count);
 
-    for(uint32_t i = 0; (i < record_count) and stream(); ++i)
+    for(uint32_t i = 0; (i < record_count) and not stream.error(); ++i)
     {
         file_header_record_t
             record;
@@ -133,7 +133,7 @@ void vdb::file_header_t::read(vdis::byte_stream_t &stream)
         records.push_back(record);
     }
 
-    for(uint32_t i = 0; (i < comment_count) and stream(); ++i)
+    for(uint32_t i = 0; (i < comment_count) and not stream.error(); ++i)
     {
         file_header_comment_t
             comment;
@@ -167,14 +167,14 @@ void vdb::file_header_t::write(vdis::byte_stream_t &stream) const
     stream.write(record_count);
     stream.write(comment_count);
 
-    for(uint32_t i = 0; (i < record_count) and stream(); ++i)
+    for(uint32_t i = 0; (i < record_count) and not stream.error(); ++i)
     {
         LOG_VERBOSE("Writing record %d/%d...", (i + 1), record_count);
 
         records[i].write(stream);
     }
 
-    for(uint32_t i = 0; (i < comment_count) and stream(); ++i)
+    for(uint32_t i = 0; (i < comment_count) and not stream.error(); ++i)
     {
         LOG_VERBOSE("Writing comment %d/%d...", (i + 1), comment_count);
 
@@ -228,7 +228,7 @@ void vdb::file_header_comment_t::read(vdis::byte_stream_t &stream)
     stream.read(time);
     stream.read(comment_length);
 
-    if (comment_length and stream())
+    if (comment_length and not stream.error())
     {
         LOG_VERBOSE("Reading %d bytes for comment string...", comment_length);
 
@@ -262,7 +262,7 @@ void vdb::file_header_comment_t::write(vdis::byte_stream_t &stream) const
     stream.write(time);
     stream.write(comment_length);
 
-    if ((comment_length > 0) and stream())
+    if ((comment_length > 0) and not stream.error())
     {
         LOG_VERBOSE(
             "Writing %d bytes for comment string...",

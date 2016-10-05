@@ -21,31 +21,29 @@ int vdb::list::list_pdus(void)
 
     // File argument required
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " list: missing file argument" << std::endl;
+        std::cerr << "vdb list: missing file argument" << std::endl;
 
         result = 1;
     }
-    else if (options::get_command_arguments().size() > 1)
+    else if (options::command_arguments.size() > 1)
     {
-        std::cerr << options::get_terminal_command()
-                  << " list: too many arguments" << std::endl;
+        std::cerr << "vdb list: too many arguments" << std::endl;
 
         result = 1;
     }
     else
     {
         const string_t
-            filename = *options::get_command_argument(0);
+            filename = options::command_arguments[0];
 
         LOG_EXTRA_VERBOSE("Starting list...");
 
         file_reader_t
             *reader_ptr = 0;
 
-        if (options::flag(OPT_PCAP))
+        if (options::use_pcap)
         {
             reader_ptr = new pcap_reader_t(filename);
         }
@@ -82,9 +80,10 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
         processed = false,
         past_end = false;
 
-    if (options::pdu_index_in_range(data.get_index(), past_end))
+    if (filter::filter_by_range(data.get_index(), past_end))
     {
-        if (filter::filter_by_header(data))
+        if (filter::filter_by_header(data) and
+            filter::filter_by_metadata(data))
         {
             const vdis::pdu_t
                 *pdu_ptr = data.generate_pdu();

@@ -229,12 +229,10 @@ uint64_t vdis::entity_type_t::get(void) const
 // ----------------------------------------------------------------------------
 string_t vdis::entity_type_t::description(void) const
 {
-    std::ostringstream
-        stream;
     string_t
-        description = entity_types::get_description(get());
+        description;;
 
-    if (description.empty())
+    if (not entity_types::get_description(get(), description))
     {
         entity_type_t
             parent;
@@ -250,9 +248,7 @@ string_t vdis::entity_type_t::description(void) const
         }
     }
 
-    stream << *this << " '" << description << "'";
-
-    return stream.str();
+    return description;
 }
 
 // ----------------------------------------------------------------------------
@@ -799,7 +795,8 @@ void vdis::burst_descriptor_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    out << prefix << "munition " << munition.description() << std::endl
+    out << prefix << "munition " << munition
+        << " '" << munition.description() << "'" << std::endl
         << prefix << "warhead " << warhead_enum() << std::endl
         << prefix << "fuse " << fuse_enum() << std::endl
         << prefix << "quantity " << (int)quantity << std::endl

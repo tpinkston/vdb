@@ -114,7 +114,7 @@ namespace vdis
         // header is valid (i.e. call to 'valid_header' method returns true.
         // Default is true.
         //
-        static bool                     valid_headers;
+        static bool                     validate_headers;
 
       protected:
 

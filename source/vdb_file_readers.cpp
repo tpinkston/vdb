@@ -72,10 +72,10 @@ vdb::standard_reader_t::standard_reader_t(const string_t &filename) :
     {
         header.read(stream);
 
-        if (header.invalid_title() or not stream())
+        if (header.invalid_title() or stream.error())
         {
-            std::cerr << options::get_terminal_command()
-                      << ": invalid capture file: " << filename << std::endl;
+            std::cerr << "vdb: invalid capture file: " << filename
+                      << std::endl;
 
             error_condition = true;
         }
@@ -103,13 +103,13 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
 
         data.read(stream);
 
-        if (stream())
+        if (stream.error())
         {
-            valid_entry = true;
+            error_condition = true;
         }
         else
         {
-            error_condition = true;
+            valid_entry = true;
         }
     }
 
@@ -135,8 +135,7 @@ vdb::pcap_reader_t::pcap_reader_t(const string_t &filename) :
     }
     else
     {
-        std::cerr << options::get_terminal_command()
-                  << ": " << error_buffer << std::endl;
+        std::cerr << "vdb: " << error_buffer << std::endl;
 
         error_condition = true;
     }
@@ -209,7 +208,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
     stream.skip(12);
     stream.read(ethernet_type);
 
-    if (stream())
+    if (stream.ready())
     {
         LOG_EXTRA_VERBOSE("Ethernet type is 0x%04X...", ethernet_type)
 
@@ -249,9 +248,9 @@ bool vdb::pcap_reader_t::read_pcap_entry(
             LOG_WARNING("Unexpected ethernet type: 0x%04X", ethernet_type)
         }
 
-        if (address_ptr and stream())
+        if (address_ptr and stream.ready())
         {
-            if (options::flag(OPT_EXTRA_VERBOSE))
+            if (logger::is_enabled(logger::EXTRA_VERBOSE))
             {
                 if (address_ptr == &address_ipv4)
                 {
@@ -286,7 +285,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
                 stream.read(destination_port);
                 stream.skip(4);
 
-                if (stream())
+                if (stream.ready())
                 {
                     LOG_EXTRA_VERBOSE(
                         "Source port %d...",

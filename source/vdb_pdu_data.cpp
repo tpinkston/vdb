@@ -122,12 +122,15 @@ vdis::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
     // match the PDU length.  Buffer index should be at the end of the
     // buffer.
     //
-    if (not stream())
+    if (stream.error())
     {
         LOG_ERROR(
-            "Read error for PDU %d, type: %s",
+            "Stream error for PDU %d, type: %s ("
+            "index = %d, length = %d)",
             index,
-            pdu_type_string.c_str());
+            pdu_type_string.c_str(),
+            stream.index(),
+            stream.length());
     }
     else if (stream.index() != stream.length())
     {
@@ -217,7 +220,7 @@ void vdb::pdu_data_t::read(vdis::byte_stream_t &stream)
     stream.read(pdu_length);
     stream.read(pdu_buffer, pdu_length);
 
-    if (options::flag(OPT_EXTRA_VERBOSE))
+    if (logger::is_enabled(logger::EXTRA_VERBOSE))
     {
         vdis::byte_buffer_t
             temp_buffer(pdu_buffer, pdu_length, false);
@@ -225,7 +228,7 @@ void vdb::pdu_data_t::read(vdis::byte_stream_t &stream)
         temp_buffer.print("DEBUG_PDU_DATA ", std::cout);
     }
 
-    if (options::flag(OPT_EXTRA_VERBOSE))
+    if (logger::is_enabled(logger::EXTRA_VERBOSE))
     {
         LOG_EXTRA_VERBOSE(
             "Read %d bytes for PDU data starting at index %d\n"
@@ -266,7 +269,7 @@ void vdb::pdu_data_t::write(vdis::byte_stream_t &stream) const
     stream.write(pdu_length);
     stream.write(pdu_buffer, pdu_length);
 
-    if (options::flag(OPT_EXTRA_VERBOSE))
+    if (logger::is_enabled(logger::EXTRA_VERBOSE))
     {
         LOG_EXTRA_VERBOSE(
             "Wrote %d bytes in byte data starting at index %d (%d hostname)...",

@@ -1,5 +1,5 @@
-#ifndef VDB_QUERY_H
-#define VDB_QUERY_H
+#ifndef VDB_SUMMARY_H
+#define VDB_SUMMARY_H
 
 #include "vdb_options.h"
 #include "vdb_system.h"
@@ -152,17 +152,16 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class query
+    class summary
     {
       public:
 
-        static int query_pdus(void);
-
-        static bool print(option_e);
+        static int summarize_pdus(void);
 
       protected:
 
         static bool process_pdu_data(const pdu_data_t &);
+        static bool process_pdu_data(const pdu_data_t &, const vdis::pdu_t &);
 
         static void process_pdu(
             const pdu_data_t &,

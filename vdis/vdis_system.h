@@ -29,7 +29,5 @@
 typedef float               float32_t;
 typedef double              float64_t;
 typedef std::string         string_t;
-typedef std::set<int32_t>   int32_set_t;
-typedef std::set<uint32_t>  uint32_set_t;
 
 #endif

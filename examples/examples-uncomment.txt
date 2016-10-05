@@ -1,0 +1,7 @@
+  Removes all comments from file (after confirmation):
+  
+    $ vdb uncomment capture.vdb
+
+  Removes comment #3 from file (after confirmation):
+  
+    $ vdb uncomment capture.vdb 3

@@ -40,8 +40,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
     if (stream.fail())
     {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to open file: " << filename << std::endl;
+        std::cerr << "vdb: failed to open file: " << filename << std::endl;
     }
     else
     {
@@ -53,8 +52,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
         if (stream.fail())
         {
-            std::cerr << options::get_terminal_command()
-                      << ": failed to read file: " << filename << std::endl;
+            std::cerr << "vdb: failed to read file: " << filename << std::endl;
         }
         else
         {
@@ -69,8 +67,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
             if (stream.fail())
             {
-                std::cerr << options::get_terminal_command()
-                          << ": failed to read file: " << filename
+                std::cerr << "vdb: failed to read file: " << filename
                           << std::endl;
             }
             else
@@ -79,10 +76,8 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
                 if (bytes_read != data_length)
                 {
-                    std::cerr << options::get_terminal_command()
-                              << ": failed to read (" << bytes_read
-                              << " of " << data_length
-                              << " bytes) from file: "
+                    std::cerr << "vdb: failed to read (" << bytes_read
+                              << " of " << data_length << " bytes) from file: "
                               << filename << std::endl;
                 }
                 else
@@ -115,8 +110,7 @@ void vdb::file_stream::write_file(const string_t &filename)
 
     if (stream.fail())
     {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to open file: " << filename << std::endl;
+        std::cerr << "vdb: failed to open file: " << filename << std::endl;
         exit(1);
     }
 
@@ -126,8 +120,7 @@ void vdb::file_stream::write_file(const string_t &filename)
 
         if (stream.fail())
         {
-            std::cerr << options::get_terminal_command()
-                      << ": failed to write to file: " << filename
+            std::cerr << "vdb: failed to write to file: " << filename
                       << std::endl;
             exit(1);
         }
@@ -137,8 +130,7 @@ void vdb::file_stream::write_file(const string_t &filename)
 
     if (bytes_written != data_length)
     {
-        std::cerr << options::get_terminal_command()
-                  << ": failed to write (" << bytes_written
+        std::cerr << "vdb: failed to write (" << bytes_written
                   << " of " << data_length << " bytes) from file: "
                   << filename << std::endl;
         exit(1);

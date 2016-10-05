@@ -8,7 +8,7 @@ const vdis::byte_stream_t::operation_t
 // ----------------------------------------------------------------------------
 vdis::byte_stream_t::byte_stream_t(void) :
     buffer_index(0),
-    buffer_status(false)
+    buffer_error(false)
 {
 
 }
@@ -17,7 +17,7 @@ vdis::byte_stream_t::byte_stream_t(void) :
 vdis::byte_stream_t::byte_stream_t(uint32_t size) :
     byte_buffer_t(size),
     buffer_index(0),
-    buffer_status(size > 0)
+    buffer_error(false)
 {
 
 }
@@ -30,7 +30,7 @@ vdis::byte_stream_t::byte_stream_t(
 ) :
     byte_buffer_t(buffer, size, copy),
     buffer_index(0),
-    buffer_status(buffer and (size > 0))
+    buffer_error(false)
 {
 
 }
@@ -41,7 +41,7 @@ vdis::byte_stream_t::byte_stream_t(
 vdis::byte_stream_t::byte_stream_t(const byte_buffer_t &buffer) :
     byte_buffer_t(buffer),
     buffer_index(0),
-    buffer_status(buffer.buffer())
+    buffer_error(false)
 {
 
 }
@@ -52,7 +52,7 @@ vdis::byte_stream_t::byte_stream_t(const byte_buffer_t &buffer) :
 vdis::byte_stream_t::byte_stream_t(const byte_stream_t &copy) :
     byte_buffer_t(copy),
     buffer_index(0),
-    buffer_status(copy.buffer())
+    buffer_error(false)
 {
 
 }
@@ -69,7 +69,7 @@ void vdis::byte_stream_t::reset(uint32_t size)
     byte_buffer_t::reset(size);
 
     buffer_index = 0;
-    buffer_status = (length() > 0);
+    buffer_error = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void vdis::byte_stream_t::reset(const uint8_t *buffer, uint32_t size)
     byte_buffer_t::reset(buffer, size);
 
     buffer_index = 0;
-    buffer_status = (length() > 0);
+    buffer_error = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -93,9 +93,9 @@ void vdis::byte_stream_t::reset_index(uint32_t value)
     if (buffer())
     {
         buffer_index = value;
-        buffer_status = (buffer_index < length());
+        buffer_error = (buffer_index > length());
 
-        if (buffer_index > length())
+        if (buffer_error)
         {
             LOG_ERROR(
                 "Index reset past end of buffer (%d/%d)",
@@ -108,14 +108,14 @@ void vdis::byte_stream_t::reset_index(uint32_t value)
 // ----------------------------------------------------------------------------
 void vdis::byte_stream_t::skip(uint32_t count)
 {
-    if ((*this)())
+    if (not error())
     {
         LOG_EXTRA_VERBOSE("Data stream skip: %d...", count);
 
         buffer_index += count;
-        buffer_status = (buffer_index < length());
+        buffer_error = (buffer_index > length());
 
-        if (buffer_index > length())
+        if (buffer_error)
         {
             LOG_ERROR(
                 "Skip past end of buffer (%d/%d)",
@@ -137,7 +137,7 @@ void vdis::byte_stream_t::resize(uint32_t size)
         data_buffer = new uint8_t[size];
         data_length = size;
         buffer_index = 0;
-        buffer_status = true;
+        buffer_error = false;
 
         std::memset(data_buffer, 0, data_length);
     }
@@ -153,15 +153,11 @@ void vdis::byte_stream_t::resize(uint32_t size)
 
         data_buffer = new_buffer;
         data_length = size;
+        buffer_error = false;
 
-        if (buffer_index < data_length)
-        {
-            buffer_status = true;
-        }
-        else
+        if (buffer_index > data_length)
         {
             buffer_index = data_length;
-            buffer_status = false;
         }
 
         delete[] new_buffer;
@@ -194,26 +190,34 @@ bool vdis::byte_stream_t::operation_ready(
     const operation_t &operation,
     uint32_t size)
 {
-    LOG_EXTRA_VERBOSE("Data stream check %s: %d...", operation.c_str(), size);
-
-    if (not (*this)())
+    if (not error())
     {
-        LOG_ERROR(
-            "Operation '%s' attempted on null buffer!",
-            operation.c_str());
-    }
-    else if ((index() + size) > length())
-    {
-        LOG_ERROR(
-            "Operation '%s' attempted past end of of buffer at index %d "
-            "(length %d), buffer length %d",
+        LOG_EXTRA_VERBOSE(
+            "Data stream check %s: %d...",
             operation.c_str(),
-            buffer_index,
-            size,
-            data_length);
+            size);
 
-        buffer_status = false;
+        if (data_length == 0)
+        {
+            LOG_ERROR(
+                "Operation '%s' attempted on null buffer!",
+                operation.c_str());
+
+            buffer_error = true;
+        }
+        else if ((buffer_index + size) > data_length)
+        {
+            LOG_ERROR(
+                "Operation '%s' attempted past end of of buffer at index %d "
+                "(length %d), buffer length %d",
+                operation.c_str(),
+                buffer_index,
+                size,
+                data_length);
+
+            buffer_error = true;
+        }
     }
 
-    return (*this)();
+    return not error();
 }

@@ -9,14 +9,14 @@ GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
 THIS_FILE=$(lastword $(MAKEFILE_LIST))
 
-build: pcap data usage version builder
+build: pcap data help examples version builder
 	@echo
 	@echo "build:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile
 .PHONY : build
 
 
-all: pcap data usage version builder
+all: pcap data help examples version builder
 	@echo
 	@echo "all:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile all
@@ -30,20 +30,26 @@ data:
 .PHONY : data
 
 
-usage:
+help:
 	@echo
-	@echo "usage:"
-	@usage/usage.sh usage/usage_main.txt ${SRC_PATH}/vdb_usage_main.txt
-	@usage/usage.sh usage/usage_capture.txt ${SRC_PATH}/vdb_usage_capture.txt
-	@usage/usage.sh usage/usage_playback.txt ${SRC_PATH}/vdb_usage_playback.txt
-	@usage/usage.sh usage/usage_list.txt ${SRC_PATH}/vdb_usage_list.txt
-	@usage/usage.sh usage/usage_query.txt ${SRC_PATH}/vdb_usage_query.txt
-	@usage/usage.sh usage/usage_comment.txt ${SRC_PATH}/vdb_usage_comment.txt
-	@usage/usage.sh usage/usage_uncomment.txt ${SRC_PATH}/vdb_usage_uncomment.txt
-	@usage/usage.sh usage/usage_enums.txt ${SRC_PATH}/vdb_usage_enums.txt
-	@usage/usage.sh usage/usage_entities.txt ${SRC_PATH}/vdb_usage_entities.txt
-	@usage/usage.sh usage/usage_objects.txt ${SRC_PATH}/vdb_usage_objects.txt
-.PHONY : usage
+	@echo "help:"
+	@./parse_text.sh help.txt ${SRC_PATH}/vdb_help.txt
+.PHONY : help
+
+
+examples:
+	@echo
+	@echo "examples:"
+	@./parse_text.sh examples/examples-capture.txt ${SRC_PATH}/examples/vdb_examples_capture.txt
+	@./parse_text.sh examples/examples-playback.txt ${SRC_PATH}/examples/vdb_examples_playback.txt
+	@./parse_text.sh examples/examples-list.txt ${SRC_PATH}/examples/vdb_examples_list.txt
+	@./parse_text.sh examples/examples-summary.txt ${SRC_PATH}/examples/vdb_examples_summary.txt
+	@./parse_text.sh examples/examples-comment.txt ${SRC_PATH}/examples/vdb_examples_comment.txt
+	@./parse_text.sh examples/examples-uncomment.txt ${SRC_PATH}/examples/vdb_examples_uncomment.txt
+	@./parse_text.sh examples/examples-enums.txt ${SRC_PATH}/examples/vdb_examples_enums.txt
+	@./parse_text.sh examples/examples-entities.txt ${SRC_PATH}/examples/vdb_examples_entities.txt
+	@./parse_text.sh examples/examples-objects.txt ${SRC_PATH}/examples/vdb_examples_objects.txt
+.PHONY : examples
 
 
 version:
@@ -117,9 +123,10 @@ clean: clean_pcap clean_builder
 	@echo
 	@echo "clean:"
 	@rm -fv vdb
+	@rm -rfv ${SRC_PATH}/vdb_help.txt
 	@rm -rfv ${SRC_PATH}/vdb_git.h
-	@rm -rfv ${SRC_PATH}/vdb_usage_*.txt
 	@rm -rfv ${SRC_PATH}/vdb_version.h
+	@rm -rfv ${SRC_PATH}/examples/vdb_examples_*.txt
 .PHONY : clean
 
 

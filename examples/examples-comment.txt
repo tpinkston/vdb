@@ -1,16 +1,3 @@
-Usage:
-
-  vdb comment [OPTIONS] FILE [COMMENT]
-
-Options:
-
-  -h --help                 Print this info
-  -v --verbose              Print as much as possible (debugging)
-  -w --warnings             Show warnings (suppressed by default)
-  -E --errors-off           Do not show any error messages
-
-Examples:
-
   Adds comment to the capture file:
   
     $ vdb comment capture.vdb 'Testing build 43.34'

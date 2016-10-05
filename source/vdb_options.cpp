@@ -8,32 +8,47 @@
 
 namespace vdb
 {
-    std::vector<option_definition_t>
-        options::option_definitions;
-    std::map<user_command_e, string_t>
-        options::command_names;
-    std::map<user_command_e, option_set_t>
-        options::command_options;
-    std::vector<string_t>
-        options::command_arguments;
-    std::map<option_e, string_t>
-        options::string_options;
-    std::map<option_e, uint32_t>
-        options::integer_options;
-    std::map<option_e, uint32_set_t>
-        options::integer_set_options;
-    std::set<option_e>
-        options::flags;
-    std::vector<vdis::id_t>
-        options::entity_ids;
-    string_t
-        options::terminal_command;
     user_command_e
         options::command = USER_COMMAND_NONE;
+    std::map<user_command_e, std::string>
+        options::command_names;
+    std::vector<std::string>
+        options::command_arguments;
+    std::set<vdis::id_t>
+        options::include_entity_ids,
+        options::exclude_entity_ids;
+    std::set<uint8_t>
+        options::include_exercises,
+        options::exclude_exercises,
+        options::include_types,
+        options::exclude_types,
+        options::include_families,
+        options::exclude_families;
+    std::set<uint32_t>
+        options::pdu_index_range;
+    std::string
+        options::network_address,
+        options::network_interface;
     bool
-        options::initialized = false;
+        options::initialized = false,
+        options::quiet_mode = false,
+        options::use_ipv6 = false,
+        options::use_pcap = false,
+        options::show_version = false,
+        options::show_help = false,
+        options::show_examples = false,
+        options::show_pdu_dump = false,
+        options::show_pdu_extracted = false,
+        options::show_pdu_summary = false,
+        options::summary_extra = false,
+        options::summary_collisions = false,
+        options::summary_emissions = false,
+        options::summary_fires = false,
+        options::summary_lasers = false,
+        options::summary_objects = false,
+        options::summary_radios = false;
     const bool
-        options::DEBUG = false;
+        options::DEBUG = (getenv("VDB_OPTIONS_DEBUG") != 0);
 }
 
 // ----------------------------------------------------------------------------
@@ -42,131 +57,41 @@ void vdb::options::configure(void)
     command_names[USER_COMMAND_CAPTURE] = "capture";
     command_names[USER_COMMAND_PLAYBACK] = "playback";
     command_names[USER_COMMAND_LIST] = "list";
-    command_names[USER_COMMAND_QUERY] = "query";
+    command_names[USER_COMMAND_SUMMARY] = "query";
     command_names[USER_COMMAND_COMMENT] = "comment";
     command_names[USER_COMMAND_UNCOMMENT] = "uncomment";
     command_names[USER_COMMAND_ENUMS] = "enums";
     command_names[USER_COMMAND_ENTITIES] = "entities";
     command_names[USER_COMMAND_OBJECTS] = "objects";
+}
 
-    add("all", 'A', OPT_ALL, OPT_ARG_NONE);
-    add("address", 'a', OPT_NET_ADDRESS, OPT_ARG_REQUIRED);
-    add("collisions", 0, OPT_COLLISIONS, OPT_ARG_NONE);
-    add("color-off", 'c', OPT_COLOR_OFF, OPT_ARG_NONE);
-    add("dump", 'd', OPT_DUMP, OPT_ARG_NONE);
-    add("emissions", 0, OPT_EMISSIONS, OPT_ARG_NONE);
-    add("errors-off", 'E', OPT_ERRORS_OFF, OPT_ARG_NONE);
-    add("exercise", 'e', OPT_EXERCISE, OPT_ARG_REQUIRED);
-    add("extract", 'x', OPT_EXTRACT, OPT_ARG_NONE);
-    add("fires", 0, OPT_FIRES, OPT_ARG_NONE);
-    add("help", 'h', OPT_HELP, OPT_ARG_NONE);
-    add("ids", 'i', OPT_ENTITY_IDS, OPT_ARG_REQUIRED);
-    add("iface", 'n', OPT_NET_INTERFACE, OPT_ARG_REQUIRED);
-    add("ipv6", '6', OPT_IPV6, OPT_ARG_NONE);
-    add("lasers", 0, OPT_LASERS, OPT_ARG_NONE);
-    add("objects", 0, OPT_OBJECTS, OPT_ARG_NONE);
-    add("quiet", 'q', OPT_QUIET, OPT_ARG_NONE);
-    add("pcap", 'p', OPT_PCAP, OPT_ARG_NONE);
-    add("pdu-family", 'f', OPT_PDU_FAMILY, OPT_ARG_REQUIRED);
-    add("pdu-type", 't', OPT_PDU_TYPE, OPT_ARG_REQUIRED);
-    add("range", 'r', OPT_PDU_RANGE, OPT_ARG_REQUIRED);
-    add("radios", 0, OPT_RADIOS, OPT_ARG_NONE);
-    add("summarize", 's', OPT_SUMMARIZE, OPT_ARG_NONE);
-    add("verbose", 'v', OPT_VERBOSE, OPT_ARG_NONE);
-    add("version", 0, OPT_VERSION, OPT_ARG_NONE);
-    add("warnings", 'w', OPT_WARNINGS, OPT_ARG_NONE);
+// ----------------------------------------------------------------------------
+bool vdb::options::verify_long_argument_value(
+    const std::string &name,
+    const std::string &value,
+    bool required,
+    bool &success)
+{
+    if (required and value.empty())
+    {
+        std::cerr << "vdb: option requires a value: --"
+                  << name << std::endl;
 
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_NET_ADDRESS);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_COLOR_OFF);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_DUMP);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_EXERCISE);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_EXTRACT);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_PDU_FAMILY);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_ENTITY_IDS);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_NET_INTERFACE);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_HELP);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_IPV6);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_QUIET);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_PDU_TYPE);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_SUMMARIZE);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_CAPTURE].insert(OPT_WARNINGS);
+        success = false;
+    }
+    else if (not required and not value.empty())
+    {
+        std::cerr << "vdb: option does not require a value: --"
+                  << name << std::endl;
 
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_NET_ADDRESS);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_COLOR_OFF);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_DUMP);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_EXERCISE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_EXTRACT);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_PDU_FAMILY);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_ENTITY_IDS);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_NET_INTERFACE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_HELP);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_IPV6);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_QUIET);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_PDU_RANGE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_PDU_TYPE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_SUMMARIZE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_PLAYBACK].insert(OPT_PCAP);
+        success = false;
+    }
+    else
+    {
+        success = true;
+    }
 
-    command_options[USER_COMMAND_LIST].insert(OPT_NET_ADDRESS);
-    command_options[USER_COMMAND_LIST].insert(OPT_COLOR_OFF);
-    command_options[USER_COMMAND_LIST].insert(OPT_DUMP);
-    command_options[USER_COMMAND_LIST].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_LIST].insert(OPT_EXERCISE);
-    command_options[USER_COMMAND_LIST].insert(OPT_EXTRACT);
-    command_options[USER_COMMAND_LIST].insert(OPT_HELP);
-    command_options[USER_COMMAND_LIST].insert(OPT_PDU_FAMILY);
-    command_options[USER_COMMAND_LIST].insert(OPT_ENTITY_IDS);
-    command_options[USER_COMMAND_LIST].insert(OPT_PDU_RANGE);
-    command_options[USER_COMMAND_LIST].insert(OPT_SUMMARIZE);
-    command_options[USER_COMMAND_LIST].insert(OPT_PDU_TYPE);
-    command_options[USER_COMMAND_LIST].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_LIST].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_LIST].insert(OPT_PCAP);
-
-    command_options[USER_COMMAND_QUERY].insert(OPT_COLOR_OFF);
-    command_options[USER_COMMAND_QUERY].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_QUERY].insert(OPT_EXERCISE);
-    command_options[USER_COMMAND_QUERY].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_QUERY].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_HELP);
-    command_options[USER_COMMAND_QUERY].insert(OPT_COLLISIONS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_EMISSIONS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_FIRES);
-    command_options[USER_COMMAND_QUERY].insert(OPT_LASERS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_RADIOS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_OBJECTS);
-    command_options[USER_COMMAND_QUERY].insert(OPT_ALL);
-    command_options[USER_COMMAND_QUERY].insert(OPT_PCAP);
-
-    command_options[USER_COMMAND_COMMENT].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_COMMENT].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_COMMENT].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_COMMENT].insert(OPT_HELP);
-
-    command_options[USER_COMMAND_UNCOMMENT].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_UNCOMMENT].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_UNCOMMENT].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_UNCOMMENT].insert(OPT_HELP);
-
-    command_options[USER_COMMAND_ENUMS].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_ENUMS].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_ENUMS].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_ENUMS].insert(OPT_HELP);
-
-    command_options[USER_COMMAND_ENTITIES].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_ENTITIES].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_ENTITIES].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_ENTITIES].insert(OPT_HELP);
-
-    command_options[USER_COMMAND_OBJECTS].insert(OPT_ERRORS_OFF);
-    command_options[USER_COMMAND_OBJECTS].insert(OPT_VERBOSE);
-    command_options[USER_COMMAND_OBJECTS].insert(OPT_WARNINGS);
-    command_options[USER_COMMAND_OBJECTS].insert(OPT_HELP);
+    return success;
 }
 
 // ----------------------------------------------------------------------------
@@ -179,15 +104,15 @@ bool vdb::options::initialize(int argc, char *argv[])
         advance = false,
         success = true;
 
-    if (not initialized)
-    {
-        configure();
-        initialized = true;
-    }
-    else
+    if (initialized)
     {
         LOG_ERROR("Already initialized!");
         success = false;
+    }
+    else
+    {
+        configure();
+        initialized = true;
     }
 
     for(int i = 0; success and (i < argc); ++i)
@@ -212,198 +137,26 @@ bool vdb::options::initialize(int argc, char *argv[])
 
             i += (advance ? 1 : 0);
         }
-        else if (terminal_command.empty())
+        else if (i > 0)
         {
-            // First non-option argument is the name of the terminal command.
-            //
-            parse_terminal_command(current_argument);
+            if (command == USER_COMMAND_NONE)
+            {
+                success = parse_command(current_argument);
+            }
+            else
+            {
+                command_arguments.push_back(std::string(current_argument));
+            }
         }
-        else if (command == USER_COMMAND_NONE)
-        {
-            // Second non-option argument is the VDB subcommand.
-            //
-            success = parse_command(current_argument);
-        }
-        else
-        {
-            command_arguments.push_back(string_t(current_argument));
-        }
-    }
-
-    if (success)
-    {
-        success = verify();
     }
 
     return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::verify(void)
-{
-    std::map<user_command_e, option_set_t>::const_iterator
-        options_itor = command_options.find(command);
-    bool
-        success = true;
-
-    LOG_VERBOSE("Verifying arguments...");
-
-    if (options_itor != command_options.end())
-    {
-        const option_set_t
-            &set = options_itor->second;
-
-        std::map<option_e, string_t>::const_iterator
-            string_itor = string_options.begin();
-        std::map<option_e, uint32_t>::const_iterator
-            integer_itor = integer_options.begin();
-        std::set<option_e>::const_iterator
-            flag_itor = flags.begin();
-
-        while(string_itor != string_options.end())
-        {
-            if (set.find(string_itor->first) == set.end())
-            {
-                print_option_error(string_itor->first);
-                success = false;
-            }
-
-            ++string_itor;
-        }
-
-        while(integer_itor != integer_options.end())
-        {
-            if (set.find(integer_itor->first) == set.end())
-            {
-                print_option_error(integer_itor->first);
-                success = false;
-            }
-
-            ++integer_itor;
-        }
-
-        while(flag_itor != flags.end())
-        {
-            if (*flag_itor != OPT_EXTRA_VERBOSE)
-            {
-                if (set.find(*flag_itor) == set.end())
-                {
-                    print_option_error(*flag_itor);
-                    success = false;
-                }
-            }
-
-            ++flag_itor;
-        }
-   }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-void vdb::options::print_option_error(option_e option)
-{
-    const option_definition_t
-        *definition_ptr = get_option(option);
-
-    if (not definition_ptr)
-    {
-        LOG_ERROR("No option definition for %d!", option);
-    }
-    else
-    {
-        std::cerr << terminal_command << " " << command_names[command]
-                  << ": option '--" << definition_ptr->long_value;
-
-        if (definition_ptr->short_value > 0)
-        {
-            std::cerr << "|-" << definition_ptr->short_value;
-        }
-
-        std::cerr << "' not allowed" << std::endl;
-    }
-}
-
-// ----------------------------------------------------------------------------
-const string_t *vdb::options::string(option_e o)
-{
-    std::map<option_e, string_t>::const_iterator
-        itor = string_options.find(o);
-
-    return (itor != string_options.end()) ? &(itor->second) : 0;
-}
-
-// ----------------------------------------------------------------------------
-const uint32_t *vdb::options::integer(option_e o)
-{
-    std::map<option_e, uint32_t>::const_iterator
-        itor = integer_options.find(o);
-
-    return (itor != integer_options.end()) ? &(itor->second) : 0;
-}
-
-// ----------------------------------------------------------------------------
-const uint32_set_t *vdb::options::integer_set(option_e o)
-{
-    std::map<option_e, uint32_set_t>::const_iterator
-        itor = integer_set_options.find(o);
-
-    return (itor != integer_set_options.end()) ? &(itor->second) : 0;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::entity_id_match(const vdis::pdu_t &pdu)
-{
-    if (entity_ids.empty())
-    {
-        return true;
-    }
-    else if (pdu.base())
-    {
-        for(uint32_t i = 0; i < entity_ids.size(); ++i)
-        {
-            if (pdu.contains_id(entity_ids[i]))
-            {
-                return true;
-            }
-        }
-    }
-
-    LOG_VERBOSE("Filtered out PDU with no entity id match...");
-
-    return false;
-}
-
-// ----------------------------------------------------------------------------
-void vdb::options::parse_terminal_command(const char *current_argument)
-{
-    string_t::size_type
-        index;
-
-    terminal_command = current_argument;
-
-    // Strip off the leading path if exists to get the base name.
-    //
-    index = terminal_command.find_last_of('/', terminal_command.length());
-
-    if (index != string_t::npos)
-    {
-        terminal_command = terminal_command.substr(
-            (index + 1),
-            (terminal_command.length() - index));
-    }
-
-    if (DEBUG)
-    {
-        std::cout << "DEBUG: terminal_command: " << terminal_command
-                  << std::endl;
-    }
 }
 
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_command(const char *current_argument)
 {
-    std::map<user_command_e, string_t>::const_iterator
+    std::map<user_command_e, std::string>::const_iterator
         itor = command_names.begin();
     bool
         success = false;
@@ -427,9 +180,8 @@ bool vdb::options::parse_command(const char *current_argument)
 
     if (not success)
     {
-        std::cerr << terminal_command << ": unrecognized command '"
-                  << current_argument << "', valid commands are: "
-                  << std::endl;
+        std::cerr << "vdb: unrecognized command '" << current_argument
+                  << "', valid commands are: " << std::endl;
 
         itor = command_names.begin();
 
@@ -446,13 +198,11 @@ bool vdb::options::parse_command(const char *current_argument)
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_long_option(const char *current_argument)
 {
-    const option_definition_t
-        *option_ptr = 0;
-    string_t
-        argument = string_t(current_argument).substr(2),
-        key,
+    std::string
+        argument = std::string(current_argument).substr(2),
+        name,
         value;
-    string_t::size_type
+    std::string::size_type
         index = argument.find_first_of('=');
     bool
         success = false;
@@ -462,46 +212,289 @@ bool vdb::options::parse_long_option(const char *current_argument)
         std::cout << "DEBUG: parse_long_option: index: " << index << std::endl;
     }
 
-    if ((index == string_t::npos) or (index < 2))
+    if ((index == std::string::npos) or (index < 2))
     {
-        key = argument;
+        name = argument;
     }
     else
     {
-        key = argument.substr(0, index);
+        name = argument.substr(0, index);
         value = argument.substr(index + 1);
     }
 
     if (DEBUG)
     {
-        std::cout << "DEBUG: parse_long_option: key: " << key << std::endl;
+        std::cout << "DEBUG: parse_long_option: name: " << name << std::endl;
         std::cout << "DEBUG: parse_long_option: value: " << value << std::endl;
     }
 
-    option_ptr = get_long_option(key);
-
-    if (not option_ptr)
+    if (name == "address")
     {
-        std::cerr << terminal_command << ": unrecognized option '--"
-                  << key << "'" << std::endl;
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            network_address = value;
+        }
     }
-    else if (option_ptr->argument_required() and value.empty())
+    else if (name == "help")
     {
-        std::cerr << terminal_command << ": option '--" << key
-                  << "' requires an argument" << std::endl;
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_help = true;
+        }
     }
-    else if (option_ptr->argument_none() and not value.empty())
+    else if (name == "mono")
     {
-        std::cerr << terminal_command << ": option '--" << key
-                  << "' doesn't allow an argument" << std::endl;
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            color::set_enabled(false);
+        }
     }
-    else if (not value.empty())
+    else if (name == "verbose")
     {
-        success = process_option(option_ptr->option, ("--" + key), value);
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            if (logger::is_enabled(logger::VERBOSE))
+            {
+                logger::set_enabled(logger::EXTRA_VERBOSE, true);
+            }
+            else
+            {
+                logger::set_enabled(logger::VERBOSE, true);
+            }
+        }
+    }
+    else if (name == "warnings")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            logger::set_enabled(logger::WARNING, true);
+        }
+    }
+    else if (name == "suppress")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            logger::set_enabled(logger::ERROR, false);
+        }
+    }
+    else if (name == "examples")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_examples = true;
+        }
+    }
+    else if (name == "version")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_version = true;
+        }
+    }
+    else if (name == "exercise")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--exercise",
+                value.c_str(),
+                include_exercises);
+        }
+    }
+    else if (name == "xexercise")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--xexercise",
+                value.c_str(),
+                exclude_exercises);
+        }
+    }
+    else if (name == "type")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--type",
+                value.c_str(),
+                include_types);
+        }
+    }
+    else if (name == "xtype")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--xtype",
+                value.c_str(),
+                exclude_types);
+        }
+    }
+    else if (name == "family")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--family",
+                value.c_str(),
+                include_families);
+        }
+    }
+    else if (name == "xfamily")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_integer_set(
+                "--xfamily",
+                value.c_str(),
+                exclude_families);
+        }
+    }
+    else if (name == "ids")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_entity_ids(
+                "--ids",
+                value.c_str(),
+                include_entity_ids);
+        }
+    }
+    else if (name == "xids")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_entity_ids(
+                "--xids",
+                value.c_str(),
+                exclude_entity_ids);
+        }
+    }
+    else if (name == "pcap")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            use_pcap = true;
+        }
+    }
+    else if (name == "ipv6")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            use_ipv6 = true;
+        }
+    }
+    else if (name == "iface")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            network_interface = value;
+        }
+    }
+    else if (name == "range")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_entity_ids(
+                "--range",
+                value.c_str(),
+                include_entity_ids);
+        }
+    }
+    else if (name == "quiet")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            quiet_mode = true;
+        }
+    }
+    else if (name == "summarize")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_pdu_summary = true;
+        }
+    }
+    else if (name == "dump")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_pdu_dump = true;
+        }
+    }
+    else if (name == "extract")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            show_pdu_extracted = true;
+        }
+    }
+    else if (name == "extra")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_extra = true;
+        }
+    }
+    else if (name == "collisions")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_collisions = true;
+        }
+    }
+    else if (name == "emissions")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_collisions = true;
+        }
+    }
+    else if (name == "fires")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_fires = true;
+        }
+    }
+    else if (name == "lasers")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_lasers = true;
+        }
+    }
+    else if (name == "objects")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_objects = true;
+        }
+    }
+    else if (name == "radios")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_radios = true;
+        }
+    }
+    else if (name == "all")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            summary_collisions = true;
+            summary_emissions = true;
+            summary_fires = true;
+            summary_lasers = true;
+            summary_objects = true;
+            summary_radios = true;
+        }
     }
     else
     {
-        success = process_flag(option_ptr->option, ("--" + key));
+        std::cerr << "vdb: invalid option: --" << name << std::endl;
+        success = false;
     }
 
     return success;
@@ -513,10 +506,8 @@ bool vdb::options::parse_short_options(
     const char *next_argument,
     bool &advance)
 {
-    const option_definition_t
-        *option_ptr = 0;
-    string_t
-        argument = string_t(current_argument).substr(1);
+    std::string
+        argument = std::string(current_argument).substr(1);
     bool
         success = true;
 
@@ -527,259 +518,280 @@ bool vdb::options::parse_short_options(
                   << "'" << std::endl;
     }
 
-    for(string_t::size_type i = 0; success and (i < argument.length()); ++i)
+    for(std::string::size_type i = 0; success and (i < argument.length()); ++i)
     {
-        string_t
-            name = "-";
-
-        name += argument[i];
-
-        option_ptr = get_short_option(argument[i]);
-
-        if (not option_ptr)
+        switch(argument[i])
         {
-            std::cerr << terminal_command << ": invalid option -- '"
-                      << argument[i] << "'" << std::endl;
-
-            success = false;
-        }
-        else if (option_ptr->argument_required())
-        {
-            if ((i == (argument.length() - 1)) and next_argument)
-            {
-                success =  process_option(
-                    option_ptr->option,
-                    name,
-                    next_argument);
-
+            case '6':
+                use_ipv6 = true;
+                break;
+            case 'a':
+                success = parse_string(
+                    "-a",
+                    next_argument,
+                    network_address);
                 advance = true;
-            }
-            else
-            {
-                std::cerr << terminal_command
-                          << ": option requires an argument -- '"
-                          << argument[i] << "'" << std::endl;
-
+                break;
+            case 'A':
+                summary_collisions = true;
+                summary_emissions = true;
+                summary_fires = true;
+                summary_lasers = true;
+                summary_objects = true;
+                summary_radios = true;
+                break;
+            case 'C':
+                command = USER_COMMAND_CAPTURE;
+                break;
+            case 'd':
+                show_pdu_dump = true;
+                break;
+            case 'e':
+                success = parse_integer_set(
+                    "-e",
+                    next_argument,
+                    include_exercises);
+                advance = true;
+                break;
+            case 'E':
+                success = parse_integer_set(
+                    "-E",
+                    next_argument,
+                    exclude_exercises);
+                advance = true;
+                break;
+            case 'f':
+                success = parse_integer_set(
+                    "-f",
+                    next_argument,
+                    include_families);
+                advance = true;
+                break;
+            case 'F':
+                success = parse_integer_set(
+                    "-F",
+                    next_argument,
+                    exclude_families);
+                advance = true;
+                break;
+            case 'h':
+                show_help = true;
+                break;
+            case 'i':
+                success = parse_entity_ids(
+                    "-i",
+                    next_argument,
+                    include_entity_ids);
+                advance = true;
+                break;
+            case 'I':
+                success = parse_entity_ids(
+                    "-I",
+                    next_argument,
+                    include_entity_ids);
+                advance = true;
+                break;
+            case 'L':
+                command = USER_COMMAND_LIST;
+                break;
+            case 'm':
+                color::set_enabled(false);
+                break;
+            case 'M':
+                command = USER_COMMAND_ENUMS;
+                break;
+            case 'n':
+                success = parse_string(
+                    "-n",
+                    next_argument,
+                    network_interface);
+                advance = true;
+                break;
+            case 'p':
+                use_pcap = true;
+                break;
+            case 'P':
+                command = USER_COMMAND_PLAYBACK;
+                break;
+            case 'q':
+                quiet_mode = true;
+                break;
+            case 'Q':
+                command = USER_COMMAND_SUMMARY;
+                break;
+            case 'r':
+                success = parse_integer_set(
+                    "-r",
+                    next_argument,
+                    0x0,
+                    0xFFFFFFFF,
+                    pdu_index_range);
+                advance = true;
+                break;
+            case 's':
+                show_pdu_summary = true;
+                break;
+            case 'S':
+                logger::set_enabled(logger::ERROR, false);
+                break;
+            case 't':
+                success = parse_integer_set(
+                    "-t",
+                    next_argument,
+                    include_types);
+                advance = true;
+                break;
+            case 'T':
+                success = parse_integer_set(
+                    "-T",
+                    next_argument,
+                    exclude_types);
+                advance = true;
+                break;
+            case 'v':
+                if (logger::is_enabled(logger::VERBOSE))
+                {
+                    logger::set_enabled(logger::EXTRA_VERBOSE, true);
+                }
+                else
+                {
+                    logger::set_enabled(logger::VERBOSE, true);
+                }
+                break;
+            case 'V':
+                show_version = true;
+                break;
+            case 'w':
+                logger::set_enabled(logger::WARNING, true);
+                break;
+            case 'x':
+                show_pdu_extracted = true;
+                break;
+            case 'X':
+                summary_extra = true;
+                break;
+            default:
+                std::cerr << "vdb: invalid option: -" << argument[i]
+                          << std::endl;
                 success = false;
-            }
-        }
-        else
-        {
-            success = process_flag(option_ptr->option, name);
+                break;
         }
     }
 
     return success;
 }
 
-
 // ----------------------------------------------------------------------------
-bool vdb::options::process_option(
-    option_e option,
-    const string_t &name,
-    const string_t &value)
+bool vdb::options::parse_entity_ids(
+    const char *name_ptr,
+    const char *value_ptr,
+    std::set<vdis::id_t> &ids)
 {
-    bool
-        success = false;
-
-    if (option == OPT_ENTITY_IDS)
-    {
-        success = parse_entity_ids(value);
-    }
-    else if ((option & OPT_STRING_MASK) == OPT_STRING_MASK)
-    {
-        if (DEBUG)
-        {
-            std::cout << "DEBUG: process_option: "
-                      << " string: " << name << "='" << value << "'"
-                      << std::endl;
-        }
-
-        // It's a string argument.
-        //
-        string_options[option] = value;
-        success = true;
-    }
-    else if ((option & OPT_INTEGER_MASK) == OPT_INTEGER_MASK)
-    {
-        // It's an integer argument, make sure it's an integer.
-        //
-        uint32_t
-            int_value;
-
-        if (DEBUG)
-        {
-            std::cout << "DEBUG: process_option: "
-                      << " integer: " << name << "='" << value << "'"
-                      << std::endl;
-        }
-
-        if (vdis::to_uint32(value, int_value))
-        {
-            integer_options[option] = int_value;
-            success = true;
-        }
-        else
-        {
-            std::cerr << terminal_command << ": option '" << name
-                      << "' value '" << value << "' is not an integer"
-                      << std::endl;
-        }
-    }
-    else if ((option & OPT_INTEGER_SET_MASK) == OPT_INTEGER_SET_MASK)
-    {
-        if (DEBUG)
-        {
-            std::cout << "DEBUG: process_option: "
-                      << " integer set: " << name << "='" << value << "'"
-                      << std::endl;
-        }
-
-        success = parse_integer_set(option, name, value);
-    }
-    else
-    {
-        LOG_ERROR("Not sure what to do with this: %s", name.c_str());
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::process_flag(option_e option, const string_t &name)
-{
-    bool
-        success = false;
-
-    if ((option & OPT_FLAG_MASK) == OPT_FLAG_MASK)
-    {
-        if (option == OPT_WARNINGS)
-        {
-            logger::set_enabled(logger::WARNING, true);
-
-            if (flag(OPT_VERBOSE))
-            {
-                std::cout << "Warning messages turned on..." << std::endl;
-            }
-        }
-        else if ((option == OPT_ERRORS_OFF) and flag(OPT_VERBOSE))
-        {
-            logger::set_enabled(logger::ERROR, false);
-
-            if (flag(OPT_VERBOSE))
-            {
-                std::cout << "Error messages turned off..." << std::endl;
-            }
-        }
-        else if (option == OPT_VERBOSE)
-        {
-            if (not flag(OPT_VERBOSE))
-            {
-                std::cout << "Verboseness turned on..." << std::endl;
-                logger::set_enabled(logger::VERBOSE, true);
-            }
-            else if (not flag(OPT_EXTRA_VERBOSE))
-            {
-                std::cout << "Extra verboseness turned on..." << std::endl;
-                logger::set_enabled(logger::EXTRA_VERBOSE, true);
-
-                option = OPT_EXTRA_VERBOSE;
-            }
-        }
-
-        if (DEBUG)
-        {
-            std::cout << "DEBUG: process_flag: " << name
-                      << std::endl;
-        }
-
-        flags.insert(option);
-        success = true;
-    }
-    else
-    {
-        LOG_ERROR("Not sure what to do with '%s'", name.c_str());
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_ids(const string_t &value)
-{
-    std::vector<string_t>
+    std::vector<std::string>
         values;
     bool
         success = true;
 
-    vdis::tokenize_csv(value, values);
-
-    for(uint32_t i = 0; success and (i < values.size()); ++i)
+    if (not value_ptr)
     {
-        success = parse_entity_id(values[i]);
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+    }
+    else
+    {
+        vdis::tokenize_csv(std::string(value_ptr), values);
+
+        for(uint32_t i = 0; success and (i < values.size()); ++i)
+        {
+            success = parse_entity_id(name_ptr, values[i].c_str(), ids);
+        }
     }
 
     return success;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_id(string_t &value)
+bool vdb::options::parse_entity_id(
+    const char *name_ptr,
+    const char *value_ptr,
+    std::set<vdis::id_t> &ids)
 {
-    std::vector<string_t>
-        tokens;
-    uint32_t
-        id[3];
     bool
         success = false;
 
-    // Tokenization uses space character as delimiter, swap ':' with ' '
-    //
-    for(unsigned i = 0; i < value.length(); ++i)
+    if (not value_ptr)
     {
-        value[i] = (value[i] == '.') ? ' ' : value[i];
-    }
-
-    if (vdis::tokenize(value, tokens) == 3)
-    {
-        // Convert wildcards to the 'ALL' value
-        //
-        for(unsigned i = 0; i < 3; ++i)
-        {
-            if ((tokens[i] == "*") or (tokens[i] == "?"))
-            {
-                tokens[i] = "65535";
-            }
-        }
-
-        if (vdis::to_uint32(tokens[0], id[0]) and
-            vdis::to_uint32(tokens[1], id[1]) and
-            vdis::to_uint32(tokens[2], id[2]))
-        {
-            if ((id[0] >= 0) and (id[0] <= 65535) and
-                (id[1] >= 0) and (id[1] <= 65535) and
-                (id[2] >= 0) and (id[2] <= 65535))
-            {
-                success = true;
-            }
-        }
-    }
-
-    if (success)
-    {
-        vdis::id_t
-            entity_id = { (uint16_t)id[0], (uint16_t)id[1], (uint16_t)id[2] };
-
-        entity_ids.push_back(entity_id);
-
-        if (flag(OPT_VERBOSE))
-        {
-            std::cout << "Filtering on entity ID: " << entity_id << std::endl;
-        }
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
     }
     else
     {
-        std::cerr << terminal_command << ": invalid entity ID: " << value
-                  << std::endl;
+        std::vector<std::string>
+            tokens;
+        std::string
+            swapped = value_ptr;
+        uint32_t
+            id[3];
+
+        // Tokenization uses space character as delimiter, swap '.' with ' '
+        //
+        for(unsigned i = 0; i < swapped.length(); ++i)
+        {
+            swapped[i] = (swapped[i] == '.') ? ' ' : swapped[i];
+        }
+
+        if (vdis::tokenize(swapped, tokens) != 3)
+        {
+            std::cerr << "vdb: expected entity ID in form '1.2.3' instead of '"
+                      << value_ptr << "'" << std::endl;
+        }
+        else
+        {
+            // Convert wildcards to the 'ALL' value
+            //
+            for(unsigned i = 0; i < 3; ++i)
+            {
+                if ((tokens[i] == "*") or (tokens[i] == "?"))
+                {
+                    tokens[i] = vdis::to_string((int)vdis::id_t::ALL);
+                }
+            }
+
+            if (vdis::to_uint32(tokens[0], id[0]) and
+                vdis::to_uint32(tokens[1], id[1]) and
+                vdis::to_uint32(tokens[2], id[2]))
+            {
+                if ((id[0] >= 0) and (id[0] <= vdis::id_t::ALL) and
+                    (id[1] >= 0) and (id[1] <= vdis::id_t::ALL) and
+                    (id[2] >= 0) and (id[2] <= vdis::id_t::ALL))
+                {
+                    success = true;
+                }
+                else
+                {
+                    std::cerr << "vdb: value out of range in '" << value_ptr
+                              << "'" << std::endl;
+                }
+            }
+            else
+            {
+                std::cerr << "vdb: invalid value in '" << value_ptr
+                          << "'" << std::endl;
+            }
+        }
+
+        if (success)
+        {
+            vdis::id_t entity_id = {
+                (uint16_t)id[0],
+                (uint16_t)id[1],
+                (uint16_t)id[2] };
+
+            ids.insert(entity_id);
+        }
+        else
+        {
+            std::cerr << "vdb: option '" << name_ptr
+                      << "': invalid entity ID: " << value_ptr << std::endl;
+        }
     }
 
     return success;
@@ -787,25 +799,58 @@ bool vdb::options::parse_entity_id(string_t &value)
 
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_integer_set(
-    option_e option,
-    const string_t &name,
-    const string_t &value)
+    const char *name_ptr,
+    const char *value_ptr,
+    std::set<uint8_t> &set)
 {
-    std::vector<string_t>
+    std::set<uint32_t>
+        temp_set;
+    bool
+        success = parse_integer_set(name_ptr, value_ptr, 0, 255, temp_set);
+
+    if (success)
+    {
+        std::set<uint32_t>::const_iterator
+            itor = temp_set.begin();
+
+        for(itor = temp_set.begin(); itor != temp_set.end(); ++itor)
+        {
+            set.insert((uint8_t)*itor);
+        }
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::options::parse_integer_set(
+    const char *name_ptr,
+    const char *value_ptr,
+    int64_t min,
+    int64_t max,
+    std::set<uint32_t> &set)
+{
+    std::vector<std::string>
         values,
         subvalues;
-    uint32_set_t
-        set;
     bool
         success = true;
 
     if (DEBUG)
     {
-        std::cout << "DEBUG: parse_integer_set: complete value '"
-                  << value << "'" << std::endl;
+        std::cout << "DEBUG: parse_integer_set: " << name_ptr << "='"
+                  << (value_ptr ? value_ptr : "null") << "'" << std::endl;
     }
 
-    vdis::tokenize_csv(value, values);
+    if (value_ptr)
+    {
+        vdis::tokenize_csv(std::string(value_ptr), values);
+    }
+    else
+    {
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+        success = false;
+    }
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
@@ -817,28 +862,36 @@ bool vdb::options::parse_integer_set(
 
         // Is this token a range "N-M" or a single value N
         //
-        if (values[i].find('-') == string_t::npos)
+        if (values[i].find('-') == std::string::npos)
         {
             int64_t
-                index = 0;
+                value = 0;
 
-            if (vdis::to_int64(values[i], index))
+            if (vdis::to_int64(values[i], value))
             {
-                if (index < 0)
+                if (DEBUG)
                 {
+                    std::cout << "DEBUG: parse_integer_set: value "
+                              << value << std::endl;
+                }
+
+                if ((value < min) or (value > max))
+                {
+                    std::cerr << "vdb: value out of range: " << value
+                              << " (" << min << "-" << max << ")" << std::endl;
                     success = false;
                 }
                 else
                 {
-                    set.insert(index);
+                    set.insert((uint32_t)value);
                 }
             }
         }
         else
         {
-            // Replace '-' with ' ' and split
+            // Replace '-' with ',' and split
             //
-            for(unsigned j = 0; j < values[i].length(); ++j)
+            for(uint32_t j = 0; j < values[i].length(); ++j)
             {
                 values[i][j] = (values[i][j] == '-') ? ',' : values[i][j];
             }
@@ -848,86 +901,71 @@ bool vdb::options::parse_integer_set(
             if (success)
             {
                 int64_t
-                    index0 = 0,
-                    index1 = 0;
+                    value0 = 0,
+                    value1 = 0;
 
-                if (vdis::to_int64(subvalues[0], index0) and
-                    vdis::to_int64(subvalues[1], index1))
+                success = false;
+
+                if (vdis::to_int64(subvalues[0], value0) and
+                    vdis::to_int64(subvalues[1], value1))
                 {
-                    if ((index0 < 0) or (index1 < 0) or (index0 >= index1))
+                    if ((value0 < min) or (value0 > max))
                     {
-                        success = false;
+                        std::cerr << "vdb: value out of range: " << value0
+                                  << " (" << min << "-" << max << ")"
+                                  << std::endl;
                     }
-                    else for(int64_t j = index0; j <= index1; ++j)
+                    else if ((value1 < min) or (value1 > max))
                     {
-                        set.insert(j);
+                        std::cerr << "vdb: value out of range: " << value1
+                                  << " (" << min << "-" << max << ")"
+                                  << std::endl;
                     }
-                }
-                else
-                {
-                    success = false;
+                    else if (value0 >= value1)
+                    {
+                        std::cerr << "vdb: invalid range: " << value0
+                                  << "-" << value1 << std::endl;
+                    }
+                    else
+                    {
+                        success = true;
+
+                        for(int64_t j = value0; j <= value1; ++j)
+                        {
+                            set.insert(j);
+                        }
+                    }
                 }
             }
         }
     }
 
-    if (success)
+    if (value_ptr and not success)
     {
-        if (not set.empty())
-        {
-            integer_set_options[option] = set;
-        }
-    }
-    else
-    {
-        std::cerr << terminal_command << ": option '" << name
-                  << "' invalid argument '" << value << "'" << std::endl;
+        std::cerr << "vdb: option '" << name_ptr
+                  << "' invalid argument '" << value_ptr << "'" << std::endl;
     }
 
     return success;
 }
 
 // ----------------------------------------------------------------------------
-const vdb::option_definition_t *vdb::options::get_option(
-    option_e value)
+bool vdb::options::parse_string(
+    const char *name_ptr,
+    const char *value_ptr,
+    std::string &value)
 {
-    for(uint32_t i = 0; i < option_definitions.size(); ++i)
+    bool
+        success = true;
+
+    if (value_ptr)
     {
-        if (option_definitions[i].option == value)
-        {
-            return &option_definitions[i];
-        }
+        value = value_ptr;
+    }
+    else
+    {
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
     }
 
-    return 0;
-}
-
-// ----------------------------------------------------------------------------
-const vdb::option_definition_t *vdb::options::get_short_option(
-    char value)
-{
-    for(uint32_t i = 0; i < option_definitions.size(); ++i)
-    {
-        if (option_definitions[i].short_value == value)
-        {
-            return &option_definitions[i];
-        }
-    }
-
-    return 0;
-}
-
-// ----------------------------------------------------------------------------
-const vdb::option_definition_t *vdb::options::get_long_option(
-    const string_t &value)
-{
-    for(uint32_t i = 0; i < option_definitions.size(); ++i)
-    {
-        if (option_definitions[i].long_value == value)
-        {
-            return &option_definitions[i];
-        }
-    }
-
-    return 0;
+    return success;
 }

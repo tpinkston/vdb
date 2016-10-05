@@ -1,0 +1,12 @@
+  Queries capture file 'capture.vdb' showing results only for PDUs on
+  exercise 3: 
+  
+    $ vdb query capture.vdb --exercise=3
+    $ vdb query -e 3 capture.vdb
+
+  Queries capture file 'capture.vdb' showing results for everything
+  in verbose mode (showing info for PDUs sent from every source host 
+  individually): 
+  
+    $ vdb query capture.vdb --verbose
+    $ vdb query -v capture.vdb

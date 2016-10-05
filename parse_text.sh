@@ -14,11 +14,10 @@ fi
 
 if [ $SOURCE_FILE -nt $TARGET_FILE ]; then
     echo "Updating $TARGET_FILE"
-    echo "// AUTO GENERATED..." > $TARGET_FILE
-    echo >> $TARGET_FILE
+    cat /dev/null > $TARGET_FILE
     while IFS='' read line;
     do
-        echo "USAGE(\"$line\")" >> $TARGET_FILE
+        echo "PRINT(\"$line\")" >> $TARGET_FILE
     done < $SOURCE_FILE
 fi
 

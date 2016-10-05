@@ -14,7 +14,6 @@ class logger
 
     enum level_e
     {
-        OFF = 0,
         ERROR = 1,
         WARNING = 2,
         VERBOSE = 3,
@@ -33,16 +32,14 @@ class logger
         ...
     );
 
-    static logger *get_instance(void);
-
     static std::ostream &serr(void) { return err; }
     static std::ostream &sout(void) { return out; }
 
   private:
 
-    logger(void);
+    static void initialize(void);
 
-    static void basename(string_t &file);
+    static void basename(std::string &file);
 
     static void log_message(
         level_e level,
@@ -60,8 +57,9 @@ class logger
         &out;
     static std::map<level_e, bool>
         levels;
-    static logger
-        *instance_ptr;
+    static bool
+        console_logging_out,
+        console_logging_err;
 };
 
 #endif

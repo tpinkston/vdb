@@ -99,8 +99,7 @@ void vdb::network::set_address(
 
         if (result == -1)
         {
-            std::cerr << options::get_terminal_command()
-                      << ": inet_pton: " <<  strerror(errno) << std::endl;
+            std::cerr << "vdb: inet_pton: " <<  strerror(errno) << std::endl;
 
             if (fail_on_error)
             {
@@ -109,8 +108,7 @@ void vdb::network::set_address(
         }
         else if (result == 0)
         {
-            std::cerr << options::get_terminal_command()
-                      << ": invalid address: " << address << std::endl;
+            std::cerr << "vdb: invalid address: " << address << std::endl;
 
             if (fail_on_error)
             {
@@ -120,7 +118,7 @@ void vdb::network::set_address(
 
         broadcast = vdis::ends_with(address_string, ".255");
 
-        if (options::flag(OPT_VERBOSE))
+        if (logger::is_enabled(logger::VERBOSE))
         {
             vdis::byte_buffer_t
                 temp_buffer(
@@ -190,8 +188,7 @@ void vdb::network::set_address(
 
         if (result == -1)
         {
-            std::cerr << options::get_terminal_command()
-                      << ": inet_pton: " <<  strerror(errno) << std::endl;
+            std::cerr << "vdb: inet_pton: " <<  strerror(errno) << std::endl;
 
             if (fail_on_error)
             {
@@ -200,8 +197,7 @@ void vdb::network::set_address(
         }
         else if (result == 0)
         {
-            std::cerr << options::get_terminal_command()
-                      << ": invalid address: " << address << std::endl;
+            std::cerr << "vdb: invalid address: " << address << std::endl;
 
             if (fail_on_error)
             {
@@ -209,7 +205,7 @@ void vdb::network::set_address(
             }
         }
 
-        if (options::flag(OPT_VERBOSE))
+        if (logger::is_enabled(logger::VERBOSE))
         {
             vdis::byte_buffer_t
                 temp_buffer(
@@ -462,7 +458,7 @@ void vdb::socket_base_t::bind_socket(void)
     int32_t
         result = -1;
 
-    if (options::flag(OPT_IPV6))
+    if (options::use_ipv6)
     {
         inet6_socket_address_t
             bind_address;

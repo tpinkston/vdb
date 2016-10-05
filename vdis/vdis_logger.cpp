@@ -9,17 +9,12 @@ std::ostream
     &logger::out = std::cout;
 std::map<logger::level_e, bool>
     logger::levels;
-logger
-    *logger::instance_ptr = 0;
-
-namespace
-{
-    logger
-        *anonymous_instance_ptr = logger::get_instance();
-}
+bool
+    logger::console_logging_out = true,
+    logger::console_logging_err = true;
 
 // ----------------------------------------------------------------------------
-logger::logger(void)
+void logger::initialize(void)
 {
     if (levels.empty())
     {
@@ -33,12 +28,16 @@ logger::logger(void)
 // ----------------------------------------------------------------------------
 bool logger::is_enabled(level_e level)
 {
+    initialize();
+
     return ((level > 0) and (level < END)) ? levels[level] : false;
 }
 
 // ----------------------------------------------------------------------------
 void logger::set_enabled(level_e level, bool value)
 {
+    initialize();
+
     if ((level > 0) and (level < END))
     {
         levels[level] = value;
@@ -65,23 +64,12 @@ void logger::log(
 }
 
 // ----------------------------------------------------------------------------
-logger *logger::get_instance(void)
+void logger::basename(std::string &file)
 {
-    if (not instance_ptr)
-    {
-        instance_ptr = new logger();
-    }
-
-    return instance_ptr;
-}
-
-// ----------------------------------------------------------------------------
-void logger::basename(string_t &file)
-{
-    string_t::size_type
+    std::string::size_type
         index = file.find_last_of('/', (file.length() - 1));
 
-    if (index != string_t::npos)
+    if (index != std::string::npos)
     {
         file = file.substr((index + 1), file.length() - index);
     }
@@ -95,27 +83,65 @@ void logger::log_message(
     int line)
 {
     std::ostream
-        &stream = (level == logger::ERROR) ? out : err;
+        *stream_ptr = &out;
+    bool
+        console_logging = console_logging_out;
 
-    // Print file and line number only on error level
-    //
-    if (level == ERROR)
+    if (level == logger::ERROR)
     {
-        string_t
+        stream_ptr = &err;
+        console_logging = console_logging_err;
+    }
+
+    // For console logging only print file and line number on errors
+    // or warnings, always when console logging is off.
+    //
+    if (not console_logging)
+    {
+        std::string
             filename(file);
 
         basename(filename);
 
-        stream << color::bold_red << "ERROR" << color::none
-               << "[" << filename << ":" << line << "]: "
-               << message << std::endl;
+        switch(level)
+        {
+            case ERROR:
+                *stream_ptr << "ERROR";
+                break;
+            case WARNING:
+                *stream_ptr << "WARNING";
+                break;
+            case VERBOSE:
+                *stream_ptr << "VERBOSE";
+                break;
+            case EXTRA_VERBOSE:
+                *stream_ptr << "EXTRA_VERBOSE";
+                break;
+            default:
+                *stream_ptr << "DEFAULT";
+                break;
+        }
+
+        *stream_ptr << "[" << filename << ":" << line << "]: ";
     }
-    else if (level == WARNING)
+    else if ((level == ERROR) or (level == WARNING))
     {
-        stream << color::bold_yellow << message << color::none << std::endl;
+        std::string
+            filename(file);
+
+        basename(filename);
+
+        if (level == ERROR)
+        {
+            *stream_ptr << color::bold_red << "ERROR" << color::none;
+        }
+        else if (level == WARNING)
+        {
+            *stream_ptr << color::bold_yellow << "WARNING" << color::none;
+        }
+
+        *stream_ptr << "[" << filename << ":" << line << "]: ";
     }
-    else
-    {
-        stream << message << std::endl;
-    }
+
+    *stream_ptr << message << std::endl;
 }

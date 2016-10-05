@@ -21,30 +21,28 @@ int vdb::comments::add(void)
 
     // File argument (1st) required, comment text argument (2nd) optional
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " comment: missing file argument" << std::endl;
+        std::cerr << "vdb comment: missing file argument" << std::endl;
     }
-    else if (options::get_command_arguments().size() > 2)
+    else if (options::command_arguments.size() > 2)
     {
-        std::cerr << options::get_terminal_command()
-                  << " comment: too many arguments" << std::endl;
+        std::cerr << "vdb comment: too many arguments" << std::endl;
     }
     else
     {
         const string_t
-            filename = *options::get_command_argument(0);
+            filename = options::command_arguments[0];
         file_header_comment_t
             comment;
 
         comment.time = vdis::get_system_time();
 
-        if (options::get_command_argument(1))
+        if (options::command_arguments.size() > 1)
         {
             // Comment to add provided in command line argument
             //
-            comment.value = *options::get_command_argument(1);
+            comment.value = options::command_arguments[1];
         }
         else
         {
@@ -103,7 +101,7 @@ int vdb::comments::add(void)
                 output.index(),
                 output.length());
 
-            while((remainder > 0) and output())
+            while((remainder > 0) and not output.error())
             {
                 if (copy_buffer_length > remainder)
                 {
@@ -118,12 +116,12 @@ int vdb::comments::add(void)
                 LOG_VERBOSE("Bytes remaining is %d", remainder);
             }
 
-            if (output())
+            if (not output.error())
             {
                 // Overwrite the file with new stream.
                 //
                 output.write_file(filename);
-                result = output() ? 0 : 1;
+                result = output.error() ? 1 : 0;
 
                 std::cout << "Comment (" << comment.value.length()
                           << " bytes) added to file '" << filename
@@ -145,21 +143,18 @@ int vdb::comments::remove(void)
 
     // File argument (1st) required, comment number argument (2nd) optional
     //
-    if (options::get_command_arguments().empty())
+    if (options::command_arguments.empty())
     {
-        std::cerr << options::get_terminal_command()
-                  << " uncomment: missing file argument" << std::endl;
+        std::cerr << "vdb uncomment: missing file argument" << std::endl;
     }
-    else if (options::get_command_arguments().size() > 2)
+    else if (options::command_arguments.size() > 2)
     {
-        std::cerr << options::get_terminal_command()
-                  << " uncomment: too many arguments" << std::endl;
+        std::cerr << "vdb uncomment: too many arguments" << std::endl;
     }
     else
     {
         const string_t
-            filename = *options::get_command_argument(0);
-
+            filename = options::command_arguments[0];
         standard_reader_t
             reader(filename);
 
@@ -167,11 +162,10 @@ int vdb::comments::remove(void)
         {
             if (reader.header.comments.size() == 0)
             {
-                std::cout << options::get_terminal_command()
-                          << " uncomment: no comments in file '"
+                std::cout << "vdb uncomment: no comments in file '"
                           << filename << "'" << std::endl;
             }
-            else if (not options::get_command_argument(1))
+            else if (not options::command_arguments.size() == 1)
             {
                 // Not comment number specified...
                 //
@@ -183,22 +177,20 @@ int vdb::comments::remove(void)
                 // Numbers start at 1 so it must be decremented to an index.
                 //
                 const string_t
-                    value(*options::get_command_argument(1));
+                    value = options::command_arguments[1];
                 int32_t
                     number = 0;
 
                 if (not vdis::to_int32(value, number))
                 {
-                    std::cout << options::get_terminal_command()
-                              << " uncomment: invalid comment number '"
+                    std::cout << "vdb uncomment: invalid comment number '"
                               << value << "'" << std::endl;
                 }
                 else
                 {
                     if (number < 1)
                     {
-                        std::cerr << options::get_terminal_command()
-                                  << " uncomment: invalid comment number '"
+                        std::cerr << "vdb uncomment: invalid comment number '"
                                   << value << "'" << std::endl;
                     }
                     else
@@ -214,8 +206,7 @@ int vdb::comments::remove(void)
                         }
                         else
                         {
-                            std::cerr << options::get_terminal_command()
-                                      << " uncomment: comment number "
+                            std::cerr << "vdb uncomment: comment number "
                                       << "out of range: " << number
                                       << ", range is 1.." << current_count
                                       << std::endl;
@@ -290,7 +281,7 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
             output.index(),
             output.length());
 
-        while((remainder > 0) and output())
+        while((remainder > 0) and not output.error())
         {
             if (copy_buffer_length > remainder)
             {
@@ -305,7 +296,11 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
             LOG_VERBOSE("Bytes remaining is %d", remainder);
         }
 
-        if (input() and output())
+        if (input.error() or output.error())
+        {
+            result = 1;
+        }
+        else
         {
             // Overwrite the file with new stream.
             //
@@ -313,10 +308,6 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 
             std::cout << "Comment #" << (index + 1)
                       << " removed." << std::endl;
-        }
-        else
-        {
-            result = 1;
         }
     }
 
@@ -352,7 +343,7 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
         uint32_t
             remainder = input.remaining_length();
 
-        while((remainder > 0) and output())
+        while((remainder > 0) and not output.error())
         {
             if (copy_buffer_length > remainder)
             {
@@ -365,17 +356,17 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
             remainder -= copy_buffer_length;
         }
 
-        if (input() or output())
+        if (input.error() or output.error())
+        {
+            result = 1;
+        }
+        else
         {
             // Overwrite the file with new stream.
             //
             output.write_file(reader.get_filename());
 
             std::cout << "All comments removed." << std::endl;
-        }
-        else
-        {
-            result = 1;
         }
      }
 

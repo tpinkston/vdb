@@ -202,17 +202,11 @@ void vdis::byte_buffer_t::print(
 // ----------------------------------------------------------------------------
 void vdis::byte_buffer_t::read(byte_stream_t &stream)
 {
-    clear();
+    uint32_t
+        size = 0;
 
-    stream.read(data_length);
-
-    if (stream() and (data_length > 0))
-    {
-        data_buffer = new uint8_t[data_length];
-        data_allocated = true;
-
-        stream.read(data_buffer, data_length);
-    }
+    stream.read(size);
+    read(stream, size);
 }
 
 // ----------------------------------------------------------------------------
@@ -220,7 +214,7 @@ void vdis::byte_buffer_t::read(byte_stream_t &stream, uint32_t size)
 {
     clear();
 
-    if (stream() and (size > 0))
+    if ((size > 0) and not stream.error())
     {
         data_length = size;
         data_buffer = new uint8_t[data_length];

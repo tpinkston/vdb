@@ -22,7 +22,8 @@ namespace vdis
         //
         const uint8_t *offset_buffer(void) const;
 
-        bool operator()(void) const;
+        bool ready(void) const;
+        bool error(void) const;
 
         uint32_t index(void) const;
 
@@ -90,7 +91,7 @@ namespace vdis
         uint32_t
             buffer_index;
         bool
-            buffer_status;
+            buffer_error;
     };
 
     // ------------------------------------------------------------------------
@@ -100,11 +101,15 @@ namespace vdis
     }
 
     // ------------------------------------------------------------------------
-    // True if bytes available to read or write
-    //
-    inline bool byte_stream_t::operator()(void) const
+    inline bool byte_stream_t::ready(void) const
     {
-        return buffer_status;
+        return (buffer_index < length()) and not error();
+    }
+
+    // ------------------------------------------------------------------------
+    inline bool byte_stream_t::error(void) const
+    {
+        return buffer_error;
     }
 
     // ------------------------------------------------------------------------
