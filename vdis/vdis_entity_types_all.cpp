@@ -13167,6 +13167,7 @@ void vdis::entity_types::add_all(void)
     add(3,1,222,3,0,0,0,"CIS_LF_CIV_UNARMED","C.I.S. Civilian, Unarmed");
     add(3,1,224,3,0,0,0,"UK_LF_CIV_UNARMED","U.K. Civilian, Unarmed");
     add(3,1,225,1,0,1,0,"US_LF_DI_UNARMED","U.S. DI, Unarmed");
+    add(3,1,225,1,0,1,1,"US_LF_DI_UNARMED","U.S. DI, Unarmed w/ flight helmet");
     add(3,1,225,1,0,3,1,"US_LF_DI_LITTER","Litter Patient w/ two litter bearers");
     add(3,1,225,1,11,1,0,"US_LF_DI_M9_BERETTA","U.S. DI, M9 Beretta 9mm");
     add(3,1,225,1,32,1,0,"US_LF_DI_M16A2_CARBINE","U.S. DI, M16A2 Carbine");
@@ -13846,6 +13847,8 @@ void vdis::entity_types::add_all(void)
     add(6,0,0,0,13,2,3,"OTHER_SUPL_SLING_LOAD_CRATE_17500_LB","Sling Load, Crate, 17500 lb");
     add(6,0,0,0,13,3,0,"OTHER_SUPL_SLING_LOAD_WATER_BUCKET","Sling Load, Water Bucket");
     add(6,0,0,0,13,3,1,"OTHER_SUPL_SLING_LOAD_WATER_BUCKET_BAMBI_120G","Sling Load, Bambi Bucket (BB 1012), 120 Gal");
+    add(6,0,0,0,13,3,2,"OTHER_SUPL_SLING_LOAD_WATER_BUCKET_BAMBI_660G","Sling Load, Bambi Torrentula (BB THL7600), 660 Gal");
+    add(6,0,0,0,13,3,3,"OTHER_SUPL_SLING_LOAD_WATER_BUCKET_BAMBI_2000G","Sling Load, Bambi Bucket (BB T5566HD), 2000 Gal");
     add(6,0,0,0,13,4,0,"OTHER_SUPL_SLING_LOAD_HMMWV","Sling Load, HMMWV");
     add(6,0,0,0,13,4,1,"OTHER_SUPL_SLING_LOAD_HMMWV_M998_SINGLE_HOOK","Sling Load, HMMWV, M998, Single Hook");
     add(6,0,0,0,13,4,2,"OTHER_SUPL_SLING_LOAD_HMMWV_M998_TANDEM_HOOK","Sling Load, HMMWV, M998, Tandem Hook");
