@@ -3,7 +3,6 @@
 
 // C++ headers
 #include <algorithm>
-#include <bitset>
 #include <cerrno>
 #include <cmath>
 #include <csignal>
@@ -27,7 +26,6 @@
 
 // C headers
 #include <arpa/inet.h>
-#include <getopt.h>
 #include <netdb.h>
 #include <net/if.h>
 #include <netinet/in.h>

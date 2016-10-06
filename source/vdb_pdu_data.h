@@ -43,12 +43,12 @@ namespace vdb
         uint16_t get_hostname_length(void) const;
 
         void set_source(
-            const inet_address_t &source_address,
+            const inet_socket_address_t &source_address,
             uint16_t socket_port
         );
 
         void set_source(
-            const inet6_address_t &source_address,
+            const inet6_socket_address_t &source_address,
             uint16_t socket_port
         );
 
@@ -82,19 +82,11 @@ namespace vdb
         void read(vdis::byte_stream_t &stream);
         void write(vdis::byte_stream_t &stream) const;
 
-        // "PDUD" in ASCII (4 bytes)
         static const uint32_t
-            HEADER = 0x50445544;
-
-        // Accommodate IPv4 and IPv6 addresses (16 bytes)
-        static const uint32_t
-            ADDRESS_LENGTH = 0x10;
-
-        static const uint32_t
-            PDU_BUFFER_LENGTH = 0x800; // 2 KB
-
-        static const uint32_t
-            BASE_LENGTH = 0x30; // 48 bytes
+            HEADER =            0x50445544,     // "PDUD" in ASCII (4 bytes)
+            ADDRESS_LENGTH =    0x10,           // IPv4 and IPv6 (16 bytes)
+            PDU_BUFFER_LENGTH = 0x800,          // 2 KB
+            BASE_LENGTH =       0x30;           // 48 bytes
 
       protected:
 
@@ -103,7 +95,7 @@ namespace vdb
         uint64_t                time;                           // 8 bytes
         uint32_t                padding;                        // 4 bytes
         pdu_data_status_t       status;                         // 2 bytes
-        string_t             hostname;                       // 2+ bytes
+        string_t                hostname;                       // 2+ bytes
         uint8_t                 address[ADDRESS_LENGTH];        // 16 bytes
         uint16_t                port;                           // 2 bytes
         uint16_t                ip_version;                     // 2 bytes

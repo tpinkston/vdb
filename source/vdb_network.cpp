@@ -72,7 +72,7 @@ void vdb::network::set_address(
     bool &broadcast,
     bool fail_on_error)
 {
-    const string_t
+    const std::string
         address_string = vdis::to_lowercase(address);
 
     std::memset(&inet_address, 0, sizeof(inet_address));
@@ -127,7 +127,7 @@ void vdb::network::set_address(
 
             LOG_VERBOSE("Converted %s to IPv4 address:", address);
 
-            temp_buffer.print(string_t(), std::cout);
+            temp_buffer.print(std::string(), std::cout);
         }
     }
 }
@@ -162,7 +162,7 @@ void vdb::network::set_address(
     inet6_address_t &inet6_address,
     bool fail_on_error)
 {
-    const string_t
+    const std::string
         address_string = vdis::to_lowercase(address);
 
     if (address_string == ANY)
@@ -214,82 +214,66 @@ void vdb::network::set_address(
 
             LOG_VERBOSE("Converted %s to IPv6 address:", address);
 
-            temp_buffer.print(string_t(), std::cout);
+            temp_buffer.print(std::string(), std::cout);
         }
     }
 }
 
 // ----------------------------------------------------------------------------
-string_t vdb::network::get_address(int family, const void *address_ptr)
+std::string vdb::network::get_address(const inet_address_t &address)
 {
-    string_t
-        source;
     char
         buffer[64];
 
     std::memset(buffer, 0, 64);
 
-    if (family == AF_INET)
+    const char *result = inet_ntop(
+        AF_INET,
+        &address,
+        buffer,
+        INET_ADDRSTRLEN);
+
+    if (result)
     {
-        inet_address_t
-            address_ipv4;
-
-        std::memset(&address_ipv4, 0, sizeof(address_ipv4));
-
-        std::memcpy(
-            &address_ipv4,
-            address_ptr,
-            sizeof(address_ipv4));
-
-        const char *result = inet_ntop(
-            AF_INET,
-            &address_ipv4,
-            buffer,
-            INET_ADDRSTRLEN);
-
-        if (result)
-        {
-            source = buffer;
-        }
-    }
-    else if (family == AF_INET6)
-    {
-        inet6_address_t
-            address_ipv6;
-
-        std::memset(&address_ipv6, 0, sizeof(address_ipv6));
-
-        std::memcpy(
-            &address_ipv6,
-            address_ptr,
-            sizeof(address_ipv6));
-
-        const char *result = inet_ntop(
-            AF_INET6,
-            &address_ipv6,
-            buffer,
-            INET6_ADDRSTRLEN);
-
-        if (result)
-        {
-            source = buffer;
-        }
+        return std::string(buffer);
     }
     else
     {
-        source = "unknown";
+        return "unknown";
     }
+}
 
-    return source;
+// ----------------------------------------------------------------------------
+std::string vdb::network::get_address(const inet6_address_t &address)
+{
+    char
+        buffer[64];
+
+    std::memset(buffer, 0, 64);
+
+    const char *result = inet_ntop(
+        AF_INET6,
+        &address,
+        buffer,
+        INET6_ADDRSTRLEN);
+
+    if (result)
+    {
+        return std::string(buffer);
+    }
+    else
+    {
+        return "unknown";
+    }
 }
 
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
-    const inet_address_t &address,
-    string_t &host)
+    const inet_socket_address_t &address,
+    std::string &host)
 {
     const uint32_t
-        ip = address.s_addr;
+        ip = address.sin_addr.s_addr;
     ipv4_address_cache_t::const_iterator
         itor;
     bool
@@ -321,8 +305,8 @@ bool vdb::network::get_hostname(
 
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
-    const inet_address_t &address,
-    string_t &host)
+    const inet_socket_address_t &address,
+    std::string &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
@@ -347,8 +331,11 @@ bool vdb::network::query_hostname(
     else
     {
         LOG_WARNING(
-            "Name resolution failed for %s",
-            get_address(AF_INET, &address).c_str());
+            "Name resolution failed for %s, family %d: (result %d = '%s')",
+            get_address(address.sin_addr).c_str(),
+            address.sin_family,
+            result,
+            gai_strerror(result));
     }
 
     return (result == 0);
@@ -356,8 +343,8 @@ bool vdb::network::query_hostname(
 
 // ----------------------------------------------------------------------------
 bool vdb::network::get_hostname(
-    const inet6_address_t &address,
-    string_t &host)
+    const inet6_socket_address_t &address,
+    std::string &host)
 {
     // TODO: Cache hostname from IPv6 address
     //
@@ -366,8 +353,8 @@ bool vdb::network::get_hostname(
 
 // ----------------------------------------------------------------------------
 bool vdb::network::query_hostname(
-    const inet6_address_t &address,
-    string_t &host)
+    const inet6_socket_address_t &address,
+    std::string &host)
 {
     char
         hostname[HOSTNAME_MAX_SIZE],
@@ -393,7 +380,7 @@ bool vdb::network::query_hostname(
     {
         LOG_WARNING(
             "Name resolution failed for %s",
-            get_address(AF_INET6, &address).c_str());
+            get_address(address.sin6_addr).c_str());
     }
 
     return (result == 0);
@@ -572,11 +559,11 @@ void vdb::capture_socket_t::receive(pdu_data_t &data)
 
         if (ipv6)
         {
-            data.set_source(address_ipv6.sin6_addr, (uint16_t)port);
+            data.set_source(address_ipv6, (uint16_t)port);
         }
         else
         {
-            data.set_source(address_ipv4.sin_addr, (uint16_t)port);
+            data.set_source(address_ipv4, (uint16_t)port);
         }
 
         LOG_VERBOSE(

@@ -56,7 +56,7 @@ int vdb::capture::capture_pdus(void)
     }
     else
     {
-        string_t
+        std::string
             filename;
 
         capturing = true;
@@ -64,7 +64,7 @@ int vdb::capture::capture_pdus(void)
         // Was filename provided?  If so check overwrite and open it for
         // output.
         //
-        if (options::options::command_arguments.size() < 2)
+        if (options::options::command_arguments.size() > 1)
         {
             struct stat
                 file_stat;
@@ -127,7 +127,7 @@ void vdb::capture::close_socket(void)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::capture::open_output_file(const string_t &filename)
+bool vdb::capture::open_output_file(const std::string &filename)
 {
     file_header_t
         header;
@@ -165,7 +165,7 @@ bool vdb::capture::open_output_file(const string_t &filename)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::capture::close_output_file(const string_t &filename)
+bool vdb::capture::close_output_file(const std::string &filename)
 {
     bool
         success = false;

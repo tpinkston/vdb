@@ -21,8 +21,8 @@ namespace vdb
         static void open_socket(void);
         static void close_socket(void);
 
-        static bool open_output_file(const string_t &filename);
-        static bool close_output_file(const string_t &filename);
+        static bool open_output_file(const std::string &filename);
+        static bool close_output_file(const std::string &filename);
 
         static void write_pdu_data(const pdu_data_t &data);
 

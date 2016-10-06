@@ -26,7 +26,7 @@ namespace vdb
     typedef struct ifreq
         interface_request_t;
 
-    typedef std::map<uint32_t, string_t>
+    typedef std::map<uint32_t, std::string>
         ipv4_address_cache_t;
 
     // ------------------------------------------------------------------------
@@ -62,18 +62,11 @@ namespace vdb
             bool fail_on_error = true
         );
 
-        // Returns IP address as string (e.g. '192.168.1.1')
-        //
-        // family:  is AF_INET or AF_INET6
-        // address: pointer to 'inet_address_t' or 'inet6_address_t'
-        //
-        static string_t get_address(int family, const void *address_ptr);
+        static std::string get_address(const inet_address_t &);
+        static std::string get_address(const inet6_address_t &);
 
-        static string_t str(const inet_address_t &);
-        static string_t str(const inet6_address_t &);
-
-        static bool get_hostname(const inet_address_t &, string_t &);
-        static bool get_hostname(const inet6_address_t &, string_t &);
+        static bool get_hostname(const inet_socket_address_t &, std::string &);
+        static bool get_hostname(const inet6_socket_address_t &, std::string &);
 
         static const char
             *ANY,
@@ -83,13 +76,13 @@ namespace vdb
       private:
 
         static bool query_hostname(
-            const inet_address_t &,
-            string_t &
+            const inet_socket_address_t &,
+            std::string &
         );
 
         static bool query_hostname(
-            const inet6_address_t &,
-            string_t &
+            const inet6_socket_address_t &,
+            std::string &
         );
 
         static ipv4_address_cache_t
@@ -174,7 +167,7 @@ inline std::ostream &operator<<(
     std::ostream &os,
     const vdb::inet_address_t &address)
 {
-    return (os << vdb::network::get_address(AF_INET, &address));
+    return (os << vdb::network::get_address(address));
 }
 
 // ----------------------------------------------------------------------------
@@ -182,7 +175,7 @@ inline std::ostream &operator<<(
     std::ostream &os,
     const vdb::inet6_address_t &address)
 {
-    return (os << vdb::network::get_address(AF_INET6, &address));
+    return (os << vdb::network::get_address(address));
 }
 
 #endif

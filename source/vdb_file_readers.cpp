@@ -189,9 +189,9 @@ bool vdb::pcap_reader_t::read_pcap_entry(
         destination_port = 0;
     int8_t
         protocol = 0;
-    inet_address_t
+    inet_socket_address_t
         address_ipv4;
-    inet6_address_t
+    inet6_socket_address_t
         address_ipv6;
     void
         *address_ptr = 0;
@@ -229,7 +229,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
             // address, then skip another 4 bytes for the destination IP
             //
             stream.skip(2);
-            stream.read(address_ptr, sizeof(inet_address_t));
+            stream.read(&address_ipv4.sin_addr, sizeof(inet_address_t));
             stream.skip(4);
         }
         else if (ethernet_type == ETHERTYPE_IPV6)
@@ -240,7 +240,7 @@ bool vdb::pcap_reader_t::read_pcap_entry(
             // then skip another 16 bytes for the destination IP
             //
             stream.skip(8);
-            stream.read(address_ptr, sizeof(inet6_address_t));
+            stream.read(&address_ipv6.sin6_addr, sizeof(inet6_address_t));
             stream.skip(16);
         }
         else
@@ -256,13 +256,13 @@ bool vdb::pcap_reader_t::read_pcap_entry(
                 {
                     LOG_EXTRA_VERBOSE(
                         "Source IPv4 address is %s...",
-                        network::get_address(AF_INET, &address_ipv4).c_str());
+                        network::get_address(address_ipv4.sin_addr).c_str());
                 }
                 else
                 {
                     LOG_EXTRA_VERBOSE(
                         "Source IPv6 address is %s...",
-                        network::get_address(AF_INET6, &address_ipv6).c_str());
+                        network::get_address(address_ipv6.sin6_addr).c_str());
                 }
             }
 

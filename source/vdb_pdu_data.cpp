@@ -26,7 +26,7 @@ uint16_t vdb::pdu_data_t::get_hostname_length(void) const
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet_address_t &source_address,
+    const inet_socket_address_t &source_address,
     uint16_t socket_port)
 {
     LOG_EXTRA_VERBOSE("Setting address with IPv4 address...");
@@ -37,12 +37,12 @@ void vdb::pdu_data_t::set_source(
     network::get_hostname(source_address, hostname);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &source_address, sizeof(inet_address_t));
+    std::memcpy(address, &source_address.sin_addr, sizeof(inet_address_t));
 }
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet6_address_t &source_address,
+    const inet6_socket_address_t &source_address,
     uint16_t socket_port)
 {
     LOG_EXTRA_VERBOSE("Setting address with IPv6 address...");
@@ -53,7 +53,7 @@ void vdb::pdu_data_t::set_source(
     network::get_hostname(source_address, hostname);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &source_address, sizeof(inet6_address_t));
+    std::memcpy(address, &source_address.sin6_addr, sizeof(inet6_address_t));
 }
 
 // ----------------------------------------------------------------------------
@@ -62,16 +62,23 @@ void vdb::pdu_data_t::set_source(
 //
 string_t vdb::pdu_data_t::get_source(void) const
 {
-    std::ostringstream
-        stream;
+    std::ostringstream stream;
 
     if (ip_version == 4)
     {
-        stream << network::get_address(AF_INET, address);
+        inet_address_t address4;
+
+        std::memcpy(&address4, address, sizeof(inet_address_t));
+
+        stream << network::get_address(address4);
     }
     else if (ip_version == 6)
     {
-        stream << network::get_address(AF_INET6, address);
+        inet_address_t address6;
+
+        std::memcpy(&address6, address, sizeof(inet6_address_t));
+
+        stream << network::get_address(address6);
     }
     else
     {
