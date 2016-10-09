@@ -264,7 +264,7 @@ namespace vdis
         location12_t                    location;                   // 12 bytes
 
         collision_pdu_t(void);
-        ~collision_pdu_t(void);
+        ~collision_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -285,7 +285,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         create_entity_pdu_t(void);
-        ~create_entity_pdu_t(void);
+        ~create_entity_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -311,7 +311,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         remove_entity_pdu_t(void);
-        ~remove_entity_pdu_t(void);
+        ~remove_entity_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -339,7 +339,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         start_resume_pdu_t(void);
-        ~start_resume_pdu_t(void);
+        ~start_resume_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -369,7 +369,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         stop_freeze_pdu_t(void);
-        ~stop_freeze_pdu_t(void);
+        ~stop_freeze_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -397,7 +397,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         acknowledge_pdu_t(void);
-        ~acknowledge_pdu_t(void);
+        ~acknowledge_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -448,9 +448,8 @@ namespace vdis
         }
 
         void clear(void);
-        void print(std::ostream &) const;
-        void print_fixed_datums(std::ostream &) const;
-        void print_variable_datums(std::ostream &) const;
+        void print_fixed(const std::string &, std::ostream &) const;
+        void print_records(const std::string &, std::ostream &) const;
     };
 
     // ------------------------------------------------------------------------
@@ -874,6 +873,9 @@ namespace vdis
         simulation_id_t                 requestor_id;               // 4 bytes
         simulation_id_t                 receiver_id;                // 4 bytes
         uint32_t                        padding32;                  // 4 bytes
+
+        point_object_state_pdu_t(void);
+        ~point_object_state_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {

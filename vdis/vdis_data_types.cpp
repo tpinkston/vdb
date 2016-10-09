@@ -727,6 +727,22 @@ void vdis::clocktime_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+bool vdis::pdu_header_t::is_valid(void) const
+{
+	return (get_family((pdu_type_e)type) == (pdu_family_e)family);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::pdu_header_t::reset(pdu_type_e pdu_type)
+{
+	clear();
+
+	protocol = (uint8_t)PROTOCOL_VERSION_PTCL_VER_IEEE_1278_1_2012;
+	type = (uint8_t)pdu_type;
+	family = (uint8_t)get_family(pdu_type);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::pdu_header_t::print(
     const string_t &prefix,
     std::ostream &out) const

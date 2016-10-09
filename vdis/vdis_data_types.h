@@ -376,6 +376,8 @@ namespace vdis
             padding = 0;
         }
 
+        bool is_valid(void) const;
+        void reset(pdu_type_e);
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);

@@ -98,6 +98,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     // Miscellaneous
 
+    pdu_family_e get_family(pdu_type_e type);
+
     uint32_t padding_length(uint32_t length, uint32_t boundary = 8);
 
     inline bool is_printable_character(uint8_t value)

@@ -333,6 +333,103 @@ uint64_t vdis::byteswap(uint64_t value, bool force)
     return result;
 }
 
+// ----------------------------------------------------------------------------
+// Returns 'PDU_FAMILY_END' if PDU type is not valid
+//
+vdis::pdu_family_e vdis::get_family(pdu_type_e type)
+{
+    switch(type)
+    {
+        case PDU_TYPE_ENTITY_STATE:
+        case PDU_TYPE_COLLISION:
+        case PDU_TYPE_COLLISION_ELASTIC:
+        case PDU_TYPE_ENTITY_STATE_UPDATE:
+        case PDU_TYPE_ATTRIBUTE:
+            return PDU_FAMILY_ENTITY_INFORMATION_INTERACTION;
+        case PDU_TYPE_FIRE:
+        case PDU_TYPE_DETONATION:
+        case PDU_TYPE_DE_FIRE:
+        case PDU_TYPE_ENTITY_DAMAGE_STATUS:
+        	return PDU_FAMILY_WARFARE;
+        case PDU_TYPE_SERVICE_REQ:
+        case PDU_TYPE_RESUPPLY_OFFER:
+        case PDU_TYPE_RESUPPLY_RECEIVED:
+        case PDU_TYPE_RESUPPLY_CANCEL:
+        case PDU_TYPE_REPAIR_COMPLETE:
+        case PDU_TYPE_REPAIR_RESPONSE:
+        	return PDU_FAMILY_LOGISTICS;
+        case PDU_TYPE_CREATE_ENTITY:
+        case PDU_TYPE_REMOVE_ENTITY:
+        case PDU_TYPE_START_RESUME:
+        case PDU_TYPE_STOP_FREEZE:
+        case PDU_TYPE_ACKNOWLEDGE:
+        case PDU_TYPE_ACTION_REQUEST:
+        case PDU_TYPE_ACTION_RESPONSE:
+        case PDU_TYPE_DATA_QUERY:
+        case PDU_TYPE_SET_DATA:
+        case PDU_TYPE_DATA:
+        case PDU_TYPE_EVENT_REPORT:
+        case PDU_TYPE_COMMENT:
+        	return PDU_FAMILY_SIMULATION_MANAGEMENT;
+        case PDU_TYPE_EM_EMISSION:
+        case PDU_TYPE_DESIGNATOR:
+        case PDU_TYPE_IFF:
+        case PDU_TYPE_UNDERWATER_ACOUSTIC:
+        case PDU_TYPE_SEES:
+        	return PDU_FAMILY_DISTRIBUTED_EMISSION_REGENERATION;
+        case PDU_TYPE_TRANSMITTER:
+        case PDU_TYPE_SIGNAL:
+        case PDU_TYPE_RECEIVER:
+        case PDU_TYPE_INTERCOM_SIGNAL:
+        case PDU_TYPE_INTERCOM_CONTROL:
+        	return PDU_FAMILY_RADIO_COMMUNICATION;
+        case PDU_TYPE_AGGREGATE_STATE:
+        case PDU_TYPE_ISGROUPOF:
+        case PDU_TYPE_TRANSFER_OWNERSHIP:
+        case PDU_TYPE_ISPARTOF:
+        	return PDU_FAMILY_ENTITY_MANAGEMENT;
+        case PDU_TYPE_MINEFIELD_STATE:
+        case PDU_TYPE_MINEFIELD_QUERY:
+        case PDU_TYPE_MINEFIELD_DATA:
+        case PDU_TYPE_MINEFIELD_RESPONSE_NAK:
+        	return PDU_FAMILY_MINEFIELD;
+        case PDU_TYPE_ENVIRONMENTAL_PROCESS:
+        case PDU_TYPE_GRIDDED_DATA:
+        case PDU_TYPE_POINT_OBJECT_STATE:
+        case PDU_TYPE_LINEAR_OBJECT_STATE:
+        case PDU_TYPE_AREAL_OBJECT_STATE:
+        	return PDU_FAMILY_SYNTHETIC_ENVIRONMENT;
+        case PDU_TYPE_TSPI:
+        case PDU_TYPE_APPEARANCE:
+        case PDU_TYPE_ARTICULATED_PARTS:
+        case PDU_TYPE_LE_FIRE:
+        case PDU_TYPE_LE_DETONATION:
+        	return PDU_FAMILY_LIVE_ENTITY;
+        case PDU_TYPE_CREATE_ENTITY_R:
+        case PDU_TYPE_REMOVE_ENTITY_R:
+        case PDU_TYPE_START_RESUME_R:
+        case PDU_TYPE_STOP_FREEZE_R:
+        case PDU_TYPE_ACKNOWLEDGE_R:
+        case PDU_TYPE_ACTION_REQUEST_R:
+        case PDU_TYPE_ACTION_RESPONSE_R:
+        case PDU_TYPE_DATA_QUERY_R:
+        case PDU_TYPE_SET_DATA_R:
+        case PDU_TYPE_DATA_R:
+        case PDU_TYPE_EVENT_REPORT_R:
+        case PDU_TYPE_COMMENT_R:
+        case PDU_TYPE_RECORD_R:
+        case PDU_TYPE_SET_RECORD_R:
+        case PDU_TYPE_RECORD_QUERY_R:
+        	return PDU_FAMILY_SIMULATION_MANAGEMENT_WITH_RELIABILITY;
+        case PDU_TYPE_INFO_OPS_ACTION:
+        case PDU_TYPE_INFO_OPS_REPORT:
+        	return PDU_FAMILY_INFO_OPS;
+        case PDU_TYPE_APPLICATION_CTRL:
+        	return PDU_FAMILY_EXPERIMENTAL_V_DIS;
+        default:
+        	return PDU_FAMILY_END;
+    }
+}
 
 // ----------------------------------------------------------------------------
 // Returns the number of bytes needed to pad data with the specified

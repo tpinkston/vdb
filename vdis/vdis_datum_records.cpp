@@ -133,6 +133,12 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::variable_datum_record_t::~variable_datum_record_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
 void vdis::variable_datum_record_t::print(
     const string_t &prefix,
     std::ostream &out) const

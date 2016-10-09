@@ -332,6 +332,168 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new detonation_pdu_t;
                 break;
             }
+            case PDU_TYPE_COLLISION:
+            {
+                LOG_EXTRA_VERBOSE("Creating new collision_pdu_t...");
+                base_ptr = new collision_pdu_t;
+                break;
+            }
+            case PDU_TYPE_CREATE_ENTITY:
+            {
+                LOG_EXTRA_VERBOSE("Creating new create_entity_pdu_t...");
+                base_ptr = new create_entity_pdu_t;
+                break;
+            }
+            case PDU_TYPE_REMOVE_ENTITY:
+            {
+                LOG_EXTRA_VERBOSE("Creating new remove_entity_pdu_t...");
+                base_ptr = new remove_entity_pdu_t;
+                break;
+            }
+            case PDU_TYPE_START_RESUME:
+            {
+                LOG_EXTRA_VERBOSE("Creating new start_resume_pdu_t...");
+                base_ptr = new start_resume_pdu_t;
+                break;
+            }
+            case PDU_TYPE_STOP_FREEZE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new stop_freeze_pdu_t...");
+                base_ptr = new stop_freeze_pdu_t;
+                break;
+            }
+            case PDU_TYPE_ACKNOWLEDGE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new acknowledge_pdu_t...");
+                base_ptr = new acknowledge_pdu_t;
+                break;
+            }
+//            case PDU_TYPE_ACTION_REQUEST: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new action_request_pdu_t...");
+//                base_ptr = new action_request_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_ACTION_RESPONSE: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new action_response_pdu_t...");
+//                base_ptr = new action_response_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_DATA_QUERY: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new data_query_pdu_t...");
+//                base_ptr = new data_query_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_SET_DATA: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new set_data_pdu_t...");
+//                base_ptr = new set_data_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_DATA: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new data_pdu_t...");
+//                base_ptr = new data_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_EVENT_REPORT: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new event_report_pdu_t...");
+//                base_ptr = new event_report_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_COMMENT: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new comment_pdu_t...");
+//                base_ptr = new comment_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_EM_EMISSION: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new em_emission_pdu_t...");
+//                base_ptr = new em_emission_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_DESIGNATOR: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new designator_pdu_t...");
+//                base_ptr = new designator_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_TRANSMITTER: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new transmitter_pdu_t...");
+//                base_ptr = new transmitter_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_SIGNAL: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new signal_pdu_t...");
+//                base_ptr = new signal_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_RECEIVER: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new receiver_pdu_t...");
+//                base_ptr = new receiver_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_IFF: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new iff_pdu_t...");
+//                base_ptr = new iff_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_MINEFIELD_STATE: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new minefield_state_pdu_t...");
+//                base_ptr = new minefield_state_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_MINEFIELD_QUERY: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new minefield_query_pdu_t...");
+//                base_ptr = new minefield_query_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_MINEFIELD_DATA: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new minefield_data_pdu_t...");
+//                base_ptr = new minefield_data_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_MINEFIELD_RESPONSE_NAK: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new minefield_response_nack_pdu_t...");
+//                base_ptr = new minefield_response_nack_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_ENVIRONMENTAL_PROCESS: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new environmental_process_pdu_t...");
+//                base_ptr = new environmental_process_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_POINT_OBJECT_STATE: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new point_object_state_pdu_t...");
+//                base_ptr = new point_object_state_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_LINEAR_OBJECT_STATE: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new linear_object_state_pdu_t...");
+//                base_ptr = new linear_object_state_pdu_t;
+//                break;
+//            }
+//            case PDU_TYPE_AREAL_OBJECT_STATE: TODO
+//            {
+//                LOG_EXTRA_VERBOSE("Creating new areal_object_state_pdu_t...");
+//                base_ptr = new areal_object_state_pdu_t;
+//                break;
+//            }
             case PDU_TYPE_APPLICATION_CTRL:
             {
                 LOG_EXTRA_VERBOSE("Creating new application_control_pdu_t...");
@@ -391,8 +553,7 @@ bool vdis::pdu_t::validate_header(byte_buffer_t &buffer)
         family = (pdu_family_e)buffer[3];
     bool
         valid_protocol = false,
-        valid_type = false,
-        valid_family = false;
+        valid_type_family = false;
 
     valid_protocol = (protocol == PROTOCOL_VERSION_PTCL_VER_IEEE_1278_1_2012);
 
@@ -403,133 +564,17 @@ bool vdis::pdu_t::validate_header(byte_buffer_t &buffer)
             enumerations::get_name(ENUM_PROTOCOL_VERSION, protocol).c_str());
     }
 
-    switch(type)
-    {
-        case PDU_TYPE_ENTITY_STATE:
-        case PDU_TYPE_COLLISION:
-        case PDU_TYPE_COLLISION_ELASTIC:
-        case PDU_TYPE_ENTITY_STATE_UPDATE:
-        case PDU_TYPE_ATTRIBUTE:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_ENTITY_INFORMATION_INTERACTION);
-            break;
-        case PDU_TYPE_FIRE:
-        case PDU_TYPE_DETONATION:
-        case PDU_TYPE_DE_FIRE:
-        case PDU_TYPE_ENTITY_DAMAGE_STATUS:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_WARFARE);
-            break;
-        case PDU_TYPE_SERVICE_REQ:
-        case PDU_TYPE_RESUPPLY_OFFER:
-        case PDU_TYPE_RESUPPLY_RECEIVED:
-        case PDU_TYPE_RESUPPLY_CANCEL:
-        case PDU_TYPE_REPAIR_COMPLETE:
-        case PDU_TYPE_REPAIR_RESPONSE:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_LOGISTICS);
-            break;
-        case PDU_TYPE_CREATE_ENTITY:
-        case PDU_TYPE_REMOVE_ENTITY:
-        case PDU_TYPE_START_RESUME:
-        case PDU_TYPE_STOP_FREEZE:
-        case PDU_TYPE_ACKNOWLEDGE:
-        case PDU_TYPE_ACTION_REQUEST:
-        case PDU_TYPE_ACTION_RESPONSE:
-        case PDU_TYPE_DATA_QUERY:
-        case PDU_TYPE_SET_DATA:
-        case PDU_TYPE_DATA:
-        case PDU_TYPE_EVENT_REPORT:
-        case PDU_TYPE_COMMENT:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_SIMULATION_MANAGEMENT);
-            break;
-        case PDU_TYPE_EM_EMISSION:
-        case PDU_TYPE_DESIGNATOR:
-        case PDU_TYPE_IFF:
-        case PDU_TYPE_UNDERWATER_ACOUSTIC:
-        case PDU_TYPE_SEES:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_DISTRIBUTED_EMISSION_REGENERATION);
-            break;
-        case PDU_TYPE_TRANSMITTER:
-        case PDU_TYPE_SIGNAL:
-        case PDU_TYPE_RECEIVER:
-        case PDU_TYPE_INTERCOM_SIGNAL:
-        case PDU_TYPE_INTERCOM_CONTROL:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_RADIO_COMMUNICATION);
-            break;
-        case PDU_TYPE_AGGREGATE_STATE:
-        case PDU_TYPE_ISGROUPOF:
-        case PDU_TYPE_TRANSFER_OWNERSHIP:
-        case PDU_TYPE_ISPARTOF:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_ENTITY_MANAGEMENT);
-            break;
-        case PDU_TYPE_MINEFIELD_STATE:
-        case PDU_TYPE_MINEFIELD_QUERY:
-        case PDU_TYPE_MINEFIELD_DATA:
-        case PDU_TYPE_MINEFIELD_RESPONSE_NAK:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_MINEFIELD);
-            break;
-        case PDU_TYPE_ENVIRONMENTAL_PROCESS:
-        case PDU_TYPE_GRIDDED_DATA:
-        case PDU_TYPE_POINT_OBJECT_STATE:
-        case PDU_TYPE_LINEAR_OBJECT_STATE:
-        case PDU_TYPE_AREAL_OBJECT_STATE:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_SYNTHETIC_ENVIRONMENT);
-            break;
-        case PDU_TYPE_TSPI:
-        case PDU_TYPE_APPEARANCE:
-        case PDU_TYPE_ARTICULATED_PARTS:
-        case PDU_TYPE_LE_FIRE:
-        case PDU_TYPE_LE_DETONATION:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_LIVE_ENTITY);
-            break;
-        case PDU_TYPE_CREATE_ENTITY_R:
-        case PDU_TYPE_REMOVE_ENTITY_R:
-        case PDU_TYPE_START_RESUME_R:
-        case PDU_TYPE_STOP_FREEZE_R:
-        case PDU_TYPE_ACKNOWLEDGE_R:
-        case PDU_TYPE_ACTION_REQUEST_R:
-        case PDU_TYPE_ACTION_RESPONSE_R:
-        case PDU_TYPE_DATA_QUERY_R:
-        case PDU_TYPE_SET_DATA_R:
-        case PDU_TYPE_DATA_R:
-        case PDU_TYPE_EVENT_REPORT_R:
-        case PDU_TYPE_COMMENT_R:
-        case PDU_TYPE_RECORD_R:
-        case PDU_TYPE_SET_RECORD_R:
-        case PDU_TYPE_RECORD_QUERY_R:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_SIMULATION_MANAGEMENT_WITH_RELIABILITY);
-            break;
-        case PDU_TYPE_INFO_OPS_ACTION:
-        case PDU_TYPE_INFO_OPS_REPORT:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_INFO_OPS);
-            break;
-        case PDU_TYPE_APPLICATION_CTRL:
-            valid_type = true;
-            valid_family = (family == PDU_FAMILY_EXPERIMENTAL_V_DIS);
-            break;
-        default:
-            break;
-    }
+    valid_type_family = (get_family(type) != family);
 
-    if (not (valid_type and valid_family))
+    if (not valid_type_family)
     {
         LOG_WARNING(
-            "Invalid PDU type/family combination: %s/%s",
+            "Invalid PDU type/family: %s/%s",
             enumerations::get_name(ENUM_PDU_TYPE, type).c_str(),
             enumerations::get_name(ENUM_PDU_FAMILY, family).c_str());
     }
 
-    return (valid_protocol and valid_type and valid_family);
+    return (valid_protocol and valid_type_family);
 }
 
 // ----------------------------------------------------------------------------
@@ -981,6 +1026,423 @@ void vdis::detonation_pdu_t::write(byte_stream_t &stream)
                     to_string(shooter).c_str());
             }
         }
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::collision_pdu_t::collision_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::collision_pdu_t::clear(void)
+{
+    header.clear();
+    issuing_entity.clear();
+    colliding_entity.clear();
+    event.clear();
+    collision_type = 0;
+    padding = 0;
+    velocity.clear();
+    mass = 0;
+    location.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::collision_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "collision.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "issuing_entity "
+        << entity_marking(issuing_entity) << std::endl
+        << prefix << "colliding_entity "
+        << entity_marking(colliding_entity) << std::endl
+        << prefix << "collision_type "
+        << (collision_e)collision_type << std::endl
+        << prefix << "event " << event << std::endl
+        << prefix << "padding(8 bits) " << to_bin_string(padding) << std::endl
+        << prefix << "velocity " << velocity << std::endl
+        << prefix << "mass " << to_string(mass, 1, 3) << std::endl
+        << prefix << "location " << location << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::collision_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    issuing_entity.read(stream);
+    colliding_entity.read(stream);
+    event.read(stream);
+    stream.read(collision_type);
+    stream.read(padding);
+    velocity.read(stream);
+    stream.read(mass);
+    location.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::collision_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    issuing_entity.write(stream);
+    colliding_entity.write(stream);
+    event.write(stream);
+    stream.write(collision_type);
+    stream.write(padding);
+    velocity.write(stream);
+    stream.write(mass);
+    location.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::create_entity_pdu_t::create_entity_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::create_entity_pdu_t::clear(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    request_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::create_entity_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "create_entity.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << entity_marking(originator) << std::endl
+        << prefix << "recipient "
+        << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::create_entity_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::create_entity_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+}
+
+// ----------------------------------------------------------------------------
+vdis::remove_entity_pdu_t::remove_entity_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::remove_entity_pdu_t::clear(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    request_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::remove_entity_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "remove_entity.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << entity_marking(originator) << std::endl
+        << prefix << "recipient "
+        << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::remove_entity_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::remove_entity_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+}
+
+// ----------------------------------------------------------------------------
+vdis::start_resume_pdu_t::start_resume_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::start_resume_pdu_t::clear(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    real_time.clear();
+    simulation_time.clear();
+    request_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::start_resume_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "start_resume.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << entity_marking(originator) << std::endl
+        << prefix << "recipient "
+        << entity_marking(recipient) << std::endl
+        << prefix << "real_time " << real_time << std::endl
+        << prefix << "simulation_time " << simulation_time << std::endl
+        << prefix << "request_id " << request_id << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::start_resume_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    real_time.read(stream);
+    simulation_time.read(stream);
+    stream.read(request_id);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::start_resume_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    real_time.write(stream);
+    simulation_time.write(stream);
+    stream.write(request_id);
+}
+
+// ----------------------------------------------------------------------------
+vdis::stop_freeze_pdu_t::stop_freeze_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::stop_freeze_pdu_t::clear(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    real_time.clear();
+    reason = 0;
+    behavior = 0;
+    padding = 0;
+    request_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::stop_freeze_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "stop_freeze.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << entity_marking(originator) << std::endl
+        << prefix << "recipient "
+        << entity_marking(recipient) << std::endl
+        << prefix << "real_time " << real_time << std::endl
+        << prefix << "reason " << (sf_reason_codes_e)reason << std::endl
+        << prefix << "behavior " << (frozen_behavior_e)behavior << std::endl
+        << prefix << "padding " << to_bin_string(padding) << std::endl
+        << prefix << "request_id " << request_id << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::stop_freeze_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    real_time.read(stream);
+    stream.read(reason);
+    stream.read(behavior);
+    stream.read(padding);
+    stream.read(request_id);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::stop_freeze_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    real_time.write(stream);
+    stream.write(reason);
+    stream.write(behavior);
+    stream.write(padding);
+    stream.write(request_id);
+}
+
+// ----------------------------------------------------------------------------
+vdis::acknowledge_pdu_t::acknowledge_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::acknowledge_pdu_t::clear(void)
+{
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    acknowledge_flag = 0;
+    response_flag = 0;
+    request_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::acknowledge_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "acknowledge.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator "
+        << entity_marking(originator) << std::endl
+        << prefix << "recipient "
+        << entity_marking(recipient) << std::endl
+        << prefix << "acknowledge_flag "
+        << (ack_acknowledge_flag_e)acknowledge_flag << std::endl
+        << prefix << "response_flag "
+        << (ack_response_flag_e)response_flag << std::endl
+        << prefix << "request_id " << request_id << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::acknowledge_pdu_t::read(byte_stream_t &stream)
+{
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(acknowledge_flag);
+    stream.read(response_flag);
+    stream.read(request_id);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::acknowledge_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(acknowledge_flag);
+    stream.write(response_flag);
+    stream.write(request_id);
+}
+
+// ----------------------------------------------------------------------------
+vdis::abstract_siman_pdu_t::abstract_siman_pdu_t(void) :
+    fixed_count(0),
+    variable_count(0),
+    fixed_records(0),
+    variable_records(0)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+vdis::abstract_siman_pdu_t::~abstract_siman_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::abstract_siman_pdu_t::clear(void)
+{
+    if (fixed_records and (fixed_count > 0))
+    {
+        for(uint32_t i = 0; i < fixed_count; ++i)
+        {
+            delete fixed_records[i];
+            fixed_records[i] = 0;
+        }
+
+        delete[] fixed_records;
+    }
+
+    if (variable_records and (variable_count > 0))
+    {
+        for(uint32_t i = 0; i < variable_count; ++i)
+        {
+            delete variable_records[i];
+            variable_records[i] = 0;
+        }
+
+        delete[] variable_records;
+    }
+
+    header.clear();
+    originator.clear();
+    recipient.clear();
+    fixed_count = 0;
+    variable_count = 0;
+    fixed_records = 0;
+    variable_records = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::abstract_siman_pdu_t::print_records(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+	out << prefix << "fixed_datums.count " << fixed_count << std::endl;
+
+    for(uint32_t i = 0; (fixed_records and (i < fixed_count)); ++i)
+    {
+    	fixed_records[i]->print(
+    		(prefix + "fixed_datums[" + to_string(i) + "]."),
+			out);
+    }
+
+	out << prefix << "variable_datums.count " << variable_count << std::endl;
+
+    for(uint32_t i = 0; (variable_records and (i < variable_count)); ++i)
+    {
+    	variable_records[i]->print(
+    		(prefix + "variable_datums[" + to_string(i) + "]."),
+			out);
     }
 }
 
