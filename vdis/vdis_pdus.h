@@ -82,7 +82,7 @@ namespace vdis
 
         pdu_t(byte_stream_t &);
 
-        virtual ~pdu_t(void)
+        inline virtual ~pdu_t(void)
         {
             clear();
         }
@@ -448,8 +448,9 @@ namespace vdis
         }
 
         void clear(void);
-        void print_fixed(const std::string &, std::ostream &) const;
         void print_records(const std::string &, std::ostream &) const;
+        void read_records(byte_stream_t &);
+        void write_records(byte_stream_t &);
     };
 
     // ------------------------------------------------------------------------

@@ -13,24 +13,26 @@ vdis::variable_parameter_record_t **vdis::read_variable_parameter_records(
     byte_stream_t &stream,
     uint32_t count)
 {
-    variable_parameter_record_t
-        **records = new variable_parameter_record_t*[count];
+    variable_parameter_record_t **records = 0;
+
+    if (count > 0)
+    {
+        records = new variable_parameter_record_t*[count];
+    }
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        variable_parameter_record_t
-            *record_ptr = new variable_parameter_record_t({ 0, 0 });
+        records[i] = new variable_parameter_record_t({ 0, 0 });
 
         LOG_EXTRA_VERBOSE(
-            "Reading VP record %d/%d with stream at index %d/%d",
+            "Reading VP record %d/%d@%p with stream at index %d/%d...",
             (i + 1),
             count,
+            records[i],
             stream.index(),
             stream.length());
 
-        record_ptr->read(stream);
-
-        records[i] = record_ptr;
+        records[i]->read(stream);
     }
 
     return records;

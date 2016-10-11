@@ -286,7 +286,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
         bytes_read = 0;
 
     LOG_EXTRA_VERBOSE(
-        "Constructing PDU with stream at index: %d/%d)",
+        "Constructing PDU with stream at index: %d/%d",
         stream.index(),
         stream.length());
 
@@ -368,60 +368,60 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new acknowledge_pdu_t;
                 break;
             }
-//            case PDU_TYPE_ACTION_REQUEST: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new action_request_pdu_t...");
-//                base_ptr = new action_request_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_ACTION_RESPONSE: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new action_response_pdu_t...");
-//                base_ptr = new action_response_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_DATA_QUERY: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new data_query_pdu_t...");
-//                base_ptr = new data_query_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_SET_DATA: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new set_data_pdu_t...");
-//                base_ptr = new set_data_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_DATA: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new data_pdu_t...");
-//                base_ptr = new data_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_EVENT_REPORT: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new event_report_pdu_t...");
-//                base_ptr = new event_report_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_COMMENT: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new comment_pdu_t...");
-//                base_ptr = new comment_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_ACTION_REQUEST:
+            {
+                LOG_EXTRA_VERBOSE("Creating new action_request_pdu_t...");
+                base_ptr = new action_request_pdu_t;
+                break;
+            }
+            case PDU_TYPE_ACTION_RESPONSE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new action_response_pdu_t...");
+                base_ptr = new action_response_pdu_t;
+                break;
+            }
+            case PDU_TYPE_DATA_QUERY:
+            {
+                LOG_EXTRA_VERBOSE("Creating new data_query_pdu_t...");
+                base_ptr = new data_query_pdu_t;
+                break;
+            }
+            case PDU_TYPE_SET_DATA:
+            {
+                LOG_EXTRA_VERBOSE("Creating new set_data_pdu_t...");
+                base_ptr = new set_data_pdu_t;
+                break;
+            }
+            case PDU_TYPE_DATA:
+            {
+                LOG_EXTRA_VERBOSE("Creating new data_pdu_t...");
+                base_ptr = new data_pdu_t;
+                break;
+            }
+            case PDU_TYPE_EVENT_REPORT:
+            {
+                LOG_EXTRA_VERBOSE("Creating new event_report_pdu_t...");
+                base_ptr = new event_report_pdu_t;
+                break;
+            }
+            case PDU_TYPE_COMMENT:
+            {
+                LOG_EXTRA_VERBOSE("Creating new comment_pdu_t...");
+                base_ptr = new comment_pdu_t;
+                break;
+            }
 //            case PDU_TYPE_EM_EMISSION: TODO
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new em_emission_pdu_t...");
 //                base_ptr = new em_emission_pdu_t;
 //                break;
 //            }
-//            case PDU_TYPE_DESIGNATOR: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new designator_pdu_t...");
-//                base_ptr = new designator_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_DESIGNATOR:
+            {
+                LOG_EXTRA_VERBOSE("Creating new designator_pdu_t...");
+                base_ptr = new designator_pdu_t;
+                break;
+            }
 //            case PDU_TYPE_TRANSMITTER: TODO
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new transmitter_pdu_t...");
@@ -533,6 +533,8 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
 // ----------------------------------------------------------------------------
 void vdis::pdu_t::clear(void)
 {
+    LOG_EXTRA_VERBOSE("Clearing PDU with base: %p", base_ptr);
+
     if (base_ptr)
     {
         base_ptr->clear();
@@ -664,6 +666,10 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
 {
     const string_t
         prefix = "entity_state.";
+    geodetic_location_t
+        gdc;
+
+    convert(location, gdc);
 
     header.print((prefix + "header."), out);
 
@@ -674,8 +680,11 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
         << " '" << type.description() << "'" << std::endl
         << prefix << "alternate_type " << alternate_type
         << " '" << alternate_type.description() << "'" << std::endl
-        << prefix << "velocity " << velocity << std::endl
-        << prefix << "location " << location << std::endl
+        << prefix << "velocity(vector) " << velocity << std::endl
+        << prefix << "velocity(m/s) "
+        << to_string(velocity.length(), 1, 2) << std::endl
+        << prefix << "location(GCC) " << location << std::endl
+        << prefix << "location(GDC) " << gdc << std::endl
         << prefix << "orientation " << orientation << std::endl
         << prefix << "appearance.value "
         << to_bin_string(appearance, true) << std::endl;
@@ -1379,7 +1388,7 @@ vdis::abstract_siman_pdu_t::abstract_siman_pdu_t(void) :
     fixed_records(0),
     variable_records(0)
 {
-    clear();
+
 }
 
 // ----------------------------------------------------------------------------
@@ -1393,8 +1402,19 @@ void vdis::abstract_siman_pdu_t::clear(void)
 {
     if (fixed_records and (fixed_count > 0))
     {
+        LOG_EXTRA_VERBOSE(
+            "Clearing abstract_siman_pdu_t fixed records: %d@%p...",
+            fixed_count,
+            fixed_records);
+
         for(uint32_t i = 0; i < fixed_count; ++i)
         {
+            LOG_EXTRA_VERBOSE(
+                "Deleting fixed record %d/%d@%p...",
+                (i + 1),
+                fixed_count,
+                fixed_records[i]);
+
             delete fixed_records[i];
             fixed_records[i] = 0;
         }
@@ -1404,8 +1424,19 @@ void vdis::abstract_siman_pdu_t::clear(void)
 
     if (variable_records and (variable_count > 0))
     {
+        LOG_EXTRA_VERBOSE(
+            "Clearing abstract_siman_pdu_t variable records: %d@%p...",
+            variable_count,
+            variable_records);
+
         for(uint32_t i = 0; i < variable_count; ++i)
         {
+            LOG_EXTRA_VERBOSE(
+                "Deleting variable record %d/%d@%p...",
+                (i + 1),
+                variable_count,
+                variable_records[i]);
+
             delete variable_records[i];
             variable_records[i] = 0;
         }
@@ -1444,6 +1475,601 @@ void vdis::abstract_siman_pdu_t::print_records(
     		(prefix + "variable_datums[" + to_string(i) + "]."),
 			out);
     }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::abstract_siman_pdu_t::read_records(byte_stream_t &stream)
+{
+    stream.read(fixed_count);
+    stream.read(variable_count);
+
+    fixed_records = read_fixed_datum_records(stream, fixed_count);
+    variable_records = read_variable_datum_records(stream, variable_count);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::abstract_siman_pdu_t::write_records(byte_stream_t &stream)
+{
+    stream.write(fixed_count);
+    stream.write(variable_count);
+
+    if (not write_fixed_datum_records(
+                stream,
+                fixed_records,
+                fixed_count))
+    {
+        LOG_ERROR(
+            "Error writing fixed records for originator %s!",
+            to_string(originator).c_str());
+    }
+
+    if (not write_variable_datum_records(
+                stream,
+                variable_records,
+                variable_count))
+    {
+        LOG_ERROR(
+            "Error writing variable records for originator %s!",
+            to_string(originator).c_str());
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::action_request_pdu_t::action_request_pdu_t(void) :
+    request_id(0),
+    action_id(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::action_request_pdu_t::~action_request_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_request_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    request_id = 0;
+    action_id = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_request_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "action_request.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl
+        << prefix << "action_id "
+        << (actreq_action_ids_e)action_id << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_request_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+    stream.read(action_id);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_request_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+    stream.write(action_id);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::action_response_pdu_t::action_response_pdu_t(void) :
+    request_id(0),
+    request_status(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::action_response_pdu_t::~action_response_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_response_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    request_id = 0;
+    request_status = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_response_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "action_response.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl
+        << prefix << "request_status "
+        << (actres_req_status_e)request_status << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_response_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+    stream.read(request_status);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::action_response_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+    stream.write(request_status);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::data_query_pdu_t::data_query_pdu_t(void) :
+    request_id(0),
+    time_interval(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::data_query_pdu_t::~data_query_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_query_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    request_id = 0;
+    time_interval = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_query_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "data_query.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl
+        << prefix << "time_interval " << time_interval << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_query_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+    stream.read(time_interval);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_query_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+    stream.write(time_interval);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::set_data_pdu_t::set_data_pdu_t(void) :
+    request_id(0),
+    padding(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::set_data_pdu_t::~set_data_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::set_data_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    request_id = 0;
+    padding = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::set_data_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "set_data.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl
+        << prefix << "padding(4 bytes) "
+        << to_hex_string(padding, true) << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::set_data_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+    stream.read(padding);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::set_data_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+    stream.write(padding);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::data_pdu_t::data_pdu_t(void) :
+    request_id(0),
+    padding(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::data_pdu_t::~data_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    request_id = 0;
+    padding = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "data.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "request_id " << request_id << std::endl
+        << prefix << "padding(4 bytes) "
+        << to_hex_string(padding, true) << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(request_id);
+    stream.read(padding);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::data_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(request_id);
+    stream.write(padding);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::event_report_pdu_t::event_report_pdu_t(void) :
+    event_type(0),
+    padding(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::event_report_pdu_t::~event_report_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::event_report_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+
+    event_type = 0;
+    padding = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::event_report_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "event_report.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl
+        << prefix << "event_type " << event_type << std::endl
+        << prefix << "padding(4 bytes) "
+        << to_hex_string(padding, true) << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::event_report_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+    stream.read(event_type);
+    stream.read(padding);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::event_report_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+    stream.write(event_type);
+    stream.write(padding);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::comment_pdu_t::comment_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::comment_pdu_t::~comment_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::comment_pdu_t::clear(void)
+{
+    abstract_siman_pdu_t::clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::comment_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "event_report.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "originator " << entity_marking(originator) << std::endl
+        << prefix << "recipient " << entity_marking(recipient) << std::endl;
+
+    print_records(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::comment_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    originator.read(stream);
+    recipient.read(stream);
+
+    read_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::comment_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    originator.write(stream);
+    recipient.write(stream);
+
+    write_records(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::designator_pdu_t::designator_pdu_t(void) :
+    spot_type(0),
+    system_name(0),
+    code(0),
+    power(0),
+    wavelength(0),
+    algorithm(0),
+    flash_rate(0),
+    system_number(0),
+    function(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::designator_pdu_t::~designator_pdu_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+void vdis::designator_pdu_t::clear(void)
+{
+    designating_id.clear();
+    spot_type = 0;
+    system_name = 0;
+    designated_id.clear();
+    code = 0;
+    power = 0;
+    wavelength = 0;
+    spot_offset.clear();
+    spot_location.clear();
+    algorithm = 0;
+    flash_rate = 0;
+    system_number = 0;
+    function = 0;
+    beam_offset.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::designator_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "designator.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "designating_id "
+        << entity_marking(designating_id) << std::endl
+        << prefix << "designated_id "
+        << entity_marking(designated_id) << std::endl
+        << prefix << "spot_type " << (desig_spot_type_e)spot_type << std::endl
+        << prefix << "system_name " << (desig_system_name_e)system_name << std::endl
+        << prefix << "code " << (int)code << std::endl
+        << prefix << "power " << to_string(power) << std::endl
+        << prefix << "wavelength " << to_string(wavelength) << std::endl
+        << prefix << "spot_offset " << spot_offset << std::endl
+        << prefix << "spot_location " << spot_location << std::endl
+        << prefix << "algorithm " << (dead_reckoning_e)algorithm << std::endl
+        << prefix << "flash_rate " << (int)flash_rate << std::endl
+        << prefix << "system_number " << (int)system_number << std::endl
+        << prefix << "function " << (laser_function_e)function << std::endl
+        << prefix << "beam_offset " << beam_offset << std::endl
+;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::designator_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    designating_id.read(stream);
+    stream.read(spot_type);
+    stream.read(system_name);
+    designated_id.read(stream);
+    stream.read(code);
+    stream.read(power);
+    stream.read(wavelength);
+    spot_offset.read(stream);
+    spot_location.read(stream);
+    stream.read(algorithm);
+    stream.read(flash_rate);
+    stream.read(system_number);
+    stream.read(function);
+    beam_offset.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::designator_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    designating_id.write(stream);
+    stream.write(spot_type);
+    stream.write(system_name);
+    designated_id.write(stream);
+    stream.write(code);
+    stream.write(power);
+    stream.write(wavelength);
+    spot_offset.write(stream);
+    spot_location.write(stream);
+    stream.write(algorithm);
+    stream.write(flash_rate);
+    stream.write(system_number);
+    stream.write(function);
+    beam_offset.write(stream);
 }
 
 // ----------------------------------------------------------------------------

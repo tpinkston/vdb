@@ -10,6 +10,48 @@ namespace
         MILLIS_PER_SECOND = 1000,
         MILLIS_PER_MINUTE = (MILLIS_PER_SECOND * 60),
         MILLIS_PER_HOUR = (MILLIS_PER_MINUTE * 60);
+
+    const float64_t
+        PI = 3.1415926535897932384626433,
+        HALF_PI = (PI / 2.0),
+        NEGATIVE_HALF_PI = (-PI / 2.0),
+        DEGREES_PER_RADIAN = 57.2957795130823208768,
+        RADIANS_PER_DEGREE = 0.01745329251994329576;
+
+    // Constants based on WGS 84 Ellipsoid.
+    const float64_t
+        WGS84_A = 6378137.0,
+        WGS84_A2 = (WGS84_A * WGS84_A),
+        WGS84_A_HALF = (WGS84_A / 2.0),
+        WGS84_B = (0.9999944354799 / 4.0),
+        WGS84_C = (1.0 / 298.257223563),
+        WGS84_D = 0.100225438677758E+01,
+        WGS84_E = -0.393246903633930E-04,
+        WGS84_F = 0.241216653453483E+12,
+        WGS84_G = 0.133733602228679E+14,
+        WGS84_H = 0.984537701867943E+00,
+        WGS84_J = (WGS84_A * (1.0 - WGS84_C)),
+        WGS84_J2 = (WGS84_J * WGS84_J),
+        WGS84_J2_54 = (54.0 * WGS84_J2),
+        WGS84_L = (WGS84_C * (2.0 - WGS84_C)), // (F)
+        WGS84_L1 = (WGS84_L - 1.0),
+        WGS84_L2 = (WGS84_L * WGS84_L),
+        WGS84_L2_2 = (2.0 * WGS84_L2),
+        WGS84_L4TH = (0.25 * WGS84_L),
+        WGS84_L_SQRT = std::sqrt(WGS84_L),
+        WGS84_L_SQRT_HALF = (std::sqrt(WGS84_L) / 2.0),
+        WGS84_P = (WGS84_J2 / WGS84_A),
+        WGS84_Q = (WGS84_A2 - WGS84_J2),
+        WGS84_R = (WGS84_Q / WGS84_J2),
+        WGS84_LQ = (WGS84_L * WGS84_Q),
+        WGS84_THIRD = (1.0 / 3.0),
+        WGS84_AR1 = std::pow((WGS84_A + 50005.0), 2.0),
+        WGS84_AR2 = (WGS84_AR1 / std::pow((WGS84_J + 50005.0), 2.0)),
+        WGS84_BR1 = std::pow((WGS84_A - 10005.0), 2.0),
+        WGS84_BR2 = (WGS84_BR1 / std::pow((WGS84_J - 10005.0), 2.0));
+
+    vdis::geodetic_conversion
+        geodetic_conversion_ptr = 0;
     bool
         swapping = false;
     bool
@@ -331,6 +373,139 @@ uint64_t vdis::byteswap(uint64_t value, bool force)
     }
 
     return result;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::convert(const location24_t &gcc, geodetic_location_t &gdc)
+{
+    gdc.clear();
+
+    if (geodetic_conversion_ptr)
+    {
+        geodetic_conversion_ptr(gcc, gdc);
+    }
+    else
+    {
+        bool
+            complete = false;
+
+        if (gcc.x == 0.0)
+        {
+            if (gcc.y > 0.0)
+            {
+                gdc.latitude = HALF_PI;
+            }
+            else if (gcc.y < 0.0)
+            {
+                gdc.longitude  = NEGATIVE_HALF_PI;
+            }
+            else if (gcc.z > 0)
+            {
+                gdc.latitude = HALF_PI;
+                gdc.longitude  = 0.0;
+                gdc.elevation = gcc.z;
+                complete = true;
+            }
+            else if (gcc.z < 0.0)
+            {
+                gdc.latitude = NEGATIVE_HALF_PI;
+                gdc.longitude  = 0.0;
+                gdc.elevation = gcc.z;
+                complete = true;
+            }
+            else
+            {
+                gdc.latitude = 0.0;
+                gdc.longitude  = 0.0;
+                gdc.elevation = 0.0;
+                complete = true;
+            }
+        }
+
+        if (not complete)
+        {
+            const float64_t
+                w2 = ((gcc.x * gcc.x) + (gcc.y * gcc.y)),
+                w = std::sqrt(w2),
+                z2 = (gcc.z * gcc.z);
+
+            const float64_t
+                ar2 = (w2 + (WGS84_AR2 * z2)),
+                br2 = (w2 + (WGS84_BR2 * z2));
+
+            if ((br2 > WGS84_BR1) and (ar2 < WGS84_AR1))
+            {
+                float64_t
+                    w2EF = (WGS84_E * w2 + WGS84_F),
+                    w2GH = (WGS84_G + w2 * WGS84_H + z2),
+                    top = gcc.z * (WGS84_D + w2EF / w2GH),
+                    top2 = (top * top),
+                    top2w2 = (top2 + w2),
+                    top2w2sqrt = std::sqrt(top2w2),
+                    r = (top2 / top2w2),
+                    n = (0.25 - (WGS84_L4TH * r)),
+                    nb = (n + WGS84_B),
+                    a = WGS84_A / (nb + n / nb);
+
+                gdc.latitude = std::atan(top / w);
+                gdc.longitude  = std::atan2(gcc.y, gcc.x);
+
+                if (r < 0.50)
+                {
+                    gdc.elevation = (top2w2sqrt - a);
+                }
+                else
+                {
+                    gdc.elevation = gcc.z / (top / top2w2sqrt) + (WGS84_L1 * a);
+                }
+            }
+            else
+            {
+                float64_t
+                    oz2 = (WGS84_J2_54 * z2),
+                    mz2 = (w2 - (WGS84_L1 * z2) - WGS84_LQ),
+                    a = (oz2 / (mz2 * mz2)),
+                    s0 = (WGS84_L2 * w2 * a / mz2),
+                    s1 = (s0 * (s0 + 2.0)),
+                    s2 = (1.0 + s0 + std::sqrt(s1)),
+                    s3 = std::pow(s2, WGS84_THIRD),
+                    p = a / (3.0 * std::pow((s3 + (1.0 / s3) + 1.0), 2)),
+                    pT = (1.0 + (WGS84_L2_2 * p)),
+                    pTsqrt = std::sqrt(pT),
+                    r0 = (pTsqrt * (1.0 + pTsqrt)),
+                    r0w2 = (-p * (2.0 * (1.0 - WGS84_L) * z2 / r0 + w2)),
+                    r1 = (1.0 + (1.0 / pTsqrt)),
+                    r2 = (r0w2 / WGS84_A2),
+                    r3 = 0.0;
+
+                if ((r1 + r2) > 0.0)
+                {
+                    r3 = WGS84_A * std::sqrt(.50 * (r1 + r2));
+                }
+
+                r3 -= (p * WGS84_L * w / (1.0 + pTsqrt));
+
+                float64_t
+                    r3L = (r3 * WGS84_L),
+                    r3Lz2 = (std::pow((w - r3L), 2.0) + z2),
+                    v = std::sqrt(r3Lz2 - (WGS84_L * z2)),
+                    zo = (WGS84_P * gcc.z / v);
+
+                gdc.latitude = std::atan((gcc.z + (WGS84_R * zo)) / w);
+                gdc.longitude  = std::atan2(gcc.y, gcc.x);
+                gdc.elevation = std::sqrt(r3Lz2) * (1.0 - WGS84_P / v);
+            }
+
+            gdc.latitude *= DEGREES_PER_RADIAN;
+            gdc.longitude *= DEGREES_PER_RADIAN;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::set_geodetic_conversion(geodetic_conversion f)
+{
+    geodetic_conversion_ptr = f;
 }
 
 // ----------------------------------------------------------------------------

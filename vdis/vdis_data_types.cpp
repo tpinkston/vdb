@@ -956,6 +956,16 @@ std::ostream &operator<<(std::ostream &out, const vdis::location24_t &o)
 }
 
 // ----------------------------------------------------------------------------
+std::ostream &operator<<(std::ostream &out, const vdis::geodetic_location_t &o)
+{
+    out << vdis::to_string(o.latitude, 1, 5) << ", "
+        << vdis::to_string(o.longitude, 1, 5) << ", "
+        << vdis::to_string(o.elevation, 1, 1);
+
+    return out;
+}
+
+// ----------------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &out, const vdis::orientation_t &o)
 {
     out << vdis::to_string(o.psi) << " (psi), "

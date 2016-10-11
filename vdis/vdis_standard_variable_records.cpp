@@ -9,8 +9,12 @@ vdis::standard_variable_record_t **vdis::read_standard_variable_records(
     byte_stream_t &stream,
     uint16_t count)
 {
-    standard_variable_record_t
-        **records = new standard_variable_record_t*[count];
+    standard_variable_record_t **records = 0;
+
+    if (count > 0)
+    {
+        records = new standard_variable_record_t*[count];
+    }
 
     for(uint32_t i = 0; i < count; ++i)
     {
@@ -18,9 +22,11 @@ vdis::standard_variable_record_t **vdis::read_standard_variable_records(
             *record_ptr = new standard_variable_record_t;
 
         LOG_EXTRA_VERBOSE(
-            "Reading standard variable record %d/%d with stream at index %d/%d",
+            "Reading standard variable record %d/%d@%p "
+            "with stream at index %d/%d...",
             (i + 1),
             count,
+            records[i],
             stream.index(),
             stream.length());
 

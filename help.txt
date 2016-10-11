@@ -20,49 +20,48 @@ Commands:
   objects        Prints all known VDIS object types in CSV form
 
 Global options (for all commands):
-  -h --help                 Print this info
-  -m --mono                 Suppress colored output
-  -q --quiet                Print as little as possible
-  -v --verbose              Print as much as possible (debugging)
-  -w --warnings             Show warnings (suppressed by default)
-  -S --suppress             Suppress any error messages
-     --examples             Prints example commands
-  -V --version              Prints version information           
-       
+  -h --help               Print this info
+  -m --mono               Suppress colored output
+  -q --quiet              Print as little as possible
+  -v --verbose            Print more than usual (debugging, -vv extra verbose)
+  -w --warnings           Show warnings (suppressed by default)
+  -S --suppress           Suppress any error messages
+     --examples           Prints example commands
+  -V --version            Prints version information
+
 File options (playback, list, summary):
-  -p --pcap                 Assumes FILE is a 'pcap' file 
-     
+  -p --pcap               Assumes FILE is a 'pcap' file
+
 Network options (capture, playback):
-  -6 --ipv6                 Use IPv6
-  -a --address=ADDR         Use IP address, e.g. 192.168.1.123
-  -n --iface=IFACE          Use network interface, e.g. 'eth0'
+  -6 --ipv6               Use IPv6
+  -a --address=ADDR       Use IP address, e.g. 192.168.1.123
+  -n --iface=IFACE        Use network interface, e.g. 'eth0'
 
 Filter options (playback, list, summary):
-  -r --range=RANGE          Plays only PDUs in specified range (indexes)
+  -r --range=RANGE        Use only PDUs in specified range (indexes)
 
 Filter options (capture, playback, list, summary):
-  -e --exercise=E1,...      Include provided exercise numbers (numeric)
-  -E --xexercise=E1,...     Exclude provided exercise numbers (numeric)
-  -t --type=T1,...          Include PDUs with PDU types (numeric)
-  -T --xtype=T1,...         Exclude PDUs except PDU types (numeric)
-  -f --family=F1,...        Include PDUs with PDU families (numeric)
-  -F --xfamily=F1,...       Exclude PDUs with PDU families (numeric)
-  -i --ids=I1,...           Include PDUs containing specified entity ID(s)
-  -I --xids=I1,...          Exclude PDUs containing specified entity ID(s)
+  -e --exercise=E1,...    Include provided exercise numbers (numeric)
+  -E --xexercise=E1,...   Exclude provided exercise numbers (numeric)
+  -t --type=T1,...        Include PDUs with PDU types (numeric)
+  -T --xtype=T1,...       Exclude PDUs except PDU types (numeric)
+  -f --family=F1,...      Include PDUs with PDU families (numeric)
+  -F --xfamily=F1,...     Exclude PDUs with PDU families (numeric)
+  -i --ids=I1,...         Include PDUs containing specified entity ID(s)
+  -I --xids=I1,...        Exclude PDUs containing specified entity ID(s)
 
 Display options (capture, playback):
-  -q --quiet                Print as little as possible
-  -s --summarize            Print short PDU summary
-  -d --dump                 Print PDU hex dump (overrides -s and -x)
-  -x --extract              Print PDU data extraction (overrides -s)
+  -q --quiet              Print as little as possible
+  -s --summarize          Print short PDU summary
+  -x --extract            Print PDU data extraction (overrides -s)
+  -d --dump               Print PDU hex dump (overrides -s and -x)
 
 Summary options:
-     --collisions           Print collision info for all entities
-     --emissions            Print emission (radar/IFF) info for all entities
-     --fires                Print fire/detonation info for all entities
-     --lasers               Print designator info for all entities
-     --radios               Print radio info for all entities
-     --objects              Print object state (point, linear, areal) info
-  -A --all                  Print all the above info
-  -X --extra                Print extra information
-  
+     --collisions         Print collision info for all entities
+     --emissions          Print emission (radar/IFF) info for all entities
+     --fires              Print fire/detonation info for all entities
+     --lasers             Print designator info for all entities
+     --radios             Print radio info for all entities
+     --objects            Print object state (point, linear, areal) info
+  -A --all                Print all the above info
+  -X --extra              Print extra information

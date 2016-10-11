@@ -96,6 +96,17 @@ namespace vdis
     void swap(uint64_t &value, bool force = false);
 
     // ------------------------------------------------------------------------
+    // Spatial
+
+    typedef void (*geodetic_conversion)(
+        const location24_t &gcc,
+        geodetic_location_t &gdc);
+
+    void convert(const location24_t &gcc, geodetic_location_t &gdc);
+
+    void set_geodetic_conversion(geodetic_conversion);
+
+    // ------------------------------------------------------------------------
     // Miscellaneous
 
     pdu_family_e get_family(pdu_type_e type);

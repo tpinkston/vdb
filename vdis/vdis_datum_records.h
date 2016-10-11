@@ -11,18 +11,26 @@ namespace vdis
     struct fixed_datum_record_t;
     struct variable_datum_record_t;
 
-    // Returns array with length equal to 'count'
-    //
     fixed_datum_record_t **read_fixed_datum_records(
         byte_stream_t &stream,
-        uint32_t count
+        uint32_t fixed_count
     );
 
-    // Returns array with length equal to 'count'
-    //
     variable_datum_record_t **read_variable_datum_records(
         byte_stream_t &stream,
-        uint32_t count
+        uint32_t variable_count
+    );
+
+    bool write_fixed_datum_records(
+        byte_stream_t &stream,
+        fixed_datum_record_t **fixed_records,
+        uint32_t fixed_count
+    );
+
+    bool write_variable_datum_records(
+        byte_stream_t &stream,
+        variable_datum_record_t **variable_records,
+        uint32_t variable_count
     );
 
     // ------------------------------------------------------------------------
@@ -70,6 +78,7 @@ namespace vdis
         uint32_t                    id;                     // 4 bytes
         variable_datum_content_t   *content_ptr;            // Variable length
 
+        variable_datum_record_t(void);
         ~variable_datum_record_t(void);
 
         inline datum_ids_e datum_id_enum(void) const
@@ -84,17 +93,7 @@ namespace vdis
             return (content_ptr ? content_ptr->length() : 0);
         }
 
-        inline void clear(void)
-        {
-            if (content_ptr)
-            {
-                delete content_ptr;
-            }
-
-            id = 0;
-            content_ptr = 0;
-        }
-
+        void clear(void);
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
@@ -176,10 +175,8 @@ namespace vdis
         uint8_t                     lines_needed;           // 1 byte
         sling_line_t              **lines;                  // N bytes (array)
 
-        virtual ~sling_load_capability_t(void)
-        {
-            clear();
-        }
+        sling_load_capability_t(void);
+        virtual ~sling_load_capability_t(void);
 
         inline hook_type_e hook_type_enum(void) const
         {

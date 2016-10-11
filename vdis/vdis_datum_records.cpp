@@ -5,59 +5,161 @@
 #include "vdis_string.h"
 
 // ----------------------------------------------------------------------------
+// Returns array with length equal to 'fixed_count'
+//
 vdis::fixed_datum_record_t **vdis::read_fixed_datum_records(
     byte_stream_t &stream,
-    uint32_t count)
+    uint32_t fixed_count)
 {
-    fixed_datum_record_t
-        **records = new fixed_datum_record_t*[count];
+    fixed_datum_record_t **records = 0;
 
-    for(uint32_t i = 0; i < count; ++i)
+    if (fixed_count > 0)
     {
-        fixed_datum_record_t
-            *record_ptr = new fixed_datum_record_t({ 0, 0 });
+        records = new fixed_datum_record_t*[fixed_count];
 
         LOG_EXTRA_VERBOSE(
-            "Reading fixed datum %d/%d with stream at index %d/%d",
+            "Allocated fixed datum record array: %p...",
+            records);
+    }
+
+    for(uint32_t i = 0; i < fixed_count; ++i)
+    {
+        records[i] = new fixed_datum_record_t({ 0, 0 });
+
+        LOG_EXTRA_VERBOSE(
+            "Reading fixed datum %d/%d@%p with stream at index %d/%d...",
             (i + 1),
-            count,
+            fixed_count,
+            records[i],
             stream.index(),
             stream.length());
 
-        record_ptr->read(stream);
-
-        records[i] = record_ptr;
+        records[i]->read(stream);
     }
 
     return records;
 }
 
 // ----------------------------------------------------------------------------
+// Returns array with length equal to 'variable_count'
+//
 vdis::variable_datum_record_t **vdis::read_variable_datum_records(
     byte_stream_t &stream,
-    uint32_t count)
+    uint32_t variable_count)
 {
-    variable_datum_record_t
-        **records = new variable_datum_record_t*[count];
+    variable_datum_record_t **records = 0;
 
-    for(uint32_t i = 0; i < count; ++i)
+    if (variable_count > 0)
     {
-        variable_datum_record_t
-            *record_ptr = new variable_datum_record_t({ 0, 0 });
+        records = new variable_datum_record_t*[variable_count];
 
         LOG_EXTRA_VERBOSE(
-            "Reading variable datum %d/%d with stream at index %d/%d",
+            "Allocated variable datum record array: %p...",
+            records);
+    }
+
+    for(uint32_t i = 0; i < variable_count; ++i)
+    {
+        records[i] = new variable_datum_record_t;
+
+        LOG_EXTRA_VERBOSE(
+            "Reading variable datum %d/%d@%p with stream at index %d/%d...",
             (i + 1),
-            count,
+            variable_count,
+            records[i],
             stream.index(),
             stream.length());
 
-        record_ptr->read(stream);
-
-        records[i] = record_ptr;
+        records[i]->read(stream);
     }
 
     return records;
+}
+
+// ----------------------------------------------------------------------------
+// Returns true if no inconsistencies are found (errors will be logged)
+//
+bool vdis::write_fixed_datum_records(
+    byte_stream_t &stream,
+    fixed_datum_record_t **fixed_records,
+    uint32_t fixed_count)
+{
+    bool success = false;
+
+    if ((fixed_count > 0) and not fixed_records)
+    {
+        LOG_ERROR("Null fixed datum array with length %d!", fixed_count);
+    }
+    else if ((fixed_count == 0) and fixed_records)
+    {
+        LOG_ERROR("Non-null fixed record array with length 0!");
+    }
+    else
+    {
+        success = true;
+
+        for(uint8_t i = 0; fixed_records and (i < fixed_count); ++i)
+        {
+            if (fixed_records[i])
+            {
+                fixed_records[i]->write(stream);
+
+                if (stream.error())
+                {
+                    success = false;
+                }
+            }
+            else
+            {
+                LOG_ERROR("Null fixed record at index %d!", i);
+                success = false;
+            }
+        }
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::write_variable_datum_records(
+    byte_stream_t &stream,
+    variable_datum_record_t **variable_records,
+    uint32_t variable_count)
+{
+    bool success = false;
+
+    if ((variable_count > 0) and not variable_records)
+    {
+        LOG_ERROR("Null fixed record array with length %d!", variable_count);
+    }
+    else if ((variable_count == 0) and variable_records)
+    {
+        LOG_ERROR("Non-null fixed record array with length 0!");
+    }
+    else
+    {
+        success = true;
+
+        for(uint8_t i = 0; variable_records and (i < variable_count); ++i)
+        {
+            if (variable_records[i])
+            {
+                variable_records[i]->write(stream);
+
+                if (stream.error())
+                {
+                    success = false;
+                }
+            }
+            else
+            {
+                LOG_ERROR("Null variable record at index %d!", i);
+                success = false;
+            }
+        }
+    }
+
+    return success;
 }
 
 // ----------------------------------------------------------------------------
@@ -66,8 +168,8 @@ void vdis::fixed_datum_record_t::print(
     std::ostream &out) const
 {
     out << prefix << "datum_id " << datum_id_enum() << std::endl
-        << prefix << "datum_value " << value
-        << " [0x" << to_hex_string(value) << "]" << std::endl;
+        << prefix << "datum_value "
+        << value << " [0x" << to_hex_string(value) << "]" << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -133,9 +235,35 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::variable_datum_record_t::variable_datum_record_t(void) :
+    id(0),
+    content_ptr(0)
+{
+    LOG_EXTRA_VERBOSE(
+        "Created variable datum record with content: %p",
+        content_ptr);
+}
+
+// ----------------------------------------------------------------------------
 vdis::variable_datum_record_t::~variable_datum_record_t(void)
 {
     clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::variable_datum_record_t::clear(void)
+{
+    LOG_EXTRA_VERBOSE(
+        "Clearing variable datum record with content: %p",
+        content_ptr);
+
+    if (content_ptr)
+    {
+        delete content_ptr;
+    }
+
+    id = 0;
+    content_ptr = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -157,6 +285,8 @@ void vdis::variable_datum_record_t::print(
 // ----------------------------------------------------------------------------
 void vdis::variable_datum_record_t::read(byte_stream_t &stream)
 {
+    clear();
+
     stream.read(id);
 
     switch(id)
@@ -182,6 +312,8 @@ void vdis::variable_datum_record_t::read(byte_stream_t &stream)
             break;
         }
     }
+
+    LOG_EXTRA_VERBOSE("Reading variable datum content: %p", content_ptr);
 
     content_ptr->read(stream);
 }
@@ -288,6 +420,24 @@ void vdis::damage_status_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::sling_load_capability_t::sling_load_capability_t(void) :
+    drag_coeffficient(0),
+    current_mass(0),
+    padding(0),
+    hook_type(0),
+    lines_needed(0),
+    lines(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::sling_load_capability_t::~sling_load_capability_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
 uint32_t vdis::sling_load_capability_t::length(void) const
 {
     // 8 bytes (64 bits) for every sling line
@@ -300,8 +450,11 @@ void vdis::sling_load_capability_t::clear(void)
 {
     for(uint8_t i = 0; ((i < lines_needed) and lines); ++i)
     {
-        delete lines[i];
-        lines[i] = 0;
+        if (lines[i])
+        {
+            delete lines[i];
+            lines[i] = 0;
+        }
     }
 
     if (lines)

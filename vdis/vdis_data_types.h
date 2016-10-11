@@ -241,6 +241,21 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct geodetic_location_t
+    {
+        float64_t               latitude;   // degrees
+        float64_t               longitude;  // degrees
+        float64_t               elevation;  // meters above ellipsoid
+
+        inline void clear(void)
+        {
+            latitude = 0;
+            longitude = 0;
+            elevation = 0;
+        }
+    };
+
+    // ------------------------------------------------------------------------
     struct orientation_t
     {
         float32_t               psi;
@@ -742,6 +757,7 @@ std::ostream &operator<<(std::ostream &, const vdis::object_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::marking_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location12_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location24_t &);
+std::ostream &operator<<(std::ostream &, const vdis::geodetic_location_t &);
 std::ostream &operator<<(std::ostream &, const vdis::orientation_t &);
 std::ostream &operator<<(std::ostream &, const vdis::velocity_t &);
 std::ostream &operator<<(std::ostream &, const vdis::timestamp_t &);
