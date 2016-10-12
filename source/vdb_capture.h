@@ -4,10 +4,10 @@
 #include "vdb_system.h"
 
 #include "vdis_data_types.h"
+#include "vdis_network.h"
 
 namespace vdb
 {
-    class capture_socket_t;
     class pdu_data_t;
 
     class capture
@@ -36,7 +36,7 @@ namespace vdb
 
         static FILE
             *file_ptr;
-        static capture_socket_t
+        static vdis::receive_socket_t
             *socket_ptr;
         static int32_t
             port;

@@ -5,6 +5,23 @@
 
 namespace
 {
+    uint32_t get_key(const vdis::address_ipv6_t &address)
+    {
+        uint32_t
+            key = 9,            // arbitrary seed value
+            multiplier = 13;    // arbitrary multiplier value
+
+        for(uint32_t i = 0; i < 16; ++i)
+        {
+            key = key * multiplier + address.s6_addr[i];
+        }
+
+        return key;
+    }
+
+    typedef std::map<uint32_t, std::string>
+        hostname_cache_t;
+
     const int32_t
         ON = 0x01,
         OFF = 0x00;
@@ -14,6 +31,11 @@ namespace
         ANY = "any",
         LOOPBACK = "loopback",
         BROADCAST = "broadcast";
+    const std::string
+        UNKNOWN_HOSTNAME = "unknown";
+    hostname_cache_t
+        ipv4_hostnames,
+        ipv6_hostnames;
 }
 
 // ----------------------------------------------------------------------------
@@ -226,15 +248,14 @@ std::string vdis::get_address(const address_ipv4_t &address)
     }
     else
     {
-        return "unknown";
+        return UNKNOWN_HOSTNAME;
     }
 }
 
 // ----------------------------------------------------------------------------
 std::string vdis::get_address(const address_ipv6_t &address)
 {
-    char
-        buffer[64];
+    char buffer[64];
 
     std::memset(buffer, 0, 64);
 
@@ -250,8 +271,80 @@ std::string vdis::get_address(const address_ipv6_t &address)
     }
     else
     {
-        return "unknown";
+        return UNKNOWN_HOSTNAME;
     }
+}
+
+// ----------------------------------------------------------------------------
+// Uses caching to store hostnames, cache gets checked first and if not
+// cached a call is made to the overloaded 'query_hostname' that makes
+// 'getnameinfo' system call.
+//
+std::string vdis::query_hostname(const socket_address_ipv4_t &address)
+{
+    const uint32_t
+        key = address.sin_addr.s_addr;
+    hostname_cache_t::const_iterator
+        search_itor = ipv4_hostnames.find(key);
+    std::string
+        hostname;
+
+    if (search_itor != ipv4_hostnames.end())
+    {
+        hostname = search_itor->second;
+    }
+    else
+    {
+        if (not query_hostname(address, hostname))
+        {
+            hostname = UNKNOWN_HOSTNAME;
+        }
+
+        ipv4_hostnames[key] = hostname;
+
+        LOG_VERBOSE(
+            "Caching IPv4 key = %d, hostname = '%s'",
+            key,
+            hostname.c_str());
+    }
+
+    return hostname;
+}
+
+// ----------------------------------------------------------------------------
+// Uses caching to store hostnames, cache gets checked first and if not
+// cached a call is made to the overloaded 'query_hostname' that makes
+// 'getnameinfo' system call.
+//
+std::string vdis::query_hostname(const socket_address_ipv6_t &address)
+{
+    const uint32_t
+        key = get_key(address.sin6_addr);
+    hostname_cache_t::const_iterator
+        search_itor = ipv4_hostnames.find(key);
+    std::string
+        hostname;
+
+    if (search_itor != ipv4_hostnames.end())
+    {
+        hostname = search_itor->second;
+    }
+    else
+    {
+        if (not query_hostname(address, hostname))
+        {
+            hostname = UNKNOWN_HOSTNAME;
+        }
+
+        ipv4_hostnames[key] = hostname;
+
+        LOG_VERBOSE(
+            "Caching IPv6 key = %d, hostname = '%s'",
+            key,
+            hostname.c_str());
+    }
+
+    return hostname;
 }
 
 // ----------------------------------------------------------------------------
@@ -332,16 +425,28 @@ bool vdis::query_hostname(
 
 // ----------------------------------------------------------------------------
 vdis::socket_base_t::socket_base_t(
-    int32_t port,
-    bool ipv6,
-    const char *address_ptr
+    const char *address_ptr,
+    int16_t port,
+    bool ipv6
 ) :
     socket_address(address_ptr ? address_ptr : ANY.c_str()),
+    socket_ipv6(ipv6),
     socket_port(port),
     socket_descriptor(open_socket(ipv6)),
-    socket_ipv6(ipv6),
-    socket_error(0)
+    socket_error(0),
+    socket_address_size(0),
+    socket_address_ptr(0)
 {
+    std::memset(&socket_address_ipv4, 0, sizeof(socket_address_ipv4));
+    std::memset(&socket_address_ipv6, 0, sizeof(socket_address_ipv6));
+
+    socket_address_ptr = socket_ipv6 ?
+        (void *)&socket_address_ipv6:
+        (void *)&socket_address_ipv4;
+    socket_address_size = socket_ipv6 ?
+        sizeof(socket_address_ipv6):
+        sizeof(socket_address_ipv4);
+
     if (socket_descriptor == -1)
     {
         LOG_ERROR(
@@ -367,7 +472,22 @@ vdis::socket_base_t::socket_base_t(
 // ----------------------------------------------------------------------------
 vdis::socket_base_t::~socket_base_t(void)
 {
-    close_socket();
+    if (socket_descriptor > 0)
+    {
+        LOG_VERBOSE(
+            "Closing socket %d on port %d...",
+            socket_descriptor,
+            socket_port);
+
+        if (close(socket_descriptor) != 0)
+        {
+            LOG_ERROR(
+                "Failed to close socket: %s",
+                std::strerror(errno));
+
+            socket_error = ERROR_BIND;
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -403,15 +523,15 @@ void vdis::socket_base_t::bind_socket(void)
 {
     if (socket_ipv6)
     {
-        socket_address_ipv6_t
-            bind_address;
-
-        set_address(socket_address, socket_port, bind_address);
+        set_address(
+            socket_address,
+            socket_port,
+            socket_address_ipv6);
 
         int32_t result = bind(
             socket_descriptor,
-            (socket_address_t *)&bind_address,
-            sizeof(socket_address_ipv6_t));
+            (socket_address_t *)&socket_address_ipv6,
+            sizeof(socket_address_ipv6));
 
         if (result < 0)
         {
@@ -425,17 +545,23 @@ void vdis::socket_base_t::bind_socket(void)
     }
     else
     {
-        socket_address_ipv4_t
-            bind_address;
-        bool
-            broadcast = false;
+        bool broadcast = false;
 
-        set_address(socket_address, socket_port, bind_address, broadcast);
+        set_address(
+            socket_address,
+            socket_port,
+            socket_address_ipv4,
+            broadcast);
+
+        LOG_VERBOSE(
+            "Binding on address '%s' port %d...",
+            get_address(socket_address_ipv4.sin_addr).c_str(),
+            socket_port);
 
         int32_t result = bind(
             socket_descriptor,
-            (socket_address_t *)&bind_address,
-            sizeof(socket_address_ipv4_t));
+            (socket_address_t *)&socket_address_ipv4,
+            sizeof(socket_address_ipv4));
 
         if (result < 0)
         {
@@ -450,22 +576,89 @@ void vdis::socket_base_t::bind_socket(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::socket_base_t::close_socket(void)
+vdis::send_socket_t::send_socket_t(
+    bool ipv6,
+    int16_t port,
+    const char *address_ptr
+) :
+   socket_base_t(address_ptr ? address_ptr : BROADCAST.c_str(), port, ipv6)
 {
-    if (socket_descriptor > 0)
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::send_socket_t::~send_socket_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+int32_t vdis::send_socket_t::send(const byte_buffer_t &buffer)
+{
+    int
+        flags = 0;
+
+    int32_t result = sendto(
+        socket_descriptor,
+        (void *)buffer.buffer(),
+        buffer.length(),
+        flags,
+        (const socket_address_t *)socket_address_ptr,
+        socket_address_size);
+
+    if (result == -1)
     {
-        LOG_VERBOSE(
-            "Closing socket %d on port %d...",
-            socket_descriptor,
-            socket_port);
-
-        if (close(socket_descriptor) != 0)
-        {
-            LOG_ERROR(
-                "Failed to close socket: %s",
-                std::strerror(errno));
-
-            socket_error = ERROR_BIND;
-        }
+        perror("sendto");
     }
+    else if (((unsigned)result) != buffer.length())
+    {
+        LOG_WARNING(
+            "sendto: %d of %d bytes sent!",
+            result,
+            buffer.length());
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+vdis::receive_socket_t::receive_socket_t(
+    bool ipv6,
+    int16_t port,
+    const char *address_ptr
+) :
+    socket_base_t(address_ptr ? address_ptr : ANY.c_str(), port, ipv6)
+{
+    bind_socket();
+}
+
+// ----------------------------------------------------------------------------
+vdis::receive_socket_t::~receive_socket_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+int32_t vdis::receive_socket_t::receive(byte_buffer_t &buffer)
+{
+    std::memset(socket_address_ptr, 0, socket_address_size);
+
+    LOG_EXTRA_VERBOSE("Listening on socket...");
+
+    buffer.reset(BUFFER_LENGTH);
+
+    int32_t result = recvfrom(
+        socket_descriptor,
+        (void *)buffer.update_buffer(),
+        buffer.length(),
+        0,
+        (socket_address_t *)socket_address_ptr,
+        &socket_address_size);
+
+    if (result < 1)
+    {
+        LOG_EXTRA_VERBOSE("recvfrom() returned %d...", result);
+    }
+
+    return result;
 }

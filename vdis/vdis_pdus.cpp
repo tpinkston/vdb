@@ -273,12 +273,14 @@ namespace
 }
 
 bool
-    vdis::pdu_t::validate_headers = true;
+    vdis::pdu_t::validate_headers = false;
 bool
     vdis::entity_state_pdu_t::set_entity_markings = true;
 
 // ----------------------------------------------------------------------------
-vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
+vdis::pdu_t::pdu_t(byte_stream_t &stream) :
+    base_type(PDU_TYPE_OTHER),
+    base_ptr(0)
 {
     uint32_t
         base_size = 0,
@@ -298,10 +300,15 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
             "Stream too short for PDU: %d bytes",
             stream.remaining_length());
     }
-    else if (validate_headers || validate_header(stream))
+    else
     {
         base_type = (pdu_type_e)stream[2];
         base_size = BASE_PDU_SIZE[base_type];
+
+        if (validate_headers and not validate_header(stream))
+        {
+            return;
+        }
 
         // Verify that stream has enough bytes for base PDU
         //
@@ -410,12 +417,12 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new comment_pdu_t;
                 break;
             }
-//            case PDU_TYPE_EM_EMISSION: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new em_emission_pdu_t...");
-//                base_ptr = new em_emission_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_EM_EMISSION:
+            {
+                LOG_EXTRA_VERBOSE("Creating new em_emission_pdu_t...");
+                base_ptr = new em_emission_pdu_t;
+                break;
+            }
             case PDU_TYPE_DESIGNATOR:
             {
                 LOG_EXTRA_VERBOSE("Creating new designator_pdu_t...");
@@ -695,7 +702,7 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
             entity_appearance;
 
         entity_appearance.value = appearance;
-        entity_appearance.print(prefix, out);
+        entity_appearance.print(prefix + "lifeform_appearance.", out);
     }
     else if (type.kind_enum() == ENT_KIND_PLATFORMS)
     {
@@ -705,7 +712,7 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
                 entity_appearance;
 
             entity_appearance.value = appearance;
-            entity_appearance.print(prefix, out);
+            entity_appearance.print(prefix + "air_platform_appearance.", out);
         }
         else if (type.domain_enum() == DOMAIN_LAND)
         {
@@ -713,7 +720,7 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
                 entity_appearance;
 
             entity_appearance.value = appearance;
-            entity_appearance.print(prefix, out);
+            entity_appearance.print(prefix + "land_platform_appearance.", out);
         }
     }
 
@@ -1964,6 +1971,108 @@ void vdis::comment_pdu_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::em_emission_pdu_t::em_emission_pdu_t(void) :
+    update(0),
+    system_count(0),
+    padding(0),
+    systems(0)
+{
+
+}
+
+
+// ----------------------------------------------------------------------------
+vdis::em_emission_pdu_t::~em_emission_pdu_t(void)
+{
+    clear();
+}
+
+
+// ----------------------------------------------------------------------------
+void vdis::em_emission_pdu_t::clear(void)
+{
+    for(uint8_t i = 0; systems and (i < system_count); ++i)
+    {
+        if (systems[i])
+        {
+            delete systems[i];
+            systems[i] = 0;
+        }
+    }
+
+    if (systems)
+    {
+        delete[] systems;
+    }
+
+    header.reset(PDU_TYPE_EM_EMISSION);
+    emitting_entity.clear();
+    event.clear();
+    update = 0;
+    system_count = 0;
+    padding = 0;
+    systems = 0;
+}
+
+
+// ----------------------------------------------------------------------------
+void vdis::em_emission_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "em_emission.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "emitting_entity "
+        << entity_marking(emitting_entity) << std::endl
+        << prefix << "event " << event << std::endl
+        << prefix << "update " << (int)update << std::endl
+        << prefix << "system_count " << (int)system_count << std::endl
+        << prefix << "padding(16 bits) " << to_bin_string(padding) << std::endl;
+
+    for(uint16_t i = 0; (systems and (i < system_count)); ++i)
+    {
+        if (systems[i])
+        {
+            systems[i]->print(
+                (prefix + "systems[" + to_string(i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::em_emission_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    emitting_entity.read(stream);
+    event.read(stream);
+    stream.read(update);
+    stream.read(system_count);
+    stream.read(padding);
+
+    if (system_count > 0)
+    {
+        systems = new emitter_system_t*[system_count];
+
+        for(uint16_t i = 0; (i < system_count) and stream.ready(); ++i)
+        {
+            systems[i] = new emitter_system_t;
+            systems[i]->read(stream);
+        }
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+void vdis::em_emission_pdu_t::write(byte_stream_t &)
+{
+    // TODO vdis::em_emission_pdu_t::write
+}
+
+// ----------------------------------------------------------------------------
 vdis::designator_pdu_t::designator_pdu_t(void) :
     spot_type(0),
     system_name(0),
@@ -2026,8 +2135,7 @@ void vdis::designator_pdu_t::print(std::ostream &out) const
         << prefix << "flash_rate " << (int)flash_rate << std::endl
         << prefix << "system_number " << (int)system_number << std::endl
         << prefix << "function " << (laser_function_e)function << std::endl
-        << prefix << "beam_offset " << beam_offset << std::endl
-;
+        << prefix << "beam_offset " << beam_offset << std::endl;
 }
 
 // ----------------------------------------------------------------------------

@@ -449,16 +449,36 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union spread_spectrum_t
+    {
+        struct bits_t
+        {
+            uint16_t            frequency_hopping:1;    // Bit 0
+            uint16_t            pseudo_noise:1;         // Bit 1
+            uint16_t            time_hopping:1;         // Bit 2
+            uint16_t            padding:13;             // Bits 3-15
+        };
+
+        uint16_t            value;
+        bits_t              bits;
+
+        void clear(void);
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct modulation_type_t
     {
-        uint16_t                spread_spectrum;        // 2 bytes
+        spread_spectrum_t       spread_spectrum;        // 2 bytes
         uint16_t                major_modulation;       // 2 bytes
         uint16_t                modulation_detail;      // 2 bytes
         uint16_t                radio_system;           // 2 bytes
 
         inline void clear(void)
         {
-            spread_spectrum = 0;
+            spread_spectrum.clear();
             major_modulation = 0;
             modulation_detail = 0;
             radio_system = 0;
@@ -472,9 +492,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_target_t
     {
-        id_t                    entity;                    // 6 bytes
-        uint8_t                 emitter;                // 1 byte
-        uint8_t                 beam;                   // 1 byte
+        id_t                    entity;                     // 6 bytes
+        uint8_t                 emitter;                    // 1 byte
+        uint8_t                 beam;                       // 1 byte
 
         inline void clear(void)
         {
@@ -494,19 +514,24 @@ namespace vdis
         uint8_t                 data_length;                // 1 byte
         uint8_t                 id_number;                  // 1 byte
         uint16_t                parameter_index;            // 2 bytes
+
+        // Fundamental parameter data:
         float32_t               frequency;                  // 4 bytes
         float32_t               frequency_range;            // 4 bytes
         float32_t               effective_radiated_power;   // 4 bytes
         float32_t               pulse_repetition_frequency; // 4 bytes
         float32_t               pulse_width;                // 4 bytes
+
+        // Beam data:
         float32_t               azimuth_center;             // 4 bytes
         float32_t               azimuth_sweep;              // 4 bytes
         float32_t               elevation_center;           // 4 bytes
         float32_t               elevation_sweep;            // 4 bytes
         float32_t               sweep_sync;                 // 4 bytes
+
         uint8_t                 function;                   // 1 byte
         uint8_t                 target_count;               // 1 byte
-        uint8_t                 hd_track_jam;               // 1 byte
+        uint8_t                 high_density_track_jam;     // 1 byte
         uint8_t                 status;                     // 1 byte
         uint32_t                jamming_technique;          // 4 bytes
         emitter_target_t      **targets;                    // Variable length

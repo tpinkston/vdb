@@ -91,7 +91,7 @@ void vdis::byte_buffer_t::clear(void)
 
     if (data_buffer and data_allocated)
     {
-        delete data_buffer;
+        delete[] data_buffer;
     }
 
     data_buffer = 0;
@@ -254,13 +254,21 @@ void vdis::byte_buffer_t::write(byte_stream_t &stream, uint32_t size)
 // ----------------------------------------------------------------------------
 void vdis::byte_buffer_t::reset(uint32_t size)
 {
-    clear();
-
-    if (size > 0)
+    if (size == 0)
     {
-        data_length = size;
-        data_buffer = new uint8_t[data_length];
-        data_allocated = true;
+        clear();
+    }
+    else
+    {
+        if ((size != data_length) or not data_allocated)
+        {
+            clear();
+
+            data_length = size;
+            data_buffer = new uint8_t[data_length];
+            data_allocated = true;
+        }
+
         std::memset(data_buffer, 0, data_length);
     }
 }

@@ -6,12 +6,11 @@
 namespace vdis
 {
     class pdu_t;
+    class send_socket_t;
 }
 
 namespace vdb
 {
-    class playback_socket_t;
-
     class playback
     {
       public:
@@ -33,7 +32,7 @@ namespace vdb
 
         static void signal_handler(int);
 
-        static playback_socket_t
+        static vdis::send_socket_t
             *socket_ptr;
         static int32_t
             port;

@@ -840,9 +840,69 @@ void vdis::burst_descriptor_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::spread_spectrum_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "frequency_hopping "
+        << (on_off_e)bits.frequency_hopping << std::endl
+        << prefix << "pseudo_noise "
+        << (on_off_e)bits.pseudo_noise << std::endl
+        << prefix << "time_hopping "
+        << (on_off_e)bits.time_hopping << std::endl
+        << prefix << "padding(13 bits) "
+        << to_bin_string((uint16_t)bits.padding) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::spread_spectrum_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::spread_spectrum_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::modulation_type_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    major_modulation_e
+        mm_value = (major_modulation_e)major_modulation;
+
+    spread_spectrum.print((prefix + "spread_spectrum."), out);
+
+    out << prefix << "major_modulation " << mm_value << std::endl
+        << prefix << "modulation_detail ";
+
+    switch(mm_value)
+    {
+        case MAJOR_MODULATION_MAJ_MOD_AMPLITUDE:
+            out << (amplitude_e)modulation_detail << std::endl;
+            break;
+        case MAJOR_MODULATION_MAJ_MOD_AMPLITUDE_AND_ANGLE:
+            out << (amplitude_and_angle_e)modulation_detail << std::endl;
+            break;
+        case MAJOR_MODULATION_MAJ_MOD_ANGLE:
+            out << (angle_e)modulation_detail << std::endl;
+            break;
+        default:
+            out << (int)modulation_detail << std::endl;
+            break;
+    }
+
+    out << prefix << "radio_system "
+        << (radio_system_e)radio_system << std::endl;
+}
+
+// ----------------------------------------------------------------------------
 void vdis::modulation_type_t::read(byte_stream_t &stream)
 {
-    stream.read(spread_spectrum);
+    spread_spectrum.read(stream);
     stream.read(major_modulation);
     stream.read(modulation_detail);
     stream.read(radio_system);
@@ -851,10 +911,339 @@ void vdis::modulation_type_t::read(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 void vdis::modulation_type_t::write(byte_stream_t &stream)
 {
-    stream.write(spread_spectrum);
+    spread_spectrum.write(stream);
     stream.write(major_modulation);
     stream.write(modulation_detail);
     stream.write(radio_system);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_target_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "entity " << entity_marking(entity) << std::endl
+        << prefix << "emitter " << (int)emitter << std::endl
+        << prefix << "beam " << (int)beam << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_target_t::read(byte_stream_t &stream)
+{
+    entity.read(stream);
+    stream.read(emitter);
+    stream.read(beam);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_target_t::write(byte_stream_t &stream)
+{
+    entity.write(stream);
+    stream.write(emitter);
+    stream.write(beam);
+}
+
+// ----------------------------------------------------------------------------
+vdis::emitter_beam_t::emitter_beam_t(void) :
+    data_length(0),
+    id_number(0),
+    parameter_index(0),
+    frequency(0),
+    frequency_range(0),
+    effective_radiated_power(0),
+    pulse_repetition_frequency(0),
+    pulse_width(0),
+    azimuth_center(0),
+    azimuth_sweep(0),
+    elevation_center(0),
+    elevation_sweep(0),
+    sweep_sync(0),
+    function(0),
+    target_count(0),
+    high_density_track_jam(0),
+    status(0),
+    jamming_technique(0),
+    targets(0)
+{
+}
+
+// ----------------------------------------------------------------------------
+vdis::emitter_beam_t::~emitter_beam_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_beam_t::clear(void)
+{
+    if (targets and (target_count > 0))
+    {
+        for(uint8_t i = 0; i < target_count; ++i)
+        {
+            if (targets[i])
+            {
+                delete targets[i];
+                targets[i] = 0;
+            }
+        }
+    }
+
+    if (targets)
+    {
+        delete[] targets;
+    }
+
+    data_length = 0;
+    id_number = 0;
+    parameter_index = 0;
+    frequency = 0;
+    frequency_range = 0;
+    effective_radiated_power = 0;
+    pulse_repetition_frequency = 0;
+    pulse_width = 0;
+    azimuth_center = 0;
+    azimuth_sweep = 0;
+    elevation_center = 0;
+    elevation_sweep = 0;
+    sweep_sync = 0;
+    function = 0;
+    target_count = 0;
+    high_density_track_jam = 0;
+    status = 0;
+    jamming_technique = 0;
+    targets = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_beam_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "data_length " << (int)data_length << std::endl
+        << prefix << "id_number " << (int)id_number << std::endl
+        << prefix << "parameter_index " << (int)parameter_index << std::endl
+        << prefix << "frequency "
+        << to_string(frequency) << std::endl
+        << prefix << "frequency_range "
+        << to_string(frequency_range) << std::endl
+        << prefix << "effective_radiated_power "
+        << to_string(effective_radiated_power) << std::endl
+        << prefix << "pulse_repetition_frequency "
+        << to_string(pulse_repetition_frequency) << std::endl
+        << prefix << "pulse_width "
+        << to_string(pulse_width) << std::endl
+        << prefix << "azimuth_center "
+        << to_string(azimuth_center) << std::endl
+        << prefix << "azimuth_sweep "
+        << to_string(azimuth_sweep) << std::endl
+        << prefix << "elevation_center "
+        << to_string(elevation_center) << std::endl
+        << prefix << "elevation_sweep "
+        << to_string(elevation_sweep) << std::endl
+        << prefix << "sweep_sync "
+        << to_string(sweep_sync) << std::endl
+        << prefix << "function " << (beam_function_e)function << std::endl
+        << prefix << "high_density_track_jam "
+        << (int)high_density_track_jam << std::endl
+        << prefix << "status " << (int)status << std::endl
+        << prefix << "jamming_technique " << (int)jamming_technique << std::endl
+        << prefix << "targets.count " << (int)target_count << std::endl;
+
+    for(uint8_t i = 0; i < target_count; ++i)
+    {
+        if (targets[i])
+        {
+            targets[i]->print(
+                (prefix + "targets[" + to_string(i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_beam_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    stream.read(data_length);
+    stream.read(id_number);
+    stream.read(parameter_index);
+    stream.read(frequency);
+    stream.read(frequency_range);
+    stream.read(effective_radiated_power);
+    stream.read(pulse_repetition_frequency);
+    stream.read(pulse_width);
+    stream.read(azimuth_center);
+    stream.read(azimuth_sweep);
+    stream.read(elevation_center);
+    stream.read(elevation_sweep);
+    stream.read(sweep_sync);
+    stream.read(function);
+    stream.read(target_count);
+    stream.read(high_density_track_jam);
+    stream.read(status);
+    stream.read(jamming_technique);
+
+    if (target_count > 0)
+    {
+        targets = new emitter_target_t*[target_count];
+    }
+
+    for(uint8_t i = 0; (i < target_count) and not stream.error(); ++i)
+    {
+        targets[i] = new emitter_target_t;
+        targets[i]->read(stream);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_beam_t::write(byte_stream_t &stream)
+{
+    stream.write(data_length);
+    stream.write(id_number);
+    stream.write(parameter_index);
+    stream.write(frequency);
+    stream.write(frequency_range);
+    stream.write(effective_radiated_power);
+    stream.write(pulse_repetition_frequency);
+    stream.write(pulse_width);
+    stream.write(azimuth_center);
+    stream.write(azimuth_sweep);
+    stream.write(elevation_center);
+    stream.write(elevation_sweep);
+    stream.write(sweep_sync);
+    stream.write(function);
+    stream.write(target_count);
+    stream.write(high_density_track_jam);
+    stream.write(status);
+    stream.write(jamming_technique);
+
+    for(uint8_t i = 0; targets and (i < target_count); ++i)
+    {
+        if (not stream.error())
+        {
+            targets[i]->write(stream);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::emitter_system_t::emitter_system_t(void) :
+    data_length(0),
+    beam_count(0),
+    padding(0),
+    name(0),
+    function(0),
+    number(0),
+    beams(0)
+{
+}
+
+// ----------------------------------------------------------------------------
+vdis::emitter_system_t::~emitter_system_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_system_t::clear(void)
+{
+    if (beams and (beam_count > 0))
+    {
+        for(uint8_t i = 0; i < beam_count; ++i)
+        {
+            if (beams[i])
+            {
+                delete beams[i];
+                beams[i] = 0;
+            }
+        }
+    }
+
+    if (beams)
+    {
+        delete[] beams;
+    }
+
+    data_length = 0;
+    beam_count = 0;
+    padding = 0;
+    name = 0;
+    function = 0;
+    number = 0;
+    location.clear();
+    beams = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_system_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "data_length " << (int)data_length << std::endl
+        << prefix << "padding(16 bits) "
+        << to_bin_string(padding, true) << std::endl
+        << prefix << "name " << (emitter_name_e)name << std::endl
+        << prefix << "function "
+        << (emitter_function_e)function << std::endl
+        << prefix << "number " << (int)number << std::endl
+        << prefix << "location " << location << std::endl
+        << prefix << "beams.count " << (int)beam_count << std::endl;
+
+    for(uint8_t i = 0; i < beam_count; ++i)
+    {
+        if (beams[i])
+        {
+            beams[i]->print(
+                (prefix + "beams[" + to_string(i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_system_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    stream.read(data_length);
+    stream.read(beam_count);
+    stream.read(padding);
+    stream.read(name);
+    stream.read(function);
+    stream.read(number);
+    location.read(stream);
+
+    if (beam_count > 0)
+    {
+        beams = new emitter_beam_t*[beam_count];
+    }
+
+    for(uint8_t i = 0; (i < beam_count) and not stream.error(); ++i)
+    {
+        beams[i] = new emitter_beam_t;
+        beams[i]->read(stream);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::emitter_system_t::write(byte_stream_t &stream)
+{
+    stream.write(data_length);
+    stream.write(beam_count);
+    stream.write(padding);
+    stream.write(name);
+    stream.write(function);
+    stream.write(number);
+    location.write(stream);
+
+    for(uint8_t i = 0; beams and (i < beam_count); ++i)
+    {
+        if (not stream.error())
+        {
+            beams[i]->write(stream);
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------

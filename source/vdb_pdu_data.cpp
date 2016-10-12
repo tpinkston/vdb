@@ -1,5 +1,3 @@
-#include "vdb_network.h"
-#include "vdb_options.h"
 #include "vdb_pdu_data.h"
 
 #include "vdis_byte_stream.h"
@@ -17,7 +15,7 @@ const uint8_t *vdb::pdu_data_t::get_address_buffer(void) const
 
 // ----------------------------------------------------------------------------
 // Returns length of hostname as saved to and restored from file (with
-// 8-byte boundaries).
+// 4-byte boundaries).
 //
 uint16_t vdb::pdu_data_t::get_hostname_length(void) const
 {
@@ -26,34 +24,32 @@ uint16_t vdb::pdu_data_t::get_hostname_length(void) const
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet_socket_address_t &source_address,
+    const vdis::socket_address_ipv4_t &source_address,
     uint16_t socket_port)
 {
     LOG_EXTRA_VERBOSE("Setting address with IPv4 address...");
 
     port = socket_port;
     ip_version = 4;
-    hostname.clear();
-    network::get_hostname(source_address, hostname);
+    hostname = vdis::query_hostname(source_address);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &source_address.sin_addr, sizeof(inet_address_t));
+    std::memcpy(address, &source_address.sin_addr, sizeof(vdis::address_ipv4_t));
 }
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::set_source(
-    const inet6_socket_address_t &source_address,
+    const vdis::socket_address_ipv6_t &source_address,
     uint16_t socket_port)
 {
     LOG_EXTRA_VERBOSE("Setting address with IPv6 address...");
 
     port = socket_port;
     ip_version = 6;
-    hostname.clear();
-    network::get_hostname(source_address, hostname);
+    hostname = vdis::query_hostname(source_address);
 
     std::memset(address, 0, ADDRESS_LENGTH);
-    std::memcpy(address, &source_address.sin6_addr, sizeof(inet6_address_t));
+    std::memcpy(address, &source_address.sin6_addr, sizeof(vdis::address_ipv6_t));
 }
 
 // ----------------------------------------------------------------------------
@@ -66,19 +62,19 @@ string_t vdb::pdu_data_t::get_source(void) const
 
     if (ip_version == 4)
     {
-        inet_address_t address4;
+        vdis::address_ipv4_t address4;
 
-        std::memcpy(&address4, address, sizeof(inet_address_t));
+        std::memcpy(&address4, address, sizeof(vdis::address_ipv4_t));
 
-        stream << network::get_address(address4);
+        stream << vdis::get_address(address4);
     }
     else if (ip_version == 6)
     {
-        inet_address_t address6;
+        vdis::address_ipv6_t address6;
 
-        std::memcpy(&address6, address, sizeof(inet6_address_t));
+        std::memcpy(&address6, address, sizeof(vdis::address_ipv6_t));
 
-        stream << network::get_address(address6);
+        stream << vdis::get_address(address6);
     }
     else
     {
@@ -116,9 +112,10 @@ vdis::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
         stream(pdu_buffer, pdu_length);
 
     LOG_EXTRA_VERBOSE(
-        "Creating PDU type %d at index %d with %d bytes...",
-        (int)pdu_type,
+        "Creating PDU at index %d: %s(%d) with %d bytes...",
         index,
+        pdu_type_string.c_str(),
+        pdu_type,
         pdu_length);
 
     // Create the PDU object...

@@ -19,11 +19,12 @@ namespace vdis
 
         void clear(void);
 
-        const uint8_t *buffer(void) const;
+        inline const uint8_t *buffer(void) const { return data_buffer; }
+        inline uint8_t *update_buffer(void) { return data_buffer; }
+
+        inline uint32_t length(void) const { return data_length; }
 
         uint8_t operator[](uint32_t index) const;
-
-        uint32_t length(void) const;
 
         void print(const string_t &, std::ostream &) const;
 
@@ -49,18 +50,6 @@ namespace vdis
         //
         bool        data_allocated;
     };
-
-    // ------------------------------------------------------------------------
-    inline const uint8_t *vdis::byte_buffer_t::buffer(void) const
-    {
-        return data_buffer;
-    }
-
-    // ------------------------------------------------------------------------
-    inline uint32_t vdis::byte_buffer_t::length(void) const
-    {
-        return data_length;
-    }
 }
 
 std::ostream &operator<<(std::ostream &, const vdis::byte_buffer_t &);

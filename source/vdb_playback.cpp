@@ -1,18 +1,18 @@
 #include "vdb_common.h"
 #include "vdb_file_readers.h"
 #include "vdb_filter.h"
-#include "vdb_network.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_playback.h"
 #include "vdb_print.h"
 
 #include "vdis_logger.h"
+#include "vdis_network.h"
 #include "vdis_pdus.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
 
-vdb::playback_socket_t
+vdis::send_socket_t
     *vdb::playback::socket_ptr;
 int32_t
     vdb::playback::port = 0;
@@ -104,15 +104,17 @@ void vdb::playback::open_socket(void)
     const char
         *address_ptr = 0;
 
+    // Default address for 'vdis::send_socket_t' is 'broadcast'
+    //
     if (not options::network_address.empty())
     {
         address_ptr = options::network_address.c_str();
     }
 
-    socket_ptr = new playback_socket_t(
-        address_ptr,
+    socket_ptr = new vdis::send_socket_t(
         port,
-        options::use_ipv6);
+        options::use_ipv6,
+        address_ptr);
 }
 
 // ----------------------------------------------------------------------------
@@ -157,6 +159,11 @@ void vdb::playback::send_pdu(
     const pdu_data_t &pdu_data,
     const vdis::pdu_t &pdu)
 {
+    vdis::byte_buffer_t pdu_buffer(
+        pdu_data.get_pdu_buffer(),
+        pdu_data.get_pdu_length(),
+        false);
+
     if (not started)
     {
         // First PDU to send marks the start times.
@@ -188,7 +195,7 @@ void vdb::playback::send_pdu(
 
     print::print_pdu(pdu_data, pdu, std::cout);
 
-    socket_ptr->send(pdu_data);
+    socket_ptr->send(pdu_buffer);
 
     started = true;
 }

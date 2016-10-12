@@ -598,7 +598,12 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct em_emission_pdu_t : pdu_base_t
     {
-        // TODO: em_emission_pdu_t
+        id_t                            emitting_entity;            // 6 bytes
+        id_t                            event;                      // 6 bytes
+        uint8_t                         update;                     // 1 byte
+        uint8_t                         system_count;               // 1 byte
+        uint16_t                        padding;                    // 2 bytes
+        emitter_system_t              **systems;                    // Varies
 
         em_emission_pdu_t(void);
         ~em_emission_pdu_t(void);

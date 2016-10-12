@@ -3,7 +3,7 @@
 
 #include <cstring>
 
-#include "vdb_network.h"
+#include "vdis_network.h"
 
 namespace vdis
 {
@@ -43,18 +43,18 @@ namespace vdb
         uint16_t get_hostname_length(void) const;
 
         void set_source(
-            const inet_socket_address_t &source_address,
+            const vdis::socket_address_ipv4_t &source_address,
             uint16_t socket_port
         );
 
         void set_source(
-            const inet6_socket_address_t &source_address,
+            const vdis::socket_address_ipv6_t &source_address,
             uint16_t socket_port
         );
 
         string_t get_source(void) const;
 
-        void set_pdu_buffer(uint8_t *buffer, uint32_t length);
+        void set_pdu_buffer(const uint8_t *buffer, uint32_t length);
 
         const uint8_t *get_pdu_buffer(void) const { return pdu_buffer; }
         uint8_t *update_pdu_buffer(void) { return pdu_buffer; }
@@ -126,7 +126,9 @@ inline vdb::pdu_data_t::~pdu_data_t(void)
 }
 
 // ----------------------------------------------------------------------------
-inline void vdb::pdu_data_t::set_pdu_buffer(uint8_t *buffer, uint32_t length)
+inline void vdb::pdu_data_t::set_pdu_buffer(
+    const uint8_t *buffer,
+    uint32_t length)
 {
     std::memset(pdu_buffer, 0, PDU_BUFFER_LENGTH);
     std::memcpy(pdu_buffer, buffer, length);

@@ -3,7 +3,6 @@
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
 #include "vdb_filter.h"
-#include "vdb_network.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
@@ -15,7 +14,7 @@
 
 FILE
     *vdb::capture::file_ptr = 0;
-vdb::capture_socket_t
+vdis::receive_socket_t
     *vdb::capture::socket_ptr = 0;
 int32_t
     vdb::capture::port = 0;
@@ -111,10 +110,10 @@ void vdb::capture::open_socket(void)
         address_ptr = options::network_address.c_str();
     }
 
-    socket_ptr = new capture_socket_t(
-        address_ptr,
+    socket_ptr = new vdis::receive_socket_t(
+        options::use_ipv6,
         port,
-        options::use_ipv6);
+        address_ptr);
 }
 
 // ----------------------------------------------------------------------------
@@ -243,6 +242,8 @@ void vdb::capture::start(void)
         index_counter = 0;
     pdu_data_t
         data;
+    vdis::byte_buffer_t
+        pdu_buffer;
     vdis::pdu_t
         *pdu_ptr = 0;
 
@@ -250,11 +251,36 @@ void vdb::capture::start(void)
 
     while(capturing)
     {
-        socket_ptr->receive(data);
+        int32_t bytes_read = socket_ptr->receive(pdu_buffer);
 
-        if (data.get_pdu_length() > 0)
+        if (bytes_read > 0)
         {
-            bytes_received += (uint64_t)data.get_pdu_length();
+            if (socket_ptr->socket_ipv6)
+            {
+                data.set_source(
+                    socket_ptr->address_ipv6(),
+                    socket_ptr->socket_port);
+            }
+            else
+            {
+                data.set_source(
+                    socket_ptr->address_ipv4(),
+                    socket_ptr->socket_port);
+            }
+
+            if (logger::is_enabled(logger::VERBOSE))
+            {
+                LOG_VERBOSE(
+                    "Received %d bytes from %s...",
+                    bytes_read,
+                    data.get_source().c_str(),
+                    port);
+            }
+
+            data.set_time(vdis::get_system_time());
+            data.set_pdu_buffer(pdu_buffer.buffer(), bytes_read);
+
+            bytes_received += (uint64_t)bytes_read;
             pdus_received += 1U;
 
             if (filter::filter_by_header(data))
