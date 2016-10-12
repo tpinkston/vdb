@@ -187,38 +187,36 @@ void vdis::fixed_datum_record_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-// Reads 4 bytes for datum length, converts value in bits to value
-// in bytes, and checks the byte stream for the needed bytes.
-// Returns datum length in bytes.
+// Reads 4 bytes for datum length and checks the byte stream for the needed
+// bytes.  Returns datum length in bytes.
 //
 uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 {
-    uint32_t
-        length = 0;
+    uint32_t length_bits = 0;
 
     // Value should be in bits not bytes
     //
-    stream.read(length);
+    stream.read(length_bits);
 
-    if ((length % 64) > 0)
+    if ((length_bits % 64) > 0)
     {
         LOG_WARNING(
             "Reading variable datum content with invalid length: %d",
-            length);
+            length_bits);
     }
     else
     {
         // Convert value in bits to bytes
         //
-        length /= 8;
+        uint32_t length_bytes = (length_bits / 8);
 
-        if (length > 0)
+        if (length_bytes > 0)
         {
-            if (stream.remaining_length() >= length)
+            if (stream.remaining_length() >= length_bytes)
             {
                 LOG_EXTRA_VERBOSE(
                     "Reading variable datum content %d bytes...",
-                    length);
+                    length_bytes);
             }
             else
             {
@@ -226,12 +224,12 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
                     "Cannot create variable datum content with "
                     " %d/%d bytes remaining",
                     stream.remaining_length(),
-                    length);
+                    length_bytes);
             }
         }
     }
 
-    return length;
+    return length_bits;
 }
 
 // ----------------------------------------------------------------------------
@@ -355,7 +353,9 @@ void vdis::default_variable_datum_content_t::read(byte_stream_t &stream)
 {
     const uint32_t length = read_length(stream);
 
-    buffer.read(stream, length);
+    // Convert length in bits to length in bytes
+    //
+    buffer.read(stream, (length / 8));
 }
 
 // ----------------------------------------------------------------------------
@@ -394,7 +394,7 @@ void vdis::damage_status_t::read(byte_stream_t &stream)
     if (length != LENGTH_BITS)
     {
         LOG_ERROR(
-            "Inconsistent datum length for damage_status_t: &d/%d",
+            "Inconsistent datum length for damage_status_t: %d/%d",
             length,
             LENGTH_BITS);
     }
@@ -510,7 +510,7 @@ void vdis::sling_load_capability_t::read(byte_stream_t &stream)
     if (length < BASE_LENGTH_BITS)
     {
         LOG_ERROR(
-            "Inconsistent datum length for sling_load_capability_t: &d/%d",
+            "Inconsistent datum length for sling_load_capability_t: %d/%d",
             length,
             BASE_LENGTH_BITS);
     }
@@ -593,7 +593,7 @@ void vdis::force_id_affiliation_t::print(
 void vdis::force_id_affiliation_t::read(byte_stream_t &stream)
 {
     const uint32_t
-        length = read_length(stream);
+        length = (read_length(stream) / 8);
     uint32_t
         name_length = 0;
 

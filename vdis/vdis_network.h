@@ -19,7 +19,7 @@ namespace vdis
 
     void set_address(
         const char *address,
-        int32_t port,
+        int16_t port,
         socket_address_ipv4_t &socket_address,
         bool &broadcast
     );
@@ -33,7 +33,7 @@ namespace vdis
 
     void set_address(
         const char *address,
-        int32_t port,
+        int16_t port,
         socket_address_ipv6_t &socket_address
     );
 

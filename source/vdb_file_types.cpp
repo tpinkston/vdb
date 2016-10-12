@@ -13,16 +13,16 @@ const uint32_t
 // ----------------------------------------------------------------------------
 void vdb::file_header_t::print(
     const string_t &prefix,
-    std::ostream &stream) const
+    std::ostream &out) const
 {
-    stream << prefix << "File version: " << (int)major_version << "."
-           << (int)minor_version << std::endl
-           << prefix << "File created: "
-           << vdis::time_to_string(time_created) << std::endl;
+    out << prefix << "File version:       "
+        << (int)major_version << "." << (int)minor_version << std::endl
+        << prefix << "File created:       "
+        << vdis::time_to_string(time_created) << std::endl;
 
     for(uint32_t i = 0; i < comments.size(); ++i)
     {
-        print_comment(prefix, i, stream);
+        print_comment(prefix, i, out);
     }
 }
 

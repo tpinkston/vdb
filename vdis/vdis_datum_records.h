@@ -160,7 +160,7 @@ namespace vdis
         void write(byte_stream_t &);
 
         static const uint32_t
-            LENGTH_BITS = 128;
+            LENGTH_BITS = 128; // Bits
     };
 
     // ------------------------------------------------------------------------

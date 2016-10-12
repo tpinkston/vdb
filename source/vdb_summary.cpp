@@ -335,8 +335,7 @@ bool vdb::summary::process_pdu_data(const pdu_data_t &data)
         if (filter::filter_by_header(data) and
             filter::filter_by_metadata(data))
         {
-            const vdis::pdu_t
-                *pdu_ptr = data.generate_pdu();
+            const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
             if (pdu_ptr)
             {
@@ -432,6 +431,13 @@ void vdb::summary::process_pdu(
     {
         source.pdu_types[pdu_type]++;
     }
+
+    if (first_pdu_time == 0)
+    {
+        first_pdu_time = data.get_time();
+    }
+
+    last_pdu_time = data.get_time();
 }
 
 // ----------------------------------------------------------------------------
@@ -609,8 +615,8 @@ void vdb::summary::print_results(std::ostream &out)
     std::map<vdis::id_t, object_data_node_t>::const_iterator
         object_itor = object_data.begin();
 
-    out << "File name: " << filename << std::endl
-        << "File size: " << std::fixed;
+    out << "File name:          " << filename << std::endl
+        << "File size:          " << std::fixed;
 
     if (stat(filename.c_str(), &file_stat) == 0)
     {
@@ -627,7 +633,7 @@ void vdb::summary::print_results(std::ostream &out)
 
     if (first_pdu_time > 0)
     {
-        out << "First PDU time: "
+        out << "First PDU time:     "
             << vdis::time_to_string(first_pdu_time) << std::endl;
     }
 
@@ -646,9 +652,10 @@ void vdb::summary::print_results(std::ostream &out)
             seconds,
             milliseconds);
 
-        out << "Last PDU time: "
+        out << "Last PDU time:      "
             << vdis::time_to_string(last_pdu_time) << std::endl
-            << "Duration: " << hours << "h " << minutes << "m "
+            << "Duration:           "
+            << hours << "h " << minutes << "m "
             << seconds << "s " << milliseconds << "ms" << std::endl;
     }
 

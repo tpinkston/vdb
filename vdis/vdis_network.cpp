@@ -54,7 +54,7 @@ int32_t vdis::open_socket(bool ipv6)
 // ----------------------------------------------------------------------------
 void vdis::set_address(
     const char *address,
-    int32_t port,
+    int16_t port,
     socket_address_ipv4_t &socket_address,
     bool &broadcast)
 {
@@ -108,7 +108,7 @@ void vdis::set_address(
 
         if (result == -1)
         {
-            LOG_ERROR("inet_pton: '%s'", strerror(errno));
+            LOG_ERROR("inet_pton: '%s'", std::strerror(errno));
 
             if (exit_on_error)
             {
@@ -144,7 +144,7 @@ void vdis::set_address(
 // ----------------------------------------------------------------------------
 void vdis::set_address(
     const char *address,
-    int32_t port,
+    int16_t port,
     socket_address_ipv6_t &socket_address)
 {
     std::memset(&socket_address, 0, sizeof(socket_address));
@@ -197,7 +197,7 @@ void vdis::set_address(
 
         if (result == -1)
         {
-            LOG_ERROR("inet_pton: '%s'", strerror(errno));
+            LOG_ERROR("inet_pton: '%s'", std::strerror(errno));
 
             if (exit_on_error)
             {
@@ -581,9 +581,37 @@ vdis::send_socket_t::send_socket_t(
     int16_t port,
     const char *address_ptr
 ) :
-   socket_base_t(address_ptr ? address_ptr : BROADCAST.c_str(), port, ipv6)
+    socket_base_t(address_ptr, port, ipv6)
 {
+    bool broadcast = false;
 
+    std::memset((void *)&socket_address_ipv4, 0, sizeof(socket_address_ipv4));
+    std::memset((void *)&socket_address_ipv6, 0, sizeof(socket_address_ipv6));
+
+    if (socket_ipv6)
+    {
+        set_address(socket_address, socket_port, socket_address_ipv6);
+
+        socket_address_ptr = &(socket_address_ipv6);
+        socket_address_size = sizeof(socket_address_ipv6);
+    }
+    else
+    {
+        set_address(
+            socket_address,
+            socket_port,
+            socket_address_ipv4,
+            broadcast);
+
+        socket_address_ptr = &(socket_address_ipv4);
+        socket_address_size = sizeof(socket_address_ipv4);
+    }
+
+    if (broadcast)
+    {
+        LOG_VERBOSE("Enabling broadcast...");
+        set_socket_option(SOL_SOCKET, SO_BROADCAST, ON);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -608,7 +636,7 @@ int32_t vdis::send_socket_t::send(const byte_buffer_t &buffer)
 
     if (result == -1)
     {
-        perror("sendto");
+        LOG_ERROR("sendto(%d): %s", result, std::strerror(errno));
     }
     else if (((unsigned)result) != buffer.length())
     {

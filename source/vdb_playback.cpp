@@ -62,11 +62,12 @@ int vdb::playback::playback_pdus(void)
     {
         const string_t
             filename = options::command_arguments[1];
+        file_reader_t
+            *reader_ptr = 0;
 
         LOG_EXTRA_VERBOSE("Starting playback...");
 
-        file_reader_t
-            *reader_ptr = new standard_reader_t(filename);
+        reader_ptr = new standard_reader_t(filename);
 
         if (not reader_ptr->good())
         {
@@ -112,8 +113,8 @@ void vdb::playback::open_socket(void)
     }
 
     socket_ptr = new vdis::send_socket_t(
-        port,
         options::use_ipv6,
+        port,
         address_ptr);
 }
 
