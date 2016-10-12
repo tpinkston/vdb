@@ -462,7 +462,11 @@ namespace vdis
         uint16_t            value;
         bits_t              bits;
 
-        void clear(void);
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);

@@ -429,12 +429,12 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
                 base_ptr = new designator_pdu_t;
                 break;
             }
-//            case PDU_TYPE_TRANSMITTER: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new transmitter_pdu_t...");
-//                base_ptr = new transmitter_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_TRANSMITTER:
+            {
+                LOG_EXTRA_VERBOSE("Creating new transmitter_pdu_t...");
+                base_ptr = new transmitter_pdu_t;
+                break;
+            }
 //            case PDU_TYPE_SIGNAL: TODO
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new signal_pdu_t...");
@@ -2067,9 +2067,19 @@ void vdis::em_emission_pdu_t::read(byte_stream_t &stream)
 
 
 // ----------------------------------------------------------------------------
-void vdis::em_emission_pdu_t::write(byte_stream_t &)
+void vdis::em_emission_pdu_t::write(byte_stream_t &stream)
 {
-    // TODO vdis::em_emission_pdu_t::write
+    header.write(stream);
+    emitting_entity.write(stream);
+    event.write(stream);
+    stream.write(update);
+    stream.write(system_count);
+    stream.write(padding);
+
+    for(uint16_t i = 0; (i < system_count) and systems; ++i)
+    {
+        systems[i]->write(stream);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -2178,6 +2188,212 @@ void vdis::designator_pdu_t::write(byte_stream_t &stream)
     stream.write(system_number);
     stream.write(function);
     beam_offset.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::transmitter_pdu_t::transmitter_pdu_t(void) :
+    radio_id(0),
+    transmit_state(0),
+    input_source(0),
+    transmitter_parameters(0),
+    antenna_pattern_type(0),
+    antenna_pattern_length(0),
+    frequency(0),
+    bandwidth(0),
+    power(0),
+    crypto_system(0),
+    crypto_key(0),
+    modulation_parameter_length(0),
+    padding8(0),
+    padding16(0),
+    antenna_patterns(0),
+    modulation_parameters(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::transmitter_pdu_t::~transmitter_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::transmitter_pdu_t::clear(void)
+{
+    if (antenna_patterns)
+    {
+        delete[] antenna_patterns;
+    }
+
+    if (modulation_parameters)
+    {
+        delete[] modulation_parameters;
+    }
+
+    entity_id.clear();
+    radio_id = 0;
+    radio_type.clear();
+    transmit_state = 0;
+    input_source = 0;
+    transmitter_parameters = 0;
+    antenna_location.clear();
+    relative_antenna_location.clear();
+    antenna_pattern_type = 0;
+    antenna_pattern_length = 0;
+    frequency = 0;
+    bandwidth = 0;
+    power = 0;
+    modulation_type.clear();
+    crypto_system = 0;
+    crypto_key = 0;
+    modulation_parameter_length = 0;
+    padding8 = 0;
+    padding16 = 0;
+    antenna_patterns = 0;
+    modulation_parameters = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::transmitter_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "transmitter.";
+    byte_buffer_t
+        antenna_pattern_bytes(
+            antenna_patterns,
+            antenna_pattern_length,
+            false),
+        modulation_parameter_bytes(
+            modulation_parameters,
+            modulation_parameter_length,
+            false);
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "entity_id " << entity_marking(entity_id) << std::endl
+        << prefix << "radio_id " << (int)radio_id << std::endl
+        << prefix << "radio_type " << radio_type
+        << " '" << radio_type.description() << "'" << std::endl
+        << prefix << "transmit_state "
+        << (transmit_state_e)transmit_state << std::endl
+        << prefix << "input_source "
+        << (input_source_e)input_source << std::endl
+        << prefix << "transmitter_parameters "
+        << to_bin_string(transmitter_parameters, true) << std::endl
+        << prefix << "antenna_location "
+        << antenna_location << std::endl
+        << prefix << "relative_antenna_location "
+        << relative_antenna_location << std::endl
+        << prefix << "antenna_pattern_type "
+        << (antenna_pattern_type_e)antenna_pattern_type << std::endl
+        << prefix << "frequency(Hz) " << (int)frequency << std::endl
+        << prefix << "bandwidth(Hz) " << to_string(bandwidth) << std::endl
+        << prefix << "power(dBm) " << to_string(power) << std::endl;
+
+    modulation_type.print((prefix + "modulation_type."), out);
+
+    out << prefix << "crypto_system "
+        << (crypto_sys_e)crypto_system << std::endl
+        << prefix << "crypto_key "
+        << to_bin_string(crypto_key) << std::endl
+        << prefix << "padding(8 bits) "
+        << to_bin_string(padding8) << std::endl
+        << prefix << "padding(16 bits) "
+        << to_bin_string(padding16) << std::endl
+        << prefix << "antenna_patterns.length "
+        << (int)antenna_pattern_length << std::endl;
+
+    antenna_pattern_bytes.print((prefix + "antenna_patterns."), out);
+
+    out << prefix << "modulation_parameters.length "
+        << (int)modulation_parameter_length << std::endl;
+
+    modulation_parameter_bytes.print((prefix + "modulation_parameters."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::transmitter_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    entity_id.read(stream);
+    stream.read(radio_id);
+    radio_type.read(stream);
+    stream.read(transmit_state);
+    stream.read(input_source);
+    stream.read(transmitter_parameters);
+    antenna_location.read(stream);
+    relative_antenna_location.read(stream);
+    stream.read(antenna_pattern_type);
+    stream.read(antenna_pattern_length);
+    stream.read(frequency);
+    stream.read(bandwidth);
+    stream.read(power);
+    modulation_type.read(stream);
+    stream.read(crypto_system);
+    stream.read(crypto_key);
+    stream.read(modulation_parameter_length);
+    stream.read(padding8);
+    stream.read(padding16);
+
+    if (antenna_pattern_length > 0)
+    {
+        antenna_patterns = new uint8_t[antenna_pattern_length];
+
+        stream.read(
+            antenna_patterns,
+            (uint32_t)antenna_pattern_length);
+    }
+
+    if (modulation_parameter_length > 0)
+    {
+        modulation_parameters = new uint8_t[modulation_parameter_length];
+
+        stream.read(
+            modulation_parameters,
+            (uint32_t)modulation_parameter_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::transmitter_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    entity_id.write(stream);
+    stream.write(radio_id);
+    radio_type.write(stream);
+    stream.write(transmit_state);
+    stream.write(input_source);
+    stream.write(transmitter_parameters);
+    antenna_location.write(stream);
+    relative_antenna_location.write(stream);
+    stream.write(antenna_pattern_type);
+    stream.write(antenna_pattern_length);
+    stream.write(frequency);
+    stream.write(bandwidth);
+    stream.write(power);
+    modulation_type.write(stream);
+    stream.write(crypto_system);
+    stream.write(crypto_key);
+    stream.write(modulation_parameter_length);
+    stream.write(padding8);
+    stream.write(padding16);
+
+    if (antenna_patterns and (antenna_pattern_length > 0))
+    {
+        stream.write(
+            antenna_patterns,
+            (uint32_t)antenna_pattern_length);
+    }
+
+    if (modulation_parameters and (modulation_parameter_length > 0))
+    {
+        stream.write(
+            modulation_parameters,
+            (uint32_t)modulation_parameter_length);
+    }
 }
 
 // ----------------------------------------------------------------------------

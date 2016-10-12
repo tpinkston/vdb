@@ -376,13 +376,13 @@ void vdis::damage_status_t::print(
         << (int)casualties << std::endl
         << prefix << "damage_status.cause "
         << cause_enum() << std::endl
-        << prefix << "damage_status.padding "
-        << to_hex_string(padding1) << std::endl
+        << prefix << "damage_status.padding(8 bits) "
+        << to_bin_string(padding1) << std::endl
         << prefix << "damage_status.event_id "
         << event_id << std::endl
         << prefix << "damage_status.extent "
         << extent_enum() << std::endl
-        << prefix << "damage_status.padding "
+        << prefix << "damage_status.padding(32 bits) "
         << to_hex_string(padding2, true) << std::endl;
 }
 
@@ -485,12 +485,12 @@ void vdis::sling_load_capability_t::print(
         << to_string(drag_coeffficient, 1, 4) << std::endl
         << prefix << "sling_load_capability.current_mass "
         << to_string(current_mass, 1, 4) << std::endl
-        << prefix << "sling_load_capability.padding "
-        << to_hex_string(padding, true) << std::endl
+        << prefix << "sling_load_capability.padding(16 bits) "
+        << to_bin_string(padding, true) << std::endl
         << prefix << "sling_load_capability.hook_type "
         << hook_type_enum() << std::endl
         << prefix << "sling_load_capability.lines_needed "
-        << lines_needed << std::endl;
+        << (int)lines_needed << std::endl;
 
     for(uint8_t i = 0; ((i < lines_needed) and lines); ++i)
     {
@@ -519,6 +519,7 @@ void vdis::sling_load_capability_t::read(byte_stream_t &stream)
     carrier.read(stream);
     stream.read(drag_coeffficient);
     stream.read(current_mass);
+    stream.read(padding);
     stream.read(hook_type);
     stream.read(lines_needed);
 
@@ -542,6 +543,7 @@ void vdis::sling_load_capability_t::write(byte_stream_t &stream)
     carrier.write(stream);
     stream.write(drag_coeffficient);
     stream.write(current_mass);
+    stream.write(padding);
     stream.write(hook_type);
     stream.write(lines_needed);
 
@@ -569,7 +571,7 @@ uint32_t vdis::force_id_affiliation_t::length(void) const
 {
     // The 'name' buffer's length includes trailing zero bytes for padding
     //
-    return (BASE_LENGTH_BITS + name.length());
+    return (BASE_LENGTH_BITS + (name.length() * 8));
 }
 
 // ----------------------------------------------------------------------------

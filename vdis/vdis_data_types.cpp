@@ -1054,7 +1054,7 @@ void vdis::emitter_beam_t::print(
         if (targets[i])
         {
             targets[i]->print(
-                (prefix + "targets[" + to_string(i) + "]."),
+                (prefix + "targets[" + to_string((int)i) + "]."),
                 out);
         }
     }
@@ -1195,7 +1195,7 @@ void vdis::emitter_system_t::print(
         if (beams[i])
         {
             beams[i]->print(
-                (prefix + "beams[" + to_string(i) + "]."),
+                (prefix + "beams[" + to_string((int)i) + "]."),
                 out);
         }
     }

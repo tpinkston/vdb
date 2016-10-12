@@ -667,7 +667,7 @@ namespace vdis
         uint16_t                        crypto_key;                 // 2 bytes
         uint8_t                         modulation_parameter_length;// 1 byte
         uint8_t                         padding8;                   // 1 byte
-        uint16_t                        padding24;                  // 2 bytes
+        uint16_t                        padding16;                  // 2 bytes
         uint8_t                        *antenna_patterns;           // Variable
         uint8_t                        *modulation_parameters;      // Variable
 
