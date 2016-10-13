@@ -52,6 +52,8 @@ namespace vdis
 
         virtual ~pdu_base_t(void) { }
 
+        virtual pdu_type_e pdu_base_type(void) const = 0;
+
         virtual inline const id_t *get_initator(void) const
         {
             return 0;
@@ -67,7 +69,11 @@ namespace vdis
             return false;
         }
 
-        virtual void clear(void) = 0;
+        virtual inline void clear(void)
+        {
+            header.reset(pdu_base_type());
+        }
+
         virtual void print(std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
@@ -78,7 +84,7 @@ namespace vdis
     {
       public:
 
-        pdu_t(void) : base_type(PDU_TYPE_OTHER), base_ptr(0) { }
+        pdu_t(void) : base_ptr(0) { }
 
         pdu_t(byte_stream_t &);
 
@@ -89,9 +95,15 @@ namespace vdis
 
         void clear(void);
 
-        inline pdu_type_e type(void) const { return base_type; }
+        inline pdu_type_e type(void) const
+        {
+            return base() ? base()->pdu_base_type() : PDU_TYPE_END;
+        }
 
-        inline const pdu_base_t *base(void) const { return base_ptr; }
+        inline const pdu_base_t *base(void) const
+        {
+            return base_ptr;
+        }
 
         inline const id_t *get_initator(void) const
         {
@@ -118,14 +130,16 @@ namespace vdis
 
       protected:
 
-        pdu_type_e                      base_type;
         pdu_base_t                     *base_ptr;
     };
 
     // ------------------------------------------------------------------------
     struct default_pdu_t : pdu_base_t
     {
+        const pdu_type_e                base_type;
         byte_buffer_t                   content;                    // Variable
+
+        default_pdu_t(pdu_type_e type) : base_type(type) { }
 
         virtual ~default_pdu_t(void)
         {
@@ -134,8 +148,12 @@ namespace vdis
 
         inline void clear(void)
         {
-            header.clear();
             content.clear();
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return base_type;
         }
 
         void print(std::ostream &) const;
@@ -178,6 +196,11 @@ namespace vdis
             return id.matches(i);
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_ENTITY_STATE;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -208,6 +231,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &shooter;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_FIRE;
         }
 
         void clear(void);
@@ -245,6 +273,11 @@ namespace vdis
             return &shooter;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_DETONATION;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -269,6 +302,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &issuing_entity;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_COLLISION;
         }
 
         void clear(void);
@@ -297,6 +335,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_CREATE_ENTITY;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -321,6 +364,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_REMOVE_ENTITY;
         }
 
         void clear(void);
@@ -349,6 +397,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_START_RESUME;
         }
 
         void clear(void);
@@ -381,6 +434,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_STOP_FREEZE;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -407,6 +465,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_ACKNOWLEDGE;
         }
 
         void clear(void);
@@ -472,6 +535,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_ACTION_REQUEST;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -497,6 +565,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_ACTION_RESPONSE;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -515,6 +588,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_DATA_QUERY;
         }
 
         void clear(void);
@@ -537,6 +615,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_SET_DATA;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -555,6 +638,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_DATA;
         }
 
         void clear(void);
@@ -577,6 +665,11 @@ namespace vdis
             return (event_type_e)event_type;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_EVENT_REPORT;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -588,6 +681,11 @@ namespace vdis
     {
         comment_pdu_t(void);
         ~comment_pdu_t(void);
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_COMMENT;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -607,6 +705,11 @@ namespace vdis
 
         em_emission_pdu_t(void);
         ~em_emission_pdu_t(void);
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_EM_EMISSION;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -638,6 +741,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &designating_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_DESIGNATOR;
         }
 
         void clear(void);
@@ -679,6 +787,11 @@ namespace vdis
             return &entity_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_TRANSMITTER;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -693,12 +806,13 @@ namespace vdis
     {
         id_t                            entity_id;                  // 6 bytes
         uint16_t                        radio_id;                   // 2 bytes
-        uint16_t                        encoding;                   // 2 bytes
+        encoding_scheme_t               encoding;                   // 2 bytes
         uint16_t                        tdl_type;                   // 2 bytes
-        int32_t                         sample_rate;                // 4 bytes
+        uint32_t                        sample_rate;                // 4 bytes
         uint16_t                        data_length;                // 2 bytes
         uint16_t                        samples;                    // 2 bytes
         uint8_t                        *data;                       // Variable
+        byte_buffer_t                   padding;                    // Variable
 
         signal_pdu_t(void);
         ~signal_pdu_t(void);
@@ -706,6 +820,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &entity_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_SIGNAL;
         }
 
         void clear(void);
@@ -731,6 +850,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &entity_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_RECEIVER;
         }
 
         void clear(void);
@@ -770,6 +894,11 @@ namespace vdis
             return &emitter;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_IFF;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -783,6 +912,11 @@ namespace vdis
 
         minefield_state_pdu_t(void);
         ~minefield_state_pdu_t(void);
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_MINEFIELD_STATE;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -798,6 +932,11 @@ namespace vdis
         minefield_query_pdu_t(void);
         ~minefield_query_pdu_t(void);
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_MINEFIELD_QUERY;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -812,6 +951,11 @@ namespace vdis
         minefield_data_pdu_t(void);
         ~minefield_data_pdu_t(void);
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_MINEFIELD_DATA;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -825,6 +969,11 @@ namespace vdis
 
         minefield_response_nack_pdu_t(void);
         ~minefield_response_nack_pdu_t(void);
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_MINEFIELD_RESPONSE_NAK;
+        }
 
         void clear(void);
         void print(std::ostream &) const;
@@ -854,6 +1003,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &process_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_ENVIRONMENTAL_PROCESS;
         }
 
         void clear(void);
@@ -888,6 +1042,11 @@ namespace vdis
             return &object_id;
         }
 
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_POINT_OBJECT_STATE;
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -918,6 +1077,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &object_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_LINEAR_OBJECT_STATE;
         }
 
         void clear(void);
@@ -953,6 +1117,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &object_id;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_AREAL_OBJECT_STATE;
         }
 
         void clear(void);
@@ -1004,6 +1173,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &originator;
+        }
+
+        inline pdu_type_e pdu_base_type(void) const
+        {
+            return PDU_TYPE_APPLICATION_CTRL;
         }
 
         void clear(void);

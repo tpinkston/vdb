@@ -867,6 +867,38 @@ void vdis::spread_spectrum_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::encoding_scheme_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "encoding_class "
+        << (encoding_class_e)bits.encoding_class << std::endl;
+
+    if (bits.encoding_class == ENCODING_CLASS_ENCODED_AUDIO)
+    {
+        out << prefix << "encoding_type "
+            << (encoding_type_e)bits.encoding_type << std::endl;
+    }
+    else
+    {
+        out << prefix << "encoding_type(TDL) "
+            << (int)bits.encoding_type << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::encoding_scheme_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::encoding_scheme_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::modulation_type_t::print(
     const string_t &prefix,
     std::ostream &out) const

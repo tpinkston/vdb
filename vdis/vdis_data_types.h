@@ -473,6 +473,28 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union encoding_scheme_t
+    {
+        struct bits_t
+        {
+            uint16_t            encoding_type:14;       // Bit 0-13
+            uint16_t            encoding_class:2;       // Bits 14-15
+        };
+
+        uint16_t            value;
+        bits_t              bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct modulation_type_t
     {
         spread_spectrum_t       spread_spectrum;        // 2 bytes

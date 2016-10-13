@@ -200,6 +200,8 @@ void vdis::byte_buffer_t::print(
 }
 
 // ----------------------------------------------------------------------------
+// Reads 32-bit length before reading the buffer.
+//
 void vdis::byte_buffer_t::read(byte_stream_t &stream)
 {
     uint32_t
@@ -210,6 +212,8 @@ void vdis::byte_buffer_t::read(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+// Reads just the buffer.
+//
 void vdis::byte_buffer_t::read(byte_stream_t &stream, uint32_t size)
 {
     clear();
@@ -225,6 +229,8 @@ void vdis::byte_buffer_t::read(byte_stream_t &stream, uint32_t size)
 }
 
 // ----------------------------------------------------------------------------
+// Writes 32-bit length before writing the buffer.
+//
 void vdis::byte_buffer_t::write(byte_stream_t &stream)
 {
     stream.write(data_length);
@@ -236,6 +242,8 @@ void vdis::byte_buffer_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+// Writes just the buffer.
+//
 void vdis::byte_buffer_t::write(byte_stream_t &stream, uint32_t size)
 {
     if (data_buffer and (data_length > 0) and (size > 0))

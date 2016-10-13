@@ -278,9 +278,7 @@ bool
     vdis::entity_state_pdu_t::set_entity_markings = true;
 
 // ----------------------------------------------------------------------------
-vdis::pdu_t::pdu_t(byte_stream_t &stream) :
-    base_type(PDU_TYPE_OTHER),
-    base_ptr(0)
+vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
 {
     uint32_t
         base_size = 0,
@@ -302,8 +300,8 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
     }
     else
     {
-        base_type = (pdu_type_e)stream[2];
-        base_size = BASE_PDU_SIZE[base_type];
+        const pdu_type_e type = (pdu_type_e)stream[2];
+        base_size = BASE_PDU_SIZE[type];
 
         if (validate_headers and not validate_header(stream))
         {
@@ -316,10 +314,10 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
         {
             LOG_ERROR(
                 "Stream too short for PDU type %s: %d bytes",
-                enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str(),
+                enumerations::get_name(ENUM_PDU_TYPE, type).c_str(),
                 stream.remaining_length());
         }
-        else switch(base_type)
+        else switch(type)
         {
             case PDU_TYPE_ENTITY_STATE:
             {
@@ -435,18 +433,18 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
                 base_ptr = new transmitter_pdu_t;
                 break;
             }
-//            case PDU_TYPE_SIGNAL: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new signal_pdu_t...");
-//                base_ptr = new signal_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_RECEIVER: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new receiver_pdu_t...");
-//                base_ptr = new receiver_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_SIGNAL:
+            {
+                LOG_EXTRA_VERBOSE("Creating new signal_pdu_t...");
+                base_ptr = new signal_pdu_t;
+                break;
+            }
+            case PDU_TYPE_RECEIVER:
+            {
+                LOG_EXTRA_VERBOSE("Creating new receiver_pdu_t...");
+                base_ptr = new receiver_pdu_t;
+                break;
+            }
 //            case PDU_TYPE_IFF: TODO
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new iff_pdu_t...");
@@ -509,10 +507,10 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
             }
             default:
             {
-                base_ptr = new default_pdu_t;
+                base_ptr = new default_pdu_t(type);
                 LOG_WARNING(
                     "No base class for PDU type: %s",
-                    enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str());
+                    enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
             }
         }
 
@@ -531,7 +529,7 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) :
                     "after reading PDU: %s",
                     base_ptr->header.length,
                     bytes_read,
-                    enumerations::get_name(ENUM_PDU_TYPE, base_type).c_str());
+                    enumerations::get_name(ENUM_PDU_TYPE, type).c_str());
             }
         }
     }
@@ -652,7 +650,7 @@ void vdis::entity_state_pdu_t::clear(void)
         delete[] records;
     }
 
-    header.clear();
+    pdu_base_t::clear();
     id.clear();
     force = 0;
     record_count = 0;
@@ -824,7 +822,7 @@ void vdis::entity_state_pdu_t::write(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 void vdis::fire_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     shooter.clear();
     target.clear();
     munition.clear();
@@ -925,7 +923,7 @@ void vdis::detonation_pdu_t::clear(void)
         delete[] records;
     }
 
-    header.clear();
+    pdu_base_t::clear();
     shooter.clear();
     target.clear();
     munition.clear();
@@ -1054,7 +1052,7 @@ vdis::collision_pdu_t::collision_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::collision_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     issuing_entity.clear();
     colliding_entity.clear();
     event.clear();
@@ -1123,7 +1121,7 @@ vdis::create_entity_pdu_t::create_entity_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::create_entity_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     request_id = 0;
@@ -1171,7 +1169,7 @@ vdis::remove_entity_pdu_t::remove_entity_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::remove_entity_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     request_id = 0;
@@ -1219,7 +1217,7 @@ vdis::start_resume_pdu_t::start_resume_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::start_resume_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     real_time.clear();
@@ -1275,7 +1273,7 @@ vdis::stop_freeze_pdu_t::stop_freeze_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::stop_freeze_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     real_time.clear();
@@ -1339,7 +1337,7 @@ vdis::acknowledge_pdu_t::acknowledge_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::acknowledge_pdu_t::clear(void)
 {
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     acknowledge_flag = 0;
@@ -1451,7 +1449,7 @@ void vdis::abstract_siman_pdu_t::clear(void)
         delete[] variable_records;
     }
 
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     fixed_count = 0;
@@ -2005,7 +2003,7 @@ void vdis::em_emission_pdu_t::clear(void)
         delete[] systems;
     }
 
-    header.reset(PDU_TYPE_EM_EMISSION);
+    pdu_base_t::clear();
     emitting_entity.clear();
     event.clear();
     update = 0;
@@ -2106,6 +2104,7 @@ vdis::designator_pdu_t::~designator_pdu_t(void)
 // ----------------------------------------------------------------------------
 void vdis::designator_pdu_t::clear(void)
 {
+    pdu_base_t::clear();
     designating_id.clear();
     spot_type = 0;
     system_name = 0;
@@ -2231,6 +2230,7 @@ void vdis::transmitter_pdu_t::clear(void)
         delete[] modulation_parameters;
     }
 
+    pdu_base_t::clear();
     entity_id.clear();
     radio_id = 0;
     radio_type.clear();
@@ -2397,6 +2397,216 @@ void vdis::transmitter_pdu_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::signal_pdu_t::signal_pdu_t(void) :
+    radio_id(0),
+    tdl_type(0),
+    sample_rate(0),
+    data_length(0),
+    samples(0),
+    data(0)
+{
+    encoding.clear();
+}
+
+// ----------------------------------------------------------------------------
+vdis::signal_pdu_t::~signal_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::signal_pdu_t::clear(void)
+{
+    if (data)
+    {
+        delete[] data;
+    }
+
+    pdu_base_t::clear();
+    entity_id.clear();
+    radio_id = 0;
+    encoding.clear();
+    tdl_type = 0;
+    sample_rate = 0;
+    data_length = 0;
+    samples = 0;
+    data = 0;
+    padding.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::signal_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "signal.";
+    byte_buffer_t
+        data_bytes(data, data_length, false);
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "entity_id " << entity_marking(entity_id) << std::endl
+        << prefix << "radio_id " << (int)radio_id << std::endl;
+
+    encoding.print(prefix, out);
+
+    out << prefix << "tdl_type " << (tdl_type_e)tdl_type << std::endl
+        << prefix << "sample_rate " << sample_rate << std::endl
+        << prefix << "samples " << (int)samples << std::endl
+        << prefix << "data.length " << (int)data_length << std::endl;
+
+    data_bytes.print((prefix + "data."), out);
+
+    if (padding.length() > 0)
+    {
+        padding.print((prefix + "padding."), out);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::signal_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    entity_id.read(stream);
+    stream.read(radio_id);
+    encoding.read(stream);
+    stream.read(tdl_type);
+    stream.read(sample_rate);
+    stream.read(data_length);
+    stream.read(samples);
+
+    if (data_length > 0)
+    {
+        // Data length will be in bits...
+        //
+        if ((data_length % 8) > 0)
+        {
+            LOG_ERROR("Signal data length not a factor of 8: %d", data_length);
+        }
+
+        data_length = (data_length / 8);
+
+        data = new uint8_t[data_length];
+        stream.read(data, (uint32_t)data_length);
+
+        uint32_t temp_padding_length = padding_length(data_length, 4);
+
+        if (temp_padding_length > 0)
+        {
+            padding.read(stream, temp_padding_length);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::signal_pdu_t::write(byte_stream_t &stream)
+{
+    const uint16_t data_length_bits = (data_length * 8);
+
+    header.write(stream);
+    entity_id.write(stream);
+    stream.write(radio_id);
+    encoding.write(stream);
+    stream.write(tdl_type);
+    stream.write(sample_rate);
+    stream.write(data_length_bits);
+    stream.write(samples);
+
+    if (data and (data_length > 0))
+    {
+        stream.write(data, (uint32_t)data_length);
+    }
+
+    if (padding.length() > 0)
+    {
+        padding.write(stream);
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::receiver_pdu_t::receiver_pdu_t(void) :
+    radio_id(0),
+    receiver_state(0),
+    padding(0),
+    power(0),
+    transmitter_radio(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::receiver_pdu_t::~receiver_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::receiver_pdu_t::clear(void)
+{
+    pdu_base_t::clear();
+    entity_id.clear();
+    radio_id = 0;
+    receiver_state = 0;
+    padding = 0;
+    power = 0;
+    transmitter_entity.clear();
+    transmitter_radio = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::receiver_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "receiver.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "receiver_entity "
+        << entity_marking(entity_id) << std::endl
+        << prefix << "receiver_state "
+        << (receiver_e)receiver_state << std::endl
+        << prefix << "radio_id "
+        << (int)radio_id << std::endl
+        << prefix << "padding(16 bits) "
+        << to_bin_string(padding, true) << std::endl
+        << prefix << "power(dBm) "
+        << to_string(power) << std::endl
+        << prefix << "transmitter_entity "
+        << entity_marking(transmitter_entity) << std::endl
+        << prefix << "transmitter_radio "
+        << (int)transmitter_radio << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::receiver_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    entity_id.read(stream);
+    stream.read(radio_id);
+    stream.read(receiver_state);
+    stream.read(padding);
+    stream.read(power);
+    transmitter_entity.read(stream);
+    stream.read(transmitter_radio);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::receiver_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    entity_id.write(stream);
+    stream.write(radio_id);
+    stream.write(receiver_state);
+    stream.write(padding);
+    stream.write(power);
+    transmitter_entity.write(stream);
+    stream.write(transmitter_radio);
+}
+
+// ----------------------------------------------------------------------------
 vdis::application_control_pdu_t::application_control_pdu_t(void)
 {
     header.clear();
@@ -2435,7 +2645,7 @@ void vdis::application_control_pdu_t::clear(void)
         delete[] records;
     }
 
-    header.clear();
+    pdu_base_t::clear();
     originator.clear();
     recipient.clear();
     reliability_service = 0;
