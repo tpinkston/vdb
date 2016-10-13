@@ -85,7 +85,6 @@ namespace vdis
       public:
 
         pdu_t(void) : base_ptr(0) { }
-
         pdu_t(byte_stream_t &);
 
         inline virtual ~pdu_t(void)
@@ -179,7 +178,7 @@ namespace vdis
         variable_parameter_record_t   **records;                    // Variable
 
         entity_state_pdu_t(void);
-        ~entity_state_pdu_t(void);
+        virtual ~entity_state_pdu_t(void);
 
         inline const variable_parameter_record_t *record(uint32_t i) const
         {
@@ -226,7 +225,7 @@ namespace vdis
         velocity_t                      velocity;                   // 12 bytes
         float32_t                       range;                      // 4 bytes
 
-        ~fire_pdu_t(void) { }
+        virtual ~fire_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -261,7 +260,7 @@ namespace vdis
         variable_parameter_record_t   **records;                    // Variable
 
         detonation_pdu_t(void);
-        ~detonation_pdu_t(void);
+        virtual ~detonation_pdu_t(void);
 
         inline const variable_parameter_record_t *record(uint32_t i) const
         {
@@ -297,7 +296,7 @@ namespace vdis
         location12_t                    location;                   // 12 bytes
 
         collision_pdu_t(void);
-        ~collision_pdu_t(void) { }
+        virtual ~collision_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -323,7 +322,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         create_entity_pdu_t(void);
-        ~create_entity_pdu_t(void) { }
+        virtual ~create_entity_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -354,7 +353,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         remove_entity_pdu_t(void);
-        ~remove_entity_pdu_t(void) { }
+        virtual ~remove_entity_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -387,7 +386,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         start_resume_pdu_t(void);
-        ~start_resume_pdu_t(void) { }
+        virtual ~start_resume_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -422,7 +421,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         stop_freeze_pdu_t(void);
-        ~stop_freeze_pdu_t(void) { }
+        virtual ~stop_freeze_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -455,7 +454,7 @@ namespace vdis
         uint32_t                        request_id;                 // 4 bytes
 
         acknowledge_pdu_t(void);
-        ~acknowledge_pdu_t(void) { }
+        virtual ~acknowledge_pdu_t(void) { }
 
         inline const id_t *get_initator(void) const
         {
@@ -489,7 +488,7 @@ namespace vdis
         variable_datum_record_t       **variable_records;           // Variable
 
         abstract_siman_pdu_t(void);
-        ~abstract_siman_pdu_t(void);
+        virtual ~abstract_siman_pdu_t(void) { }
 
         inline const fixed_datum_record_t *fixed_datum(uint32_t i) const
         {
@@ -523,7 +522,7 @@ namespace vdis
         uint32_t                        action_id;                  // 4 bytes
 
         action_request_pdu_t(void);
-        ~action_request_pdu_t(void);
+        virtual ~action_request_pdu_t(void);
 
         inline actreq_action_ids_e action_id_enum(void) const
         {
@@ -553,7 +552,7 @@ namespace vdis
         uint32_t                        request_status;             // 4 bytes
 
         action_response_pdu_t(void);
-        ~action_response_pdu_t(void);
+        virtual ~action_response_pdu_t(void);
 
         inline actres_req_status_e request_status_enum(void) const
         {
@@ -583,7 +582,7 @@ namespace vdis
         uint32_t                        time_interval;              // 4 bytes
 
         data_query_pdu_t(void);
-        ~data_query_pdu_t(void);
+        virtual ~data_query_pdu_t(void);
 
         inline const uint32_t *get_request_id(void) const
         {
@@ -608,7 +607,7 @@ namespace vdis
         uint32_t                        padding;                    // 4 bytes
 
         set_data_pdu_t(void);
-        ~set_data_pdu_t(void);
+        virtual ~set_data_pdu_t(void);
 
         inline const uint32_t *get_request_id(void) const
         {
@@ -633,7 +632,7 @@ namespace vdis
         uint32_t                        padding;                    // 4 bytes
 
         data_pdu_t(void);
-        ~data_pdu_t(void);
+        virtual ~data_pdu_t(void);
 
         inline const uint32_t *get_request_id(void) const
         {
@@ -658,7 +657,7 @@ namespace vdis
         uint32_t                        padding;                    // 4 bytes
 
         event_report_pdu_t(void);
-        ~event_report_pdu_t(void);
+        virtual ~event_report_pdu_t(void);
 
         inline event_type_e event_type_enum(void) const
         {
@@ -680,7 +679,7 @@ namespace vdis
     struct comment_pdu_t : abstract_siman_pdu_t
     {
         comment_pdu_t(void);
-        ~comment_pdu_t(void);
+        virtual ~comment_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -704,7 +703,7 @@ namespace vdis
         emitter_system_t              **systems;                    // Varies
 
         em_emission_pdu_t(void);
-        ~em_emission_pdu_t(void);
+        virtual ~em_emission_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -736,7 +735,7 @@ namespace vdis
         location12_t                    beam_offset;                // 12 bytes
 
         designator_pdu_t(void);
-        ~designator_pdu_t(void);
+        virtual ~designator_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
@@ -780,7 +779,7 @@ namespace vdis
         uint8_t                        *modulation_parameters;      // Variable
 
         transmitter_pdu_t(void);
-        ~transmitter_pdu_t(void);
+        virtual ~transmitter_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
@@ -815,7 +814,7 @@ namespace vdis
         byte_buffer_t                   padding;                    // Variable
 
         signal_pdu_t(void);
-        ~signal_pdu_t(void);
+        virtual ~signal_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
@@ -845,7 +844,7 @@ namespace vdis
         uint16_t                        transmitter_radio;          // 2 bytes
 
         receiver_pdu_t(void);
-        ~receiver_pdu_t(void);
+        virtual ~receiver_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
@@ -877,21 +876,16 @@ namespace vdis
     //
     struct iff_pdu_t : pdu_base_t
     {
-        id_t                            emitter;                    // 6 bytes
-        id_t                            event;                      // 6 bytes
-        location12_t                    antenna_location;           // 12 bytes
-        iff_system_id_t                 system_id;                  // 6 bytes
-        uint8_t                         designator;                 // 1 byte
-        uint8_t                         specific;                   // 1 byte
-        iff_operational_data_t          operational_data;           // 16 bytes
+        iff_layer1_data_t               layer1;                     // Variable
+        iff_layer2_data_t              *layer2;                     // Variable
         byte_buffer_t                   extra_layers;               // Variable
 
         iff_pdu_t(void);
-        ~iff_pdu_t(void);
+        virtual ~iff_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
-            return &emitter;
+            return &layer1.emitter;
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -911,7 +905,7 @@ namespace vdis
         // TODO: minefield_state_pdu_t
 
         minefield_state_pdu_t(void);
-        ~minefield_state_pdu_t(void);
+        virtual ~minefield_state_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -930,7 +924,7 @@ namespace vdis
         // TODO: minefield_query_pdu_t
 
         minefield_query_pdu_t(void);
-        ~minefield_query_pdu_t(void);
+        virtual ~minefield_query_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -949,7 +943,7 @@ namespace vdis
         // TODO: minefield_data_pdu_t
 
         minefield_data_pdu_t(void);
-        ~minefield_data_pdu_t(void);
+        virtual ~minefield_data_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -968,7 +962,7 @@ namespace vdis
         // TODO: minefield_response_nack_pdu_t
 
         minefield_response_nack_pdu_t(void);
-        ~minefield_response_nack_pdu_t(void);
+        virtual ~minefield_response_nack_pdu_t(void);
 
         inline pdu_type_e pdu_base_type(void) const
         {
@@ -993,7 +987,7 @@ namespace vdis
         environment_record_t          **records;                    // Variable
 
         environmental_process_pdu_t(void);
-        ~environmental_process_pdu_t(void);
+        virtual ~environmental_process_pdu_t(void);
 
         inline const environment_record_t *record(uint32_t i) const
         {
@@ -1035,7 +1029,7 @@ namespace vdis
         uint32_t                        padding32;                  // 4 bytes
 
         point_object_state_pdu_t(void);
-        ~point_object_state_pdu_t(void);
+        virtual ~point_object_state_pdu_t(void);
 
         inline const id_t *get_initator(void) const
         {
@@ -1067,7 +1061,7 @@ namespace vdis
         linear_segment_t              **segments;                   // Variable
 
         linear_object_state_pdu_t(void);
-        ~linear_object_state_pdu_t(void);
+        virtual ~linear_object_state_pdu_t(void);
 
         inline const linear_segment_t *segment(uint32_t i) const
         {
@@ -1107,7 +1101,7 @@ namespace vdis
         location24_t                  **points;                     // Variable
 
         areal_object_state_pdu_t(void);
-        ~areal_object_state_pdu_t(void);
+        virtual ~areal_object_state_pdu_t(void);
 
         inline const location24_t *point(uint32_t i) const
         {
@@ -1148,7 +1142,7 @@ namespace vdis
         standard_variable_record_t    **records;                    // Variable
 
         application_control_pdu_t(void);
-        ~application_control_pdu_t(void);
+        virtual ~application_control_pdu_t(void);
 
         inline app_ctrl_control_type_e control_type_enum(void) const
         {

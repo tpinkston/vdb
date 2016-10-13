@@ -421,7 +421,7 @@ string_t vdis::marking_t::str(void) const
             }
         }
 
-        string = ("'" + stream.str() + "'");
+        string = ("'" + trim(stream.str()) + "'");
     }
     else
     {
@@ -1275,6 +1275,366 @@ void vdis::emitter_system_t::write(byte_stream_t &stream)
         {
             beams[i]->write(stream);
         }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_change_options_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "change_options.bits "
+        << to_bin_string(value) << std::endl;
+
+    if (bits.specific1)
+    {
+        out << prefix << "change_options.system_specific1 yes" << std::endl;
+    }
+
+    if (bits.specific2)
+    {
+        out << prefix << "change_options.system_specific2 yes" << std::endl;
+    }
+
+    if (bits.heartbeat)
+    {
+        out << prefix << "change_options.heartbeat yes" << std::endl;
+    }
+
+    out << prefix << "change_options.iff_mode "
+        << (bits.iff_mode ? "interrogator" : "transponder") << std::endl
+        << prefix << "change_options.simulation_mode "
+        << (bits.simulation_mode ? "interactive" : "regeneration") << std::endl;
+
+    if (bits.interactive)
+    {
+        out << prefix << "change_options.interactive capable" << std::endl;
+    }
+
+    if (bits.test_mode)
+    {
+        out << prefix << "change_options.test_mode on" << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_change_options_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_change_options_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_system_id_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "type " << (iff_system_type_e)type << std::endl
+        << prefix << "name " << (iff_system_name_e)name << std::endl
+        << prefix << "mode " << (iff_system_mode_e)mode << std::endl;
+
+    options.print(prefix, out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_system_id_t::read(byte_stream_t &stream)
+{
+    stream.read(type);
+    stream.read(name);
+    stream.read(mode);
+    stream.read(options);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_system_id_t::write(byte_stream_t &stream)
+{
+    stream.write(type);
+    stream.write(name);
+    stream.write(mode);
+    stream.write(options);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_operational_data_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "status " << (int)status << std::endl
+        << prefix << "data_field_1 " << (int)data_field_1 << std::endl
+        << prefix << "information_layers " << (int)information_layers << std::endl
+        << prefix << "data_field_2 " << (int)data_field_2 << std::endl
+        << prefix << "parameter_1 " << (int)parameter_1 << std::endl
+        << prefix << "parameter_2 " << (int)parameter_2 << std::endl
+        << prefix << "parameter_3 " << (int)parameter_3 << std::endl
+        << prefix << "parameter_4 " << (int)parameter_4 << std::endl
+        << prefix << "parameter_5 " << (int)parameter_5 << std::endl
+        << prefix << "parameter_6 " << (int)parameter_6 << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_operational_data_t::read(byte_stream_t &stream)
+{
+    stream.read(status);
+    stream.read(data_field_1);
+    stream.read(information_layers);
+    stream.read(data_field_2);
+    stream.read(parameter_1);
+    stream.read(parameter_2);
+    stream.read(parameter_3);
+    stream.read(parameter_4);
+    stream.read(parameter_5);
+    stream.read(parameter_6);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_operational_data_t::write(byte_stream_t &stream)
+{
+    stream.write(status);
+    stream.write(data_field_1);
+    stream.write(information_layers);
+    stream.write(data_field_2);
+    stream.write(parameter_1);
+    stream.write(parameter_2);
+    stream.write(parameter_3);
+    stream.write(parameter_4);
+    stream.write(parameter_5);
+    stream.write(parameter_6);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_parameter_data_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "radiated_power(dBm) "
+        << to_string(radiated_power) << std::endl
+        << prefix << "frequency(Hz) "
+        << to_string(frequency) << std::endl
+        << prefix << "interrogation_frequency(Hz) "
+        << to_string(interrogation_frequency) << std::endl
+        << prefix << "pulse_width "
+        << to_string(pulse_width) << std::endl
+        << prefix << "burst_length "
+        << to_string(burst_length) << std::endl
+        << prefix << "applicable_modes "
+        << to_bin_string(applicable_modes) << std::endl
+        << prefix << "system_specific_data "
+        << to_hex_string(system_specific_data[0]) << "-"
+        << to_hex_string(system_specific_data[1]) << "-"
+        << to_hex_string(system_specific_data[2]) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_parameter_data_t::read(byte_stream_t &stream)
+{
+    stream.read(radiated_power);
+    stream.read(frequency);
+    stream.read(interrogation_frequency);
+    stream.read(pulse_width);
+    stream.read(burst_length);
+    stream.read(applicable_modes);
+    stream.read(system_specific_data[0]);
+    stream.read(system_specific_data[1]);
+    stream.read(system_specific_data[2]);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_parameter_data_t::write(byte_stream_t &stream)
+{
+    stream.write(radiated_power);
+    stream.write(frequency);
+    stream.write(interrogation_frequency);
+    stream.write(pulse_width);
+    stream.write(burst_length);
+    stream.write(applicable_modes);
+    stream.write(system_specific_data[0]);
+    stream.write(system_specific_data[1]);
+    stream.write(system_specific_data[2]);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer1_data_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "emitter " << entity_marking(emitter) << std::endl
+        << prefix << "event " << event << std::endl
+        << prefix << "antenna_location " << antenna_location << std::endl;
+
+    system_id.print((prefix + "system_id."), out);
+
+    out << prefix << "system_designator "
+        << (int)system_designator << std::endl
+        << prefix << "system_specific "
+        << (int)system_specific << std::endl;
+
+    operational_data.print((prefix + "operational_data."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer1_data_t::read(byte_stream_t &stream)
+{
+    emitter.read(stream);
+    event.read(stream);
+    antenna_location.read(stream);
+    system_id.read(stream);
+    stream.read(system_designator);
+    stream.read(system_specific);
+    operational_data.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer1_data_t::write(byte_stream_t &stream)
+{
+    emitter.write(stream);
+    event.write(stream);
+    antenna_location.write(stream);
+    system_id.write(stream);
+    stream.write(system_designator);
+    stream.write(system_specific);
+    operational_data.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+vdis::iff_layer2_data_t::iff_layer2_data_t(void) :
+    number(0),
+    specific_info(0),
+    layer_length(0),
+    azimuth_center(0),
+    azimuth_sweep(0),
+    elevation_center(0),
+    elevation_sweep(0),
+    sweep_sync(0),
+    parameter_1(0),
+    parameter_2(0),
+    parameter_data_count(0),
+    parameter_data(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::iff_layer2_data_t::~iff_layer2_data_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer2_data_t::clear(void)
+{
+    for(uint16_t i = 0; parameter_data and (i < parameter_data_count); ++i)
+    {
+        if (parameter_data[i])
+        {
+            delete parameter_data[i];
+            parameter_data[i] = 0;
+        }
+    }
+
+    if (parameter_data)
+    {
+        delete[] parameter_data;
+    }
+
+    number = 0;
+    specific_info = 0;
+    layer_length = 0;
+    azimuth_center = 0;
+    azimuth_sweep = 0;
+    elevation_center = 0;
+    elevation_sweep = 0;
+    sweep_sync = 0;
+    parameter_1 = 0;
+    parameter_2 = 0;
+    parameter_data_count = 0;
+    parameter_data = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer2_data_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "number " << (int)number << std::endl
+        << prefix << "specific_info " << (int)specific_info << std::endl
+        << prefix << "layer_length " << (int)layer_length << std::endl
+        << prefix << "azimuth_center "
+        << to_string(azimuth_center) << std::endl
+        << prefix << "azimuth_sweep "
+        << to_string(azimuth_sweep) << std::endl
+        << prefix << "elevation_center "
+        << to_string(elevation_center) << std::endl
+        << prefix << "elevation_sweep "
+        << to_string(elevation_sweep) << std::endl
+        << prefix << "sweep_sync " << to_string(sweep_sync) << std::endl
+        << prefix << "parameter_1 " << (int)parameter_1 << std::endl
+        << prefix << "parameter_2 " << (int)parameter_2 << std::endl
+        << prefix << "parameter_data.count "
+        << (int)parameter_data_count << std::endl;
+
+    for(uint16_t i = 0; parameter_data and (i < parameter_data_count); ++i)
+    {
+        if (parameter_data[i])
+        {
+            parameter_data[i]->print(
+                (prefix + "parameter_data[" + to_string((int)i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer2_data_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    stream.read(number);
+    stream.read(specific_info);
+    stream.read(layer_length);
+    stream.read(azimuth_center);
+    stream.read(azimuth_sweep);
+    stream.read(elevation_center);
+    stream.read(elevation_sweep);
+    stream.read(sweep_sync);
+    stream.read(parameter_1);
+    stream.read(parameter_2);
+    stream.read(parameter_data_count);
+
+    if (parameter_data_count > 0)
+    {
+        parameter_data = new iff_parameter_data_t*[parameter_data_count];
+    }
+
+    for(uint16_t i = 0; (i < parameter_data_count) and not stream.error(); ++i)
+    {
+        parameter_data[i] = new iff_parameter_data_t;
+        parameter_data[i]->read(stream);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_layer2_data_t::write(byte_stream_t &stream)
+{
+    stream.write(number);
+    stream.write(specific_info);
+    stream.write(layer_length);
+    stream.write(azimuth_center);
+    stream.write(azimuth_sweep);
+    stream.write(elevation_center);
+    stream.write(elevation_sweep);
+    stream.write(sweep_sync);
+    stream.write(parameter_1);
+    stream.write(parameter_2);
+    stream.write(parameter_data_count);
+
+    for(uint16_t i = 0; (i < parameter_data_count) and parameter_data; ++i)
+    {
+        parameter_data[i]->write(stream);
     }
 }
 

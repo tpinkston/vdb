@@ -445,12 +445,12 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new receiver_pdu_t;
                 break;
             }
-//            case PDU_TYPE_IFF: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new iff_pdu_t...");
-//                base_ptr = new iff_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_IFF:
+            {
+                LOG_EXTRA_VERBOSE("Creating new iff_pdu_t...");
+                base_ptr = new iff_pdu_t;
+                break;
+            }
 //            case PDU_TYPE_MINEFIELD_STATE: TODO
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new minefield_state_pdu_t...");
@@ -1397,12 +1397,6 @@ vdis::abstract_siman_pdu_t::abstract_siman_pdu_t(void) :
 }
 
 // ----------------------------------------------------------------------------
-vdis::abstract_siman_pdu_t::~abstract_siman_pdu_t(void)
-{
-    clear();
-}
-
-// ----------------------------------------------------------------------------
 void vdis::abstract_siman_pdu_t::clear(void)
 {
     if (fixed_records and (fixed_count > 0))
@@ -1530,7 +1524,7 @@ vdis::action_request_pdu_t::action_request_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::action_request_pdu_t::~action_request_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1596,7 +1590,7 @@ vdis::action_response_pdu_t::action_response_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::action_response_pdu_t::~action_response_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1662,7 +1656,7 @@ vdis::data_query_pdu_t::data_query_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::data_query_pdu_t::~data_query_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1727,7 +1721,7 @@ vdis::set_data_pdu_t::set_data_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::set_data_pdu_t::~set_data_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1793,7 +1787,7 @@ vdis::data_pdu_t::data_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::data_pdu_t::~data_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1859,7 +1853,7 @@ vdis::event_report_pdu_t::event_report_pdu_t(void) :
 // ----------------------------------------------------------------------------
 vdis::event_report_pdu_t::~event_report_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1923,7 +1917,7 @@ vdis::comment_pdu_t::comment_pdu_t(void)
 // ----------------------------------------------------------------------------
 vdis::comment_pdu_t::~comment_pdu_t(void)
 {
-
+    clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -2604,6 +2598,68 @@ void vdis::receiver_pdu_t::write(byte_stream_t &stream)
     stream.write(power);
     transmitter_entity.write(stream);
     stream.write(transmitter_radio);
+}
+
+// ----------------------------------------------------------------------------
+vdis::iff_pdu_t::iff_pdu_t(void) : layer2(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::iff_pdu_t::~iff_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_pdu_t::clear(void)
+{
+    pdu_base_t::clear();
+    layer1.clear();
+
+    if (layer2)
+    {
+        delete layer2;
+        layer2 = 0;
+    }
+
+    extra_layers.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "iff.";
+
+    header.print("iff.header.", out);
+    layer1.print("iff.layer1.", out);
+
+    if (layer2)
+    {
+        layer2->print("iff.layer2.", out);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    layer1.read(stream);
+
+    // TODO: read layers 2,3,...
+}
+
+// ----------------------------------------------------------------------------
+void vdis::iff_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    layer1.write(stream);
+
+    // TODO: read layers 2,3,...
 }
 
 // ----------------------------------------------------------------------------

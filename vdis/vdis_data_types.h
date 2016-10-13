@@ -593,19 +593,54 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union iff_change_options_t
+    {
+        // change           0=no initial report/no change
+        //                  1=initial report/change
+        // heartbeat        0=no, 1=yes
+        // iff_mode         0=transponder, 1=interrogator
+        // simulation_mode  0=regeneration, 1=interactive
+        // interactive      0=incapable, 1=capable
+        // test_mode        0=off, 1=on
+        struct bits_t
+        {
+            uint8_t             change:1;                   // Bit 0
+            uint8_t             specific1:1;                // Bit 1
+            uint8_t             specific2:1;                // Bit 2
+            uint8_t             heartbeat:1;                // Bit 3
+            uint8_t             iff_mode:1;                 // Bit 4
+            uint8_t             simulation_mode:1;          // Bit 5
+            uint8_t             interactive:1;              // Bit 6
+            uint8_t             test_mode:1;                // Bit 7
+        };
+
+        uint8_t             value;
+        bits_t              bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct iff_system_id_t
     {
         uint16_t                type;                       // 2 bytes
         uint16_t                name;                       // 2 bytes
         uint8_t                 mode;                       // 1 byte
-        uint8_t                 options;                    // 1 byte
+        iff_change_options_t    options;                    // 1 byte
 
         inline void clear(void)
         {
             type = 0;
             name = 0;
             mode = 0;
-            options = 0;
+            options.clear();
         }
 
         void print(const string_t &, std::ostream &) const;
@@ -649,22 +684,19 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_parameter_data_t
     {
-        float32_t               erp;                         // 4 bytes
+        float32_t               radiated_power;              // 4 bytes
         float32_t               frequency;                   // 4 bytes
-        float32_t               pgrf;                        // 4 bytes
+        float32_t               interrogation_frequency;     // 4 bytes
         float32_t               pulse_width;                 // 4 bytes
         float32_t               burst_length;                // 4 bytes
         uint8_t                 applicable_modes;            // 1 byte
         uint8_t                 system_specific_data[3];     // 3 bytes
 
-        iff_parameter_data_t(void);
-        ~iff_parameter_data_t(void);
-
         inline void clear(void)
         {
-            erp = 0;
+            radiated_power = 0;
             frequency = 0;
-            pgrf = 0;
+            interrogation_frequency = 0;
             pulse_width = 0;
             burst_length = 0;
             applicable_modes = 0;
@@ -679,11 +711,38 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct iff_layer1_data_t
+    {
+        id_t                    emitter;                    // 6 bytes
+        id_t                    event;                      // 6 bytes
+        location12_t            antenna_location;           // 12 bytes
+        iff_system_id_t         system_id;                  // 6 bytes
+        uint8_t                 system_designator;          // 1 byte
+        uint8_t                 system_specific;            // 1 byte
+        iff_operational_data_t  operational_data;           // 16 bytes
+
+        inline void clear(void)
+        {
+            emitter.clear();
+            event.clear();
+            antenna_location.clear();
+            system_id.clear();
+            system_designator = 0;
+            system_specific = 0;
+            operational_data.clear();
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct iff_layer2_data_t
     {
         // Layer header
         uint8_t                 number;                     // 1 byte
-        uint8_t                 specific_information;       // 1 byte
+        uint8_t                 specific_info;              // 1 byte
         uint16_t                layer_length;               // 2 bytes
 
         // Beam data

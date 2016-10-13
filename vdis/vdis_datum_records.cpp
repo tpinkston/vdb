@@ -595,7 +595,7 @@ void vdis::force_id_affiliation_t::print(
 void vdis::force_id_affiliation_t::read(byte_stream_t &stream)
 {
     const uint32_t
-        length = (read_length(stream) / 8);
+        length = read_length(stream);
     uint32_t
         name_length = 0;
 
@@ -604,7 +604,7 @@ void vdis::force_id_affiliation_t::read(byte_stream_t &stream)
     stream.read(force); // 2 bytes
     stream.read(padding); // 2 bytes
 
-    name_length = (length - BASE_LENGTH_BITS);
+    name_length = (length - (BASE_LENGTH_BITS / 8));
 
     if (name_length > 0)
     {
