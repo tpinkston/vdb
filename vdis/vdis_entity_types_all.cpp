@@ -13884,6 +13884,7 @@ void vdis::entity_types::add_all(void)
     add(6,0,0,0,13,11,1,"OTHER_SUPL_SLING_LOAD_HOIST_JP","Jungle Penetrator (JP)");
     add(6,0,0,0,13,11,2,"OTHER_SUPL_SLING_LOAD_HOIST_SKED","Sked Stretcher");
     add(6,0,0,0,13,11,3,"OTHER_SUPL_SLING_LOAD_HOIST_STOKES","Stokes Basket");
+    add(6,0,0,0,13,11,4,"OTHER_SUPL_SLING_LOAD_HOIST_RESCUE_STROP","Rescue Strop");
     add(7,1,225,1,0,0,0,"US_RAD_LAND_VTR","Voice Transmission/Reception");
     add(7,1,225,1,0,3,0,"US_RAD_LAND_VTR_DAFIF_DERIVED_TRAFFIC_CTRL_VOICE_RADIO","Typical DAFIF Derived Traffic Control Voice Radio");
     add(7,1,225,4,0,0,0,"US_RAD_LAND_ILSGT","Instrumented Landing System (ILS) Glideslope");

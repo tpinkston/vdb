@@ -13876,6 +13876,7 @@
 6,0,0,0,13,11,1,"OTHER_SUPL_SLING_LOAD_HOIST_JP","Jungle Penetrator (JP)"
 6,0,0,0,13,11,2,"OTHER_SUPL_SLING_LOAD_HOIST_SKED","Sked Stretcher"
 6,0,0,0,13,11,3,"OTHER_SUPL_SLING_LOAD_HOIST_STOKES","Stokes Basket"
+6,0,0,0,13,11,4,"OTHER_SUPL_SLING_LOAD_HOIST_RESCUE_STROP","Rescue Strop"
 7,1,225,1,0,0,0,"US_RAD_LAND_VTR","Voice Transmission/Reception"
 7,1,225,1,0,3,0,"US_RAD_LAND_VTR_DAFIF_DERIVED_TRAFFIC_CTRL_VOICE_RADIO","Typical DAFIF Derived Traffic Control Voice Radio"
 7,1,225,4,0,0,0,"US_RAD_LAND_ILSGT","Instrumented Landing System (ILS) Glideslope"

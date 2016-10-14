@@ -1,6 +1,7 @@
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
 #include "vdis_entity_types.h"
+#include "vdis_logger.h"
 #include "vdis_object_types.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
@@ -363,7 +364,7 @@ void vdis::marking_t::str(const string_t &name)
 {
     character_set = ENTITY_MARKING_ASCII;
 
-    for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
+    for(unsigned i = 0; i < 11; ++i)
     {
         characters[i] = ((i < name.length()) ? (uint8_t)name[i] : 0);
     }
@@ -379,7 +380,7 @@ string_t vdis::marking_t::str(void) const
     uint32_t
         sum = 0;
 
-    for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
+    for(unsigned i = 0; i < 11; ++i)
     {
         sum += (uint32_t)characters[i];
     }
@@ -395,7 +396,7 @@ string_t vdis::marking_t::str(void) const
         bool
             done = false;
 
-        for(unsigned i = 0; (i < VDIS_MARKING_CHARACTERS) and not done; ++i)
+        for(unsigned i = 0; (i < 11) and not done; ++i)
         {
             uint8_t value = characters[i];
 
@@ -428,7 +429,7 @@ string_t vdis::marking_t::str(void) const
         std::ostringstream
             stream;
 
-        for(unsigned i = 0; i < VDIS_MARKING_CHARACTERS; ++i)
+        for(unsigned i = 0; i < 11; ++i)
         {
             stream << to_hex_string((uint8_t)characters[i]);
         }
@@ -443,7 +444,7 @@ string_t vdis::marking_t::str(void) const
 void vdis::marking_t::clear(void)
 {
     character_set = 0;
-    clear_memory(characters, VDIS_MARKING_CHARACTERS);
+    clear_memory(characters, 11);
 }
 
 // ----------------------------------------------------------------------------
@@ -474,14 +475,14 @@ bool vdis::marking_t::operator>(const marking_t &other) const
 void vdis::marking_t::read(byte_stream_t &stream)
 {
     stream.read(character_set);
-    stream.read(characters, VDIS_MARKING_CHARACTERS);
+    stream.read(characters, 11);
 }
 
 // ----------------------------------------------------------------------------
 void vdis::marking_t::write(byte_stream_t &stream)
 {
     stream.write(character_set);
-    stream.write(characters, VDIS_MARKING_CHARACTERS);
+    stream.write(characters, 11);
 }
 
 // ----------------------------------------------------------------------------
@@ -624,7 +625,7 @@ void vdis::velocity_t::write(byte_stream_t &stream)
 void vdis::dead_reckoning_t::clear(void)
 {
     algorithm = 0;
-    clear_memory(parameters, VDIS_DR_PARAMETERS_SIZE);
+    clear_memory(parameters, 15);
     linear_acceleration.clear();
     angular_velocity.clear();
 }
@@ -646,7 +647,7 @@ void vdis::dead_reckoning_t::print(
 void vdis::dead_reckoning_t::read(byte_stream_t &stream)
 {
     stream.read(algorithm);
-    stream.read(parameters, VDIS_DR_PARAMETERS_SIZE);
+    stream.read(parameters, 15);
     linear_acceleration.read(stream);
     angular_velocity.read(stream);
 }
@@ -655,7 +656,7 @@ void vdis::dead_reckoning_t::read(byte_stream_t &stream)
 void vdis::dead_reckoning_t::write(byte_stream_t &stream)
 {
     stream.write(algorithm);
-    stream.write(parameters, VDIS_DR_PARAMETERS_SIZE);
+    stream.write(parameters, 15);
     linear_acceleration.write(stream);
     angular_velocity.write(stream);
 }
@@ -1639,6 +1640,102 @@ void vdis::iff_layer2_data_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+vdis::environment_record_t::environment_record_t(void) :
+    type(0),
+    data_length(0),
+    index(0),
+    padding(0),
+    data(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::environment_record_t::~environment_record_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environment_record_t::clear(void)
+{
+    type = 0;
+    data_length = 0;
+    index = 0;
+    padding = 0;
+
+    if (data)
+    {
+        delete[] data;
+        data = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environment_record_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "type " << (env_geometry_rec_type_e)type << std::endl
+        << prefix << "index " << (int)index << std::endl
+        << prefix << "padding " << (int)padding << std::endl
+        << prefix << "data.length " << (int)data_length << std::endl;
+
+    if (data)
+    {
+        byte_buffer_t data_buffer(data, data_length, false);
+
+        data_buffer.print((prefix + "data."), out);
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environment_record_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    stream.read(type);
+    stream.read(data_length);
+    stream.read(index);
+    stream.read(padding);
+
+    if (data_length > 0)
+    {
+        data_length = (data_length / 8);
+
+        if (data_length < 8)
+        {
+            LOG_ERROR("Invalid length in environment record: %d", data_length);
+            data_length = 0;
+        }
+        else
+        {
+            data_length -= 8;
+
+            if (data_length > 0)
+            {
+                data = new uint8_t[data_length];
+                stream.read(data, data_length);
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environment_record_t::write(byte_stream_t &stream)
+{
+    stream.write(type);
+    stream.write((data_length * 8) + 64);
+    stream.write(index);
+    stream.write(padding);
+
+    if (data and (data_length > 0))
+    {
+        stream.write(data, data_length);
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::exercise_state_t::print(
     const string_t &prefix,
     std::ostream &out) const
@@ -1665,6 +1762,109 @@ void vdis::exercise_state_t::write(byte_stream_t &stream)
     stream.write(transition);
     stream.write(current_state);
     stream.write(requested_state);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::generic_object_appearance_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "generic_appearance.value "
+        << to_bin_string(value, true) << std::endl
+        << prefix << "generic_appearance.percent_complete "
+        << (int)bits.percent_complete << std::endl
+        << prefix << "generic_appearance.damage "
+        << (object_damage_e)bits.damage << std::endl
+        << prefix << "generic_appearance.predistributed "
+        << (yes_no_e)bits.predistributed << std::endl
+        << prefix << "generic_appearance.deactivated "
+        << (yes_no_e)bits.deactivated << std::endl
+        << prefix << "generic_appearance.smoking "
+        << (yes_no_e)bits.smoking << std::endl
+        << prefix << "generic_appearance.flaming "
+        << (yes_no_e)bits.flaming << std::endl
+        << prefix << "generic_appearance.padding(2 bits) "
+        << (int)bits.padding << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::generic_object_appearance_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::generic_object_appearance_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_segment_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    geodetic_location_t
+        geodetic_location;
+
+    convert(location, geodetic_location);
+
+    out << prefix << "number " << (int)number << std::endl
+        << prefix << "modifications " << (int)modifications << std::endl;
+
+    generic_appearance.print(prefix, out);
+
+    out << prefix << "specific_appearance "
+        << to_bin_string(specific_appearance, true) << std::endl
+        << prefix << "location.gcc " << location << std::endl
+        << prefix << "location.gdc " << geodetic_location << std::endl
+        << prefix << "orientation " << orientation << std::endl;
+
+#ifdef LINEAR_SEGMENTS_USE_32BIT_FLOAT
+    out << prefix << "segment_length " << to_string(segment_length) << std::endl
+        << prefix << "segment_width " << to_string(segment_width) << std::endl
+        << prefix << "segment_height " << to_string(segment_height) << std::endl
+        << prefix << "segment_depth " << to_string(segment_depth) << std::endl;
+#else
+    out << prefix << "segment_length " << (int)segment_length << std::endl
+        << prefix << "segment_width " << (int)segment_width << std::endl
+        << prefix << "segment_height " << (int)segment_height << std::endl
+        << prefix << "segment_depth " << (int)segment_depth << std::endl;
+#endif
+
+    out << prefix << "padding " << to_hex_string(padding, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_segment_t::read(byte_stream_t &stream)
+{
+    stream.read(number);
+    stream.read(modifications);
+    generic_appearance.read(stream);
+    stream.read(specific_appearance);
+    location.read(stream);
+    orientation.read(stream);
+    stream.read(segment_length);
+    stream.read(segment_width);
+    stream.read(segment_height);
+    stream.read(segment_depth);
+    stream.read(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_segment_t::write(byte_stream_t &stream)
+{
+    stream.write(number);
+    stream.write(modifications);
+    generic_appearance.write(stream);
+    stream.write(specific_appearance);
+    location.write(stream);
+    orientation.write(stream);
+    stream.write(segment_length);
+    stream.write(segment_width);
+    stream.write(segment_height);
+    stream.write(segment_depth);
+    stream.write(padding);
 }
 
 // ----------------------------------------------------------------------------

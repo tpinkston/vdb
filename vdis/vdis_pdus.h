@@ -1013,6 +1013,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct point_object_state_pdu_t : pdu_base_t
     {
+        // TODO: specific_point_appearance_t
         id_t                            object_id;                  // 6 bytes
         id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
@@ -1022,7 +1023,7 @@ namespace vdis
         location24_t                    location;                   // 24 bytes
         orientation_t                   orientation;                // 12 bytes
         uint32_t                        specific_appearance;        // 4 bytes
-        uint16_t                        generic_appearance;         // 2 bytes
+        generic_object_appearance_t     generic_appearance;         // 2 bytes
         uint16_t                        padding16;                  // 2 bytes
         simulation_id_t                 requestor_id;               // 4 bytes
         simulation_id_t                 receiver_id;                // 4 bytes
@@ -1087,6 +1088,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct areal_object_state_pdu_t : pdu_base_t
     {
+        // TODO: specific_areal_appearance_t
         id_t                            object_id;                  // 6 bytes
         id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
@@ -1094,7 +1096,7 @@ namespace vdis
         uint8_t                         modifications;              // 1 byte
         object_type_t                   object_type;                // 4 bytes
         uint32_t                        specific_appearance;        // 4 bytes
-        uint16_t                        generic_appearance;         // 2 bytes
+        generic_object_appearance_t     generic_appearance;         // 2 bytes
         uint16_t                        point_count;                // 2 bytes
         simulation_id_t                 requestor_id;               // 4 bytes
         simulation_id_t                 receiver_id;                // 4 bytes

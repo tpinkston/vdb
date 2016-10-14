@@ -475,30 +475,30 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
 //                base_ptr = new minefield_response_nack_pdu_t;
 //                break;
 //            }
-//            case PDU_TYPE_ENVIRONMENTAL_PROCESS: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new environmental_process_pdu_t...");
-//                base_ptr = new environmental_process_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_POINT_OBJECT_STATE: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new point_object_state_pdu_t...");
-//                base_ptr = new point_object_state_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_LINEAR_OBJECT_STATE: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new linear_object_state_pdu_t...");
-//                base_ptr = new linear_object_state_pdu_t;
-//                break;
-//            }
-//            case PDU_TYPE_AREAL_OBJECT_STATE: TODO
-//            {
-//                LOG_EXTRA_VERBOSE("Creating new areal_object_state_pdu_t...");
-//                base_ptr = new areal_object_state_pdu_t;
-//                break;
-//            }
+            case PDU_TYPE_ENVIRONMENTAL_PROCESS:
+            {
+                LOG_EXTRA_VERBOSE("Creating new environmental_process_pdu_t...");
+                base_ptr = new environmental_process_pdu_t;
+                break;
+            }
+            case PDU_TYPE_POINT_OBJECT_STATE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new point_object_state_pdu_t...");
+                base_ptr = new point_object_state_pdu_t;
+                break;
+            }
+            case PDU_TYPE_LINEAR_OBJECT_STATE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new linear_object_state_pdu_t...");
+                base_ptr = new linear_object_state_pdu_t;
+                break;
+            }
+            case PDU_TYPE_AREAL_OBJECT_STATE:
+            {
+                LOG_EXTRA_VERBOSE("Creating new areal_object_state_pdu_t...");
+                base_ptr = new areal_object_state_pdu_t;
+                break;
+            }
             case PDU_TYPE_APPLICATION_CTRL:
             {
                 LOG_EXTRA_VERBOSE("Creating new application_control_pdu_t...");
@@ -2660,6 +2660,498 @@ void vdis::iff_pdu_t::write(byte_stream_t &stream)
     layer1.write(stream);
 
     // TODO: read layers 2,3,...
+}
+
+// ----------------------------------------------------------------------------
+vdis::environmental_process_pdu_t::environmental_process_pdu_t(void) :
+    model_type(0),
+    status(0),
+    record_count(0),
+    sequence_number(0),
+    records(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::environmental_process_pdu_t::~environmental_process_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environmental_process_pdu_t::clear(void)
+{
+    for(uint16_t i = 0; records and (i < record_count); ++i)
+    {
+        if (records[i])
+        {
+            delete records[i];
+            records[i] = 0;
+        }
+    }
+
+    if (records)
+    {
+        delete[] records;
+        records = 0;
+    }
+
+    pdu_base_t::clear();
+    process_id.clear();
+    environment_type.clear();
+    model_type = 0;
+    status = 0;
+    record_count = 0;
+    sequence_number = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environmental_process_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "environmental_process.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "process_id " << process_id << std::endl
+        << prefix << "environment_type " << environment_type
+        << " " << environment_type.description() << std::endl
+        << prefix << "model_type " << (int)model_type << std::endl
+        << prefix << "status " << (int)status << std::endl
+        << prefix << "sequence_number " << (int)sequence_number << std::endl
+        << prefix << "records.count " << (int)record_count << std::endl;
+
+    for(uint16_t i = 0; records and (i < record_count); ++i)
+    {
+        if (records[i])
+        {
+            records[i]->print(
+                (prefix + "records[" + to_string((int)i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environmental_process_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    process_id.read(stream);
+    environment_type.read(stream);
+    stream.read(model_type);
+    stream.read(status);
+    stream.read(record_count);
+    stream.read(sequence_number);
+
+    if (record_count > 0)
+    {
+        records = new environment_record_t*[record_count];
+
+        for(uint16_t i = 0; i < record_count; ++i)
+        {
+            records[i] = new environment_record_t;
+            records[i]->read(stream);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::environmental_process_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    process_id.write(stream);
+    environment_type.write(stream);
+    stream.write(model_type);
+    stream.write(status);
+    stream.write(record_count);
+    stream.write(sequence_number);
+
+    for(uint16_t i = 0; records and (i < record_count); ++i)
+    {
+        if (records[i])
+        {
+            records[i]->write(stream);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::point_object_state_pdu_t::point_object_state_pdu_t(void) :
+    update(0),
+    force_id(0),
+    modifications(0),
+    specific_appearance(0),
+    padding16(0),
+    padding32(0)
+{
+    generic_appearance.clear();
+}
+
+// ----------------------------------------------------------------------------
+vdis::point_object_state_pdu_t::~point_object_state_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_object_state_pdu_t::clear(void)
+{
+    pdu_base_t::clear();
+    object_id.clear();
+    referenced_object_id.clear();
+    update = 0;
+    force_id = 0;
+    modifications = 0;
+    object_type.clear();
+    location.clear();
+    orientation.clear();
+    specific_appearance = 0;
+    generic_appearance.clear();
+    padding16 = 0;
+    requestor_id.clear();
+    receiver_id.clear();
+    padding32 = 0;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_object_state_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "point_object_state.";
+    geodetic_location_t
+        geodetic_location;
+
+    convert(location, geodetic_location);
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "object_id " << object_id << std::endl
+        << prefix << "referenced_object_id "
+        << referenced_object_id << std::endl
+        << prefix << "update " << (int)update << std::endl
+        << prefix << "force_id " << (force_id_e)force_id << std::endl
+        << prefix << "modifications " << (int)modifications << std::endl
+        << prefix << "object_type " << object_type << " "
+        << object_type.description() << std::endl
+        << prefix << "location.gcc " << location << std::endl
+        << prefix << "location.gdc " << geodetic_location << std::endl
+        << prefix << "orientation " << orientation << std::endl
+        << prefix << "specific_appearance " << specific_appearance << std::endl;
+
+    generic_appearance.print(prefix, out);
+
+    out << prefix << "padding16 " << to_hex_string(padding16) << std::endl
+        << prefix << "requestor_id " << requestor_id << std::endl
+        << prefix << "receiver_id " << receiver_id << std::endl
+        << prefix << "padding32 " << to_hex_string(padding32) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_object_state_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    object_id.read(stream);
+    referenced_object_id.read(stream);
+    stream.read(update);
+    stream.read(force_id);
+    stream.read(modifications);
+    object_type.read(stream);
+    location.read(stream);
+    orientation.read(stream);
+    stream.read(specific_appearance);
+    stream.read(generic_appearance);
+    stream.read(padding16);
+    requestor_id.read(stream);
+    receiver_id.read(stream);
+    stream.read(padding32);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_object_state_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    object_id.write(stream);
+    referenced_object_id.write(stream);
+    stream.write(update);
+    stream.write(force_id);
+    stream.write(modifications);
+    object_type.write(stream);
+    location.write(stream);
+    orientation.write(stream);
+    stream.write(specific_appearance);
+    stream.write(generic_appearance);
+    stream.write(padding16);
+    requestor_id.write(stream);
+    receiver_id.write(stream);
+    stream.write(padding32);
+}
+
+// ----------------------------------------------------------------------------
+vdis::linear_object_state_pdu_t::linear_object_state_pdu_t(void) :
+    update(0),
+    force_id(0),
+    segment_count(0),
+    segments(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::linear_object_state_pdu_t::~linear_object_state_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_object_state_pdu_t::clear(void)
+{
+    for(uint8_t i = 0; segments and (i < segment_count); ++i)
+    {
+         if (segments[i])
+         {
+             delete segments[i];
+             segments[i] = 0;
+         }
+    }
+
+    if (segments)
+    {
+        delete[] segments;
+        segments = 0;
+    }
+
+    pdu_base_t::clear();
+    object_id.clear();
+    referenced_object_id.clear();
+    update = 0;
+    force_id = 0;
+    segment_count = 0;
+    requestor_id.clear();
+    receiver_id.clear();
+    object_type.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_object_state_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "linear_object_state.";
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "object_id " << object_id << std::endl
+        << prefix << "referenced_object_id "
+        << referenced_object_id << std::endl
+        << prefix << "update " << (int)update << std::endl
+        << prefix << "force_id " << (force_id_e)force_id << std::endl
+        << prefix << "requestor_id " << requestor_id << std::endl
+        << prefix << "receiver_id " << receiver_id << std::endl
+        << prefix << "object_type " << object_type << " "
+        << object_type.description() << std::endl
+        << prefix << "segments.count " << (int)segment_count << std::endl;
+
+    for(uint8_t i = 0; segments and (i < segment_count); ++i)
+    {
+        if (segments[i])
+        {
+            segments[i]->print(
+                (prefix + "segments[" + to_string((int)i) + "]."),
+                out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_object_state_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    object_id.read(stream);
+    referenced_object_id.read(stream);
+    stream.read(update);
+    stream.read(force_id);
+    stream.read(segment_count);
+    requestor_id.read(stream);
+    receiver_id.read(stream);
+    object_type.read(stream);
+
+    if (segment_count > 0)
+    {
+        segments = new linear_segment_t*[segment_count];
+
+        for(uint8_t i = 0; i < segment_count; ++i)
+        {
+            segments[i] = new linear_segment_t;
+            segments[i]->read(stream);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_object_state_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    object_id.write(stream);
+    referenced_object_id.write(stream);
+    stream.write(update);
+    stream.write(force_id);
+    stream.write(segment_count);
+    requestor_id.write(stream);
+    receiver_id.write(stream);
+    object_type.write(stream);
+
+    for(uint8_t i = 0; segments and (i < segment_count); ++i)
+    {
+        segments[i]->write(stream);
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdis::areal_object_state_pdu_t::areal_object_state_pdu_t(void) :
+    update(0),
+    force_id(0),
+    modifications(0),
+    specific_appearance(0),
+    point_count(0),
+    points(0)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdis::areal_object_state_pdu_t::~areal_object_state_pdu_t(void)
+{
+    clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::areal_object_state_pdu_t::clear(void)
+{
+    for(uint16_t i = 0; points and (i < point_count); ++i)
+    {
+         if (points[i])
+         {
+             delete points[i];
+             points[i] = 0;
+         }
+    }
+
+    if (points)
+    {
+        delete[] points;
+        points = 0;
+    }
+
+    pdu_base_t::clear();
+    object_id.clear();
+    referenced_object_id.clear();
+    update = 0;
+    force_id = 0;
+    modifications = 0;
+    object_type.clear();
+    specific_appearance = 0;
+    generic_appearance.clear();
+    point_count = 0;
+    requestor_id.clear();
+    receiver_id.clear();
+}
+
+// ----------------------------------------------------------------------------
+void vdis::areal_object_state_pdu_t::print(std::ostream &out) const
+{
+    const string_t
+        prefix = "areal_object_state.";
+    geodetic_location_t
+        geodetic_location;
+
+    header.print((prefix + "header."), out);
+
+    out << prefix << "object_id " << object_id << std::endl
+        << prefix << "referenced_object_id "
+        << referenced_object_id << std::endl
+        << prefix << "update " << (int)update << std::endl
+        << prefix << "force_id " << (force_id_e)force_id << std::endl
+        << prefix << "modifications " << (int)modifications << std::endl
+        << prefix << "object_type " << object_type << " "
+        << object_type.description() << std::endl
+        << prefix << "specific_appearance " << specific_appearance << std::endl;
+
+    generic_appearance.print(prefix, out);
+
+    out << prefix << "requestor_id " << requestor_id << std::endl
+        << prefix << "receiver_id " << receiver_id << std::endl
+        << prefix << "points.count " << (int)point_count << std::endl;
+
+    for(uint8_t i = 0; points and (i < point_count); ++i)
+    {
+        if (points[i])
+        {
+            convert(*points[i], geodetic_location);
+
+            out << prefix << "points[" << (int)i << "].gcc "
+                << *points[i] << std::endl
+                << prefix << "points[" << (int)i << "].gdc "
+                << geodetic_location << std::endl;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::areal_object_state_pdu_t::read(byte_stream_t &stream)
+{
+    clear();
+
+    header.read(stream);
+    object_id.read(stream);
+    referenced_object_id.read(stream);
+    stream.read(update);
+    stream.read(force_id);
+    stream.read(modifications);
+    object_type.read(stream);
+    stream.read(specific_appearance);
+    generic_appearance.read(stream);
+    stream.read(point_count);
+    requestor_id.read(stream);
+    receiver_id.read(stream);
+
+    if (point_count > 0)
+    {
+        points = new location24_t*[point_count];
+
+        for(uint8_t i = 0; i < point_count; ++i)
+        {
+            points[i] = new location24_t;
+            points[i]->read(stream);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::areal_object_state_pdu_t::write(byte_stream_t &stream)
+{
+    header.write(stream);
+    object_id.write(stream);
+    referenced_object_id.write(stream);
+    stream.write(update);
+    stream.write(force_id);
+    stream.write(modifications);
+    object_type.write(stream);
+    stream.write(specific_appearance);
+    generic_appearance.write(stream);
+    stream.write(point_count);
+    requestor_id.write(stream);
+    receiver_id.write(stream);
+
+    for(uint8_t i = 0; points and (i < point_count); ++i)
+    {
+        points[i]->write(stream);
+    }
 }
 
 // ----------------------------------------------------------------------------

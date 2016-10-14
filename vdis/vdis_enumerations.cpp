@@ -90,7 +90,7 @@ std::ostream &vdis::enumerations::print(
     stream << std::hex << value;
 
     out << get_name(enumeration, value)
-        << " [" << value << " (0x" << vdis::to_uppercase(stream.str()) << ")]";
+        << "(" << value << "[0x" << vdis::to_uppercase(stream.str()) << "])";
 
     return out;
 }

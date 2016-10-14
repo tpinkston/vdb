@@ -3,9 +3,6 @@
 
 #include "vdis_enums.h"
 
-#define VDIS_MARKING_CHARACTERS 11
-#define VDIS_DR_PARAMETERS_SIZE 15
-
 namespace vdis
 {
     class byte_stream_t;
@@ -13,8 +10,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct simulation_id_t
     {
-        uint16_t                site;
-        uint16_t                application;
+        uint16_t                    site;                       // 2 bytes
+        uint16_t                    application;                // 2 bytes
 
         inline void clear(void)
         {
@@ -34,9 +31,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct id_t
     {
-        uint16_t                site;
-        uint16_t                application;
-        uint16_t                identity;
+        uint16_t                    site;                       // 2 bytes
+        uint16_t                    application;                // 2 bytes
+        uint16_t                    identity;                   // 2 bytes
 
         bool is_none(void) const;
         bool is_all(void) const;
@@ -68,13 +65,13 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct entity_type_t
     {
-        uint8_t                 kind;
-        uint8_t                 domain;
-        uint16_t                country;
-        uint8_t                 category;
-        uint8_t                 subcategory;
-        uint8_t                 specific;
-        uint8_t                 extra;
+        uint8_t                     kind;                       // 1 byte
+        uint8_t                     domain;                     // 1 byte
+        uint16_t                    country;                    // 2 bytes
+        uint8_t                     category;                   // 1 byte
+        uint8_t                     subcategory;                // 1 byte
+        uint8_t                     specific;                   // 1 byte
+        uint8_t                     extra;                      // 1 byte
 
         inline ent_kind_e kind_enum(void) const
         {
@@ -121,10 +118,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct object_type_t
     {
-        uint8_t                 domain;
-        uint8_t                 kind;
-        uint8_t                 category;
-        uint8_t                 subcategory;
+        uint8_t                     domain;                     // 1 byte
+        uint8_t                     kind;                       // 1 byte
+        uint8_t                     category;                   // 1 byte
+        uint8_t                     subcategory;                // 1 byte
 
         inline void clear(void)
         {
@@ -153,8 +150,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct marking_t
     {
-        uint8_t                 character_set;
-        char                    characters[VDIS_MARKING_CHARACTERS];
+        uint8_t                     character_set;              // 1 Byte
+        char                        characters[11];             // 11 Bytes
 
         marking_t(void) { clear(); }
         ~marking_t(void) { }
@@ -183,20 +180,20 @@ namespace vdis
     {
         struct bits_t
         {
-            uint32_t            ammunition_supply:1;    // Bit 0
-            uint32_t            fuel_supply:1;          // Bit 1
-            uint32_t            recovery:1;             // Bit 2
-            uint32_t            repair:1;               // Bit 3
-            uint32_t            ads_broadcast:1;        // Bit 4
-            uint32_t            sling_load_carrier:1;   // Bit 5
-            uint32_t            sling_loadable:1;       // Bit 6
-            uint32_t            ied_presence:1;         // Bit 7
-            uint32_t            task_organizable:1;     // Bit 8
-            uint32_t            padding:23;             // Bits 9-31
+            uint32_t                ammunition_supply:1;        // Bit 0
+            uint32_t                fuel_supply:1;              // Bit 1
+            uint32_t                recovery:1;                 // Bit 2
+            uint32_t                repair:1;                   // Bit 3
+            uint32_t                ads_broadcast:1;            // Bit 4
+            uint32_t                sling_load_carrier:1;       // Bit 5
+            uint32_t                sling_loadable:1;           // Bit 6
+            uint32_t                ied_presence:1;             // Bit 7
+            uint32_t                task_organizable:1;         // Bit 8
+            uint32_t                padding:23;                 // Bits 9-31
         };
 
-        uint32_t            value;
-        bits_t              bits;
+        uint32_t                    value;
+        bits_t                      bits;
 
         void clear(void);
         void print(const string_t &, std::ostream &) const;
@@ -207,9 +204,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct location12_t
     {
-        float32_t               x;
-        float32_t               y;
-        float32_t               z;
+        float32_t                   x;                          // 4 bytes
+        float32_t                   y;                          // 4 bytes
+        float32_t                   z;                          // 4 bytes
 
         inline void clear(void)
         {
@@ -225,9 +222,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct location24_t
     {
-        float64_t               x;
-        float64_t               y;
-        float64_t               z;
+        float64_t                   x;                          // 8 bytes
+        float64_t                   y;                          // 8 bytes
+        float64_t                   z;                          // 8 bytes
 
         inline void clear(void)
         {
@@ -243,9 +240,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct geodetic_location_t
     {
-        float64_t               latitude;   // degrees
-        float64_t               longitude;  // degrees
-        float64_t               elevation;  // meters above ellipsoid
+        float64_t                   latitude;                   // 8 bytes
+        float64_t                   longitude;                  // 8 bytes
+        float64_t                   elevation;                  // 8 bytes
 
         inline void clear(void)
         {
@@ -258,9 +255,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct orientation_t
     {
-        float32_t               psi;
-        float32_t               theta;
-        float32_t               phi;
+        float32_t                   psi;                        // 4 bytes
+        float32_t                   theta;                      // 4 bytes
+        float32_t                   phi;                        // 4 bytes
 
         inline void clear(void)
         {
@@ -276,9 +273,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct velocity_t
     {
-        float32_t               x;
-        float32_t               y;
-        float32_t               z;
+        float32_t                   x;                          // 4 bytes
+        float32_t                   y;                          // 4 bytes
+        float32_t                   z;                          // 4 bytes
 
         inline float32_t length(void) const
         {
@@ -304,10 +301,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct dead_reckoning_t
     {
-        uint8_t                 algorithm;
-        uint8_t                 parameters[VDIS_DR_PARAMETERS_SIZE];
-        velocity_t              linear_acceleration;
-        velocity_t              angular_velocity;
+        uint8_t                     algorithm;                  // 1 byte
+        uint8_t                     parameters[15];             // 15 bytes
+        velocity_t                  linear_acceleration;        // 12 bytes
+        velocity_t                  angular_velocity;           // 12 bytes
 
         inline dead_reckoning_e algorithm_enum(void) const
         {
@@ -323,7 +320,7 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct timestamp_t
     {
-        uint32_t                value;
+        uint32_t                    value;                      // 4 bytes
 
         inline void clear(void)
         {
@@ -339,8 +336,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct clocktime_t
     {
-        uint32_t                hours;
-        timestamp_t             offset;
+        uint32_t                    hours;                      // 4 bytes
+        timestamp_t                 offset;                     // 4 bytes
 
         inline void clear(void)
         {
@@ -355,14 +352,14 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct pdu_header_t
     {
-        uint8_t                 protocol;
-        uint8_t                 exercise;
-        uint8_t                 type;
-        uint8_t                 family;
-        timestamp_t             timestamp;
-        uint16_t                length;
-        uint8_t                 status;
-        uint8_t                 padding;
+        uint8_t                     protocol;                   // 1 byte
+        uint8_t                     exercise;                   // 1 byte
+        uint8_t                     type;                       // 1 byte
+        uint8_t                     family;                     // 1 byte
+        timestamp_t                 timestamp;                  // 4 bytes
+        uint16_t                    length;                     // 2 bytes
+        uint8_t                     status;                     // 1 byte
+        uint8_t                     padding;                    // 1 byte
 
         inline protocol_version_e protocol_enum(void) const
         {
@@ -401,8 +398,8 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct sling_line_t
     {
-        float32_t               line_length;            // 4 bytes
-        float32_t               line_offset;            // 4 bytes
+        float32_t                   line_length;                // 4 bytes
+        float32_t                   line_offset;                // 4 bytes
 
         inline void clear(void)
         {
@@ -418,11 +415,11 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct burst_descriptor_t
     {
-        munition_type_t         munition;
-        uint16_t                warhead;
-        uint16_t                fuse;
-        uint16_t                quantity;
-        uint16_t                rate;
+        munition_type_t             munition;                   // 8 bytes
+        uint16_t                    warhead;                    // 2 bytes
+        uint16_t                    fuse;                       // 2 bytes
+        uint16_t                    quantity;                   // 2 bytes
+        uint16_t                    rate;                       // 2 bytes
 
         inline warhead_burst_desc_e warhead_enum(void) const
         {
@@ -453,14 +450,14 @@ namespace vdis
     {
         struct bits_t
         {
-            uint16_t            frequency_hopping:1;    // Bit 0
-            uint16_t            pseudo_noise:1;         // Bit 1
-            uint16_t            time_hopping:1;         // Bit 2
-            uint16_t            padding:13;             // Bits 3-15
+            uint16_t                frequency_hopping:1;        // Bit 0
+            uint16_t                pseudo_noise:1;             // Bit 1
+            uint16_t                time_hopping:1;             // Bit 2
+            uint16_t                padding:13;                 // Bits 3-15
         };
 
-        uint16_t            value;
-        bits_t              bits;
+        uint16_t                    value;
+        bits_t                      bits;
 
         inline void clear(void)
         {
@@ -477,12 +474,12 @@ namespace vdis
     {
         struct bits_t
         {
-            uint16_t            encoding_type:14;       // Bit 0-13
-            uint16_t            encoding_class:2;       // Bits 14-15
+            uint16_t                encoding_type:14;           // Bit 0-13
+            uint16_t                encoding_class:2;           // Bits 14-15
         };
 
-        uint16_t            value;
-        bits_t              bits;
+        uint16_t                    value;
+        bits_t                      bits;
 
         inline void clear(void)
         {
@@ -497,10 +494,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct modulation_type_t
     {
-        spread_spectrum_t       spread_spectrum;        // 2 bytes
-        uint16_t                major_modulation;       // 2 bytes
-        uint16_t                modulation_detail;      // 2 bytes
-        uint16_t                radio_system;           // 2 bytes
+        spread_spectrum_t           spread_spectrum;            // 2 bytes
+        uint16_t                    major_modulation;           // 2 bytes
+        uint16_t                    modulation_detail;          // 2 bytes
+        uint16_t                    radio_system;               // 2 bytes
 
         inline void clear(void)
         {
@@ -518,9 +515,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_target_t
     {
-        id_t                    entity;                     // 6 bytes
-        uint8_t                 emitter;                    // 1 byte
-        uint8_t                 beam;                       // 1 byte
+        id_t                        entity;                     // 6 bytes
+        uint8_t                     emitter;                    // 1 byte
+        uint8_t                     beam;                       // 1 byte
 
         inline void clear(void)
         {
@@ -537,30 +534,30 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_beam_t
     {
-        uint8_t                 data_length;                // 1 byte
-        uint8_t                 id_number;                  // 1 byte
-        uint16_t                parameter_index;            // 2 bytes
+        uint8_t                     data_length;                // 1 byte
+        uint8_t                     id_number;                  // 1 byte
+        uint16_t                    parameter_index;            // 2 bytes
 
         // Fundamental parameter data:
-        float32_t               frequency;                  // 4 bytes
-        float32_t               frequency_range;            // 4 bytes
-        float32_t               effective_radiated_power;   // 4 bytes
-        float32_t               pulse_repetition_frequency; // 4 bytes
-        float32_t               pulse_width;                // 4 bytes
+        float32_t                   frequency;                  // 4 bytes
+        float32_t                   frequency_range;            // 4 bytes
+        float32_t                   effective_radiated_power;   // 4 bytes
+        float32_t                   pulse_repetition_frequency; // 4 bytes
+        float32_t                   pulse_width;                // 4 bytes
 
         // Beam data:
-        float32_t               azimuth_center;             // 4 bytes
-        float32_t               azimuth_sweep;              // 4 bytes
-        float32_t               elevation_center;           // 4 bytes
-        float32_t               elevation_sweep;            // 4 bytes
-        float32_t               sweep_sync;                 // 4 bytes
+        float32_t                   azimuth_center;             // 4 bytes
+        float32_t                   azimuth_sweep;              // 4 bytes
+        float32_t                   elevation_center;           // 4 bytes
+        float32_t                   elevation_sweep;            // 4 bytes
+        float32_t                   sweep_sync;                 // 4 bytes
 
-        uint8_t                 function;                   // 1 byte
-        uint8_t                 target_count;               // 1 byte
-        uint8_t                 high_density_track_jam;     // 1 byte
-        uint8_t                 status;                     // 1 byte
-        uint32_t                jamming_technique;          // 4 bytes
-        emitter_target_t      **targets;                    // Variable length
+        uint8_t                     function;                   // 1 byte
+        uint8_t                     target_count;               // 1 byte
+        uint8_t                     high_density_track_jam;     // 1 byte
+        uint8_t                     status;                     // 1 byte
+        uint32_t                    jamming_technique;          // 4 bytes
+        emitter_target_t          **targets;                    // Variable
 
         emitter_beam_t(void);
         ~emitter_beam_t(void);
@@ -574,14 +571,14 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct emitter_system_t
     {
-        uint8_t                 data_length;                // 1 byte
-        uint8_t                 beam_count;                 // 1 byte
-        uint16_t                padding;                    // 2 bytes
-        uint16_t                name;                       // 2 bytes
-        uint8_t                 function;                   // 1 byte
-        uint8_t                 number;                     // 1 byte
-        location12_t            location;                   // 12 bytes
-        emitter_beam_t        **beams;                      // Variable length
+        uint8_t                     data_length;                // 1 byte
+        uint8_t                     beam_count;                 // 1 byte
+        uint16_t                    padding;                    // 2 bytes
+        uint16_t                    name;                       // 2 bytes
+        uint8_t                     function;                   // 1 byte
+        uint8_t                     number;                     // 1 byte
+        location12_t                location;                   // 12 bytes
+        emitter_beam_t            **beams;                      // Variable
 
         emitter_system_t(void);
         ~emitter_system_t(void);
@@ -604,18 +601,18 @@ namespace vdis
         // test_mode        0=off, 1=on
         struct bits_t
         {
-            uint8_t             change:1;                   // Bit 0
-            uint8_t             specific1:1;                // Bit 1
-            uint8_t             specific2:1;                // Bit 2
-            uint8_t             heartbeat:1;                // Bit 3
-            uint8_t             iff_mode:1;                 // Bit 4
-            uint8_t             simulation_mode:1;          // Bit 5
-            uint8_t             interactive:1;              // Bit 6
-            uint8_t             test_mode:1;                // Bit 7
+            uint8_t                 change:1;                   // Bit 0
+            uint8_t                 specific1:1;                // Bit 1
+            uint8_t                 specific2:1;                // Bit 2
+            uint8_t                 heartbeat:1;                // Bit 3
+            uint8_t                 iff_mode:1;                 // Bit 4
+            uint8_t                 simulation_mode:1;          // Bit 5
+            uint8_t                 interactive:1;              // Bit 6
+            uint8_t                 test_mode:1;                // Bit 7
         };
 
-        uint8_t             value;
-        bits_t              bits;
+        uint8_t                     value;
+        bits_t                      bits;
 
         inline void clear(void)
         {
@@ -630,10 +627,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_system_id_t
     {
-        uint16_t                type;                       // 2 bytes
-        uint16_t                name;                       // 2 bytes
-        uint8_t                 mode;                       // 1 byte
-        iff_change_options_t    options;                    // 1 byte
+        uint16_t                    type;                       // 2 bytes
+        uint16_t                    name;                       // 2 bytes
+        uint8_t                     mode;                       // 1 byte
+        iff_change_options_t        options;                    // 1 byte
 
         inline void clear(void)
         {
@@ -651,16 +648,16 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_operational_data_t
     {
-        uint8_t                 status;                      // 1 byte
-        uint8_t                 data_field_1;                // 1 byte
-        uint8_t                 information_layers;          // 1 byte
-        uint8_t                 data_field_2;                // 1 byte
-        uint16_t                parameter_1;                 // 2 bytes
-        uint16_t                parameter_2;                 // 2 bytes
-        uint16_t                parameter_3;                 // 2 bytes
-        uint16_t                parameter_4;                 // 2 bytes
-        uint16_t                parameter_5;                 // 2 bytes
-        uint16_t                parameter_6;                 // 2 bytes
+        uint8_t                     status;                      // 1 byte
+        uint8_t                     data_field_1;                // 1 byte
+        uint8_t                     information_layers;          // 1 byte
+        uint8_t                     data_field_2;                // 1 byte
+        uint16_t                    parameter_1;                 // 2 bytes
+        uint16_t                    parameter_2;                 // 2 bytes
+        uint16_t                    parameter_3;                 // 2 bytes
+        uint16_t                    parameter_4;                 // 2 bytes
+        uint16_t                    parameter_5;                 // 2 bytes
+        uint16_t                    parameter_6;                 // 2 bytes
 
         inline void clear(void)
         {
@@ -684,13 +681,13 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_parameter_data_t
     {
-        float32_t               radiated_power;              // 4 bytes
-        float32_t               frequency;                   // 4 bytes
-        float32_t               interrogation_frequency;     // 4 bytes
-        float32_t               pulse_width;                 // 4 bytes
-        float32_t               burst_length;                // 4 bytes
-        uint8_t                 applicable_modes;            // 1 byte
-        uint8_t                 system_specific_data[3];     // 3 bytes
+        float32_t                   radiated_power;              // 4 bytes
+        float32_t                   frequency;                   // 4 bytes
+        float32_t                   interrogation_frequency;     // 4 bytes
+        float32_t                   pulse_width;                 // 4 bytes
+        float32_t                   burst_length;                // 4 bytes
+        uint8_t                     applicable_modes;            // 1 byte
+        uint8_t                     system_specific_data[3];     // 3 bytes
 
         inline void clear(void)
         {
@@ -713,13 +710,13 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct iff_layer1_data_t
     {
-        id_t                    emitter;                    // 6 bytes
-        id_t                    event;                      // 6 bytes
-        location12_t            antenna_location;           // 12 bytes
-        iff_system_id_t         system_id;                  // 6 bytes
-        uint8_t                 system_designator;          // 1 byte
-        uint8_t                 system_specific;            // 1 byte
-        iff_operational_data_t  operational_data;           // 16 bytes
+        id_t                        emitter;                    // 6 bytes
+        id_t                        event;                      // 6 bytes
+        location12_t                antenna_location;           // 12 bytes
+        iff_system_id_t             system_id;                  // 6 bytes
+        uint8_t                     system_designator;          // 1 byte
+        uint8_t                     system_specific;            // 1 byte
+        iff_operational_data_t      operational_data;           // 16 bytes
 
         inline void clear(void)
         {
@@ -741,22 +738,22 @@ namespace vdis
     struct iff_layer2_data_t
     {
         // Layer header
-        uint8_t                 number;                     // 1 byte
-        uint8_t                 specific_info;              // 1 byte
-        uint16_t                layer_length;               // 2 bytes
+        uint8_t                     number;                     // 1 byte
+        uint8_t                     specific_info;              // 1 byte
+        uint16_t                    layer_length;               // 2 bytes
 
         // Beam data
-        float32_t               azimuth_center;             // 4 bytes
-        float32_t               azimuth_sweep;              // 4 bytes
-        float32_t               elevation_center;           // 4 bytes
-        float32_t               elevation_sweep;            // 4 bytes
-        float32_t               sweep_sync;                 // 4 bytes
+        float32_t                   azimuth_center;             // 4 bytes
+        float32_t                   azimuth_sweep;              // 4 bytes
+        float32_t                   elevation_center;           // 4 bytes
+        float32_t                   elevation_sweep;            // 4 bytes
+        float32_t                   sweep_sync;                 // 4 bytes
 
         // Secondary operational data
-        uint8_t                 parameter_1;                // 1 byte
-        uint8_t                 parameter_2;                // 1 byte
-        uint16_t                parameter_data_count;       // 2 bytes
-        iff_parameter_data_t  **parameter_data;             // Variable
+        uint8_t                     parameter_1;                // 1 byte
+        uint8_t                     parameter_2;                // 1 byte
+        uint16_t                    parameter_data_count;       // 2 bytes
+        iff_parameter_data_t      **parameter_data;             // Variable
 
         iff_layer2_data_t(void);
         ~iff_layer2_data_t(void);
@@ -770,11 +767,11 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct environment_record_t
     {
-        uint32_t                type;                       // 4 bytes
-        uint16_t                data_length;                // 2 bytes
-        uint8_t                 index;                      // 1 byte
-        uint8_t                 padding;                    // 1 byte
-        uint8_t                *parameter_data;             // Variable
+        uint32_t                    type;                       // 4 bytes
+        uint16_t                    data_length;                // 2 bytes
+        uint8_t                     index;                      // 1 byte
+        uint8_t                     padding;                    // 1 byte
+        uint8_t                    *data;                       // Variable
 
         environment_record_t(void);
         ~environment_record_t(void);
@@ -788,10 +785,10 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct exercise_state_t
     {
-        uint8_t                     id;                     // 1 byte
-        uint8_t                     transition;             // 1 byte
-        uint8_t                     current_state;          // 1 byte
-        uint8_t                     requested_state;        // 1 byte
+        uint8_t                     id;                         // 1 byte
+        uint8_t                     transition;                 // 1 byte
+        uint8_t                     current_state;              // 1 byte
+        uint8_t                     requested_state;            // 1 byte
 
         inline transition_e transition_enum(void) const
         {
@@ -822,31 +819,59 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union generic_object_appearance_t
+    {
+        struct bits_t
+        {
+            uint16_t                percent_complete:8;         // Bits 0-7
+            uint16_t                damage:2;                   // Bits 8-9
+            uint16_t                predistributed:1;           // Bits 10
+            uint16_t                deactivated:1;              // Bits 11
+            uint16_t                smoking:1;                  // Bits 12
+            uint16_t                flaming:1;                  // Bits 13
+            uint16_t                padding:2;                  // Bits 14-15
+        };
+
+        uint16_t                    value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct linear_segment_t
     {
-        uint8_t                 number;                     // 1 byte
-        uint8_t                 modifications;              // 1 byte
-        uint16_t                generic_appearance;         // 2 bytes
-        uint32_t                specific_appearance;        // 4 bytes
-        location24_t            location;                   // 24 bytes
-        orientation_t           orientation;                // 12 bytes
+        // TODO: specific_linear_appearance_t
+        uint8_t                     number;                     // 1 byte
+        uint8_t                     modifications;              // 1 byte
+        generic_object_appearance_t generic_appearance;         // 2 bytes
+        uint32_t                    specific_appearance;        // 4 bytes
+        location24_t                location;                   // 24 bytes
+        orientation_t               orientation;                // 12 bytes
 
-// In the latest standard these are represented as 32-bit floating
-// point numbers, not 16-bit unsigned integers.
+// In the latest standard these are represented as 32-bit floating point
+// numbers, not the 16-bit unsigned integers that AVCATT/OneSAF uses.
 //
 #ifdef LINEAR_SEGMENTS_USE_32BIT_FLOAT
-        float32_t               segment_length;             // 4 bytes
-        float32_t               segment_width;              // 4 bytes
-        float32_t               segment_height;             // 4 bytes
-        float32_t               segment_depth;              // 4 bytes
+        float32_t                   segment_length;             // 4 bytes
+        float32_t                   segment_width;              // 4 bytes
+        float32_t                   segment_height;             // 4 bytes
+        float32_t                   segment_depth;              // 4 bytes
 #else
-        uint16_t                segment_length;             // 2 bytes
-        uint16_t                segment_width;              // 2 bytes
-        uint16_t                segment_height;             // 2 bytes
-        uint16_t                segment_depth;              // 2 bytes
+        uint16_t                    segment_length;             // 2 bytes
+        uint16_t                    segment_width;              // 2 bytes
+        uint16_t                    segment_height;             // 2 bytes
+        uint16_t                    segment_depth;              // 2 bytes
 #endif
 
-        uint32_t                padding;                    // 4 bytes
+        uint32_t                    padding;                    // 4 bytes
 
         inline float32_t length(void) const { return segment_length; }
         inline float32_t width(void) const { return segment_width; }
