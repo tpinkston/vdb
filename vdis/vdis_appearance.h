@@ -91,6 +91,104 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.2.2) for point log cribs, abatis, vehicle
+    // defilades, infantry fighting positions.
+    //
+    struct point_appearance_v2_bits_t
+    {
+        uint32_t            breach:8;               // Bits 0-7
+        uint32_t            unused:24;              // Bits 8-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.2.3) for air/ground bursts.
+    //
+    struct point_appearance_v3_bits_t
+    {
+        uint32_t            opacity:8;              // Bits 0-7
+        uint32_t            size:8;                 // Bits 8-15
+        uint32_t            height:8;               // Bits 16-23
+        uint32_t            burst_count:6;          // Bits 24-29
+        uint32_t            chemical:2;             // Bits 30-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.2.4) for point craters.
+    //
+    struct point_appearance_v4_bits_t
+    {
+        uint32_t            size:8;                 // Bits 0-7
+        uint32_t            unused:24;              // Bits 8-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.2.5) for point ribbon bridges.
+    //
+    struct point_appearance_v5_bits_t
+    {
+        uint32_t            segment_count:8;        // Bits 0-7
+        uint32_t            unused:24;              // Bits 8-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.3.1) for tank ditches and concertina
+    // wires.
+    //
+    struct linear_appearance_v1_bits_t
+    {
+        uint32_t            breach:8;               // Bits 0-7
+        uint32_t            unused:8;               // Bits 8-15
+        uint32_t            breach_length:8;        // Bits 16-23
+        uint32_t            breach_position:8;      // Bits 24-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.3.2) for exhaust smoke.
+    //
+    struct linear_appearance_v2_bits_t
+    {
+        uint32_t            opacity:8;              // Bits 0-7
+        uint32_t            attached:1;             // Bit 8
+        uint32_t            chemical:2;             // Bits 9-10
+        uint32_t            unused:19;              // Bits 11-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.3.3) for minefield lane markers.
+    //
+    struct linear_appearance_v3_bits_t
+    {
+        uint32_t            visible_side:2;         // Bits 0-1
+        uint32_t            unused:30;              // Bits 11-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    // SISO-REF-010 (Section 12.1.2.4.1) for minefields.
+    //
+    struct areal_appearance_v1_bits_t
+    {
+        uint32_t            breach:2;               // Bits 0-1
+        uint32_t            unused:14;              // Bits 2-15
+        uint32_t            mine_count:16;          // Bits 16-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
     template<typename bits_t>
     union appearance_t
     {
@@ -98,33 +196,60 @@ namespace vdis
         uint32_t            value;
         bits_t              bits;
 
-        void clear(void)
+        inline void clear(void)
         {
             value = 0;
         }
 
-        void print(const string_t &prefix, std::ostream &out) const
+        inline void print(const string_t &prefix, std::ostream &out) const
         {
             bits.print(prefix, out);
         }
 
-        void read(byte_stream_t &stream)
+        inline void read(byte_stream_t &stream)
         {
             stream.read(value);
         }
 
-        void write(byte_stream_t &stream)
+        inline void write(byte_stream_t &stream)
         {
             stream.read(value);
         }
     };
 
+    // Entity appearances
+    //
     typedef appearance_t<lifeform_appearance_bits_t>
         lifeform_appearance_t;
     typedef appearance_t<air_platform_appearance_bits_t>
         air_platform_appearance_t;
     typedef appearance_t<land_platform_appearance_bits_t>
         land_platform_appearance_t;
+
+    // Point object appearances
+    //
+    typedef appearance_t<point_appearance_v2_bits_t>
+        point_appearance_v2_t;
+    typedef appearance_t<point_appearance_v3_bits_t>
+        point_appearance_v3_t;
+    typedef appearance_t<point_appearance_v4_bits_t>
+        point_appearance_v4_t;
+    typedef appearance_t<point_appearance_v5_bits_t>
+        point_appearance_v5_t;
+
+    // Linear object appearances
+    //
+    typedef appearance_t<linear_appearance_v1_bits_t>
+        linear_appearance_v1_t;
+    typedef appearance_t<linear_appearance_v2_bits_t>
+        linear_appearance_v2_t;
+    typedef appearance_t<linear_appearance_v3_bits_t>
+        linear_appearance_v3_t;
+
+    // Areal object appearances
+    //
+    typedef appearance_t<areal_appearance_v1_bits_t>
+        areal_appearance_v1_t;
 }
 
 #endif

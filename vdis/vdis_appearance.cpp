@@ -1,4 +1,4 @@
-#include "vdis_entity_appearance.h"
+#include "vdis_appearance.h"
 
 // ----------------------------------------------------------------------------
 void vdis::lifeform_appearance_bits_t::print(
@@ -291,4 +291,31 @@ void vdis::land_platform_appearance_bits_t::print(
     {
         out << prefix << "cloaked yes" << std::endl;
     }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::areal_appearance_v1_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "breach ";
+
+    switch(breach)
+    {
+        case 0:
+            out << "none" << std::endl;
+            break;
+        case 1:
+            out << "breached" << std::endl;
+            break;
+        case 2:
+            out << "cleared" << std::endl;
+            break;
+        default:
+            out << (int)breach << std::endl;
+    }
+
+    out << prefix << "unused(14 bits) "
+        << to_bin_string((uint16_t)unused) << std::endl
+        << prefix << "mine_count " << (int)mine_count << std::endl;
 }

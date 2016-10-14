@@ -1,6 +1,6 @@
+#include "vdis_appearance.h"
 #include "vdis_byte_stream.h"
 #include "vdis_datum_records.h"
-#include "vdis_entity_appearance.h"
 #include "vdis_enums.h"
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
@@ -2839,7 +2839,8 @@ void vdis::point_object_state_pdu_t::print(std::ostream &out) const
         << prefix << "location.gcc " << location << std::endl
         << prefix << "location.gdc " << geodetic_location << std::endl
         << prefix << "orientation " << orientation << std::endl
-        << prefix << "specific_appearance " << specific_appearance << std::endl;
+        << prefix << "specific_appearance "
+        << to_bin_string(specific_appearance, true) << std::endl;
 
     generic_appearance.print(prefix, out);
 
@@ -3080,7 +3081,17 @@ void vdis::areal_object_state_pdu_t::print(std::ostream &out) const
         << prefix << "modifications " << (int)modifications << std::endl
         << prefix << "object_type " << object_type << " "
         << object_type.description() << std::endl
-        << prefix << "specific_appearance " << specific_appearance << std::endl;
+        << prefix << "specific_appearance "
+        << to_bin_string(specific_appearance, true) << std::endl;
+
+    if ((object_type.get() & 0xFFFFFF00U) == 0x00010100U)
+    {
+        areal_appearance_v1_t
+            entity_appearance;
+
+        entity_appearance.value = specific_appearance;
+        entity_appearance.print(prefix + "specific_appearance.", out);
+    }
 
     generic_appearance.print(prefix, out);
 

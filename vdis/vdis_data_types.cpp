@@ -309,8 +309,6 @@ uint32_t vdis::object_type_t::get(void) const
 // ----------------------------------------------------------------------------
 string_t vdis::object_type_t::description(void) const
 {
-    std::ostringstream
-        stream;
     string_t
         description = object_types::get_description(get());
 
@@ -321,7 +319,7 @@ string_t vdis::object_type_t::description(void) const
 
         if (object_types::get_valid_parent(*this, parent))
         {
-            description = entity_types::get_description(parent.get());
+            description = object_types::get_description(parent.get());
             description += " (Parent)";
         }
         else
@@ -330,9 +328,7 @@ string_t vdis::object_type_t::description(void) const
         }
     }
 
-    stream << *this << " '" << description << "'";
-
-    return stream.str();
+    return description;
 }
 
 // ----------------------------------------------------------------------------
