@@ -121,7 +121,7 @@ namespace vdis
     //
     struct point_appearance_v4_bits_t
     {
-        uint32_t            size:8;                 // Bits 0-7
+        uint32_t            diameter:8;             // Bits 0-7
         uint32_t            unused:24;              // Bits 8-31
 
         void print(const string_t &prefix, std::ostream &out) const;

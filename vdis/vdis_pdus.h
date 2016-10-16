@@ -232,6 +232,11 @@ namespace vdis
             return &shooter;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return shooter.matches(i) or target.matches(i) or event.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_FIRE;
@@ -272,6 +277,11 @@ namespace vdis
             return &shooter;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return shooter.matches(i) or target.matches(i) or event.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_DETONATION;
@@ -301,6 +311,13 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &issuing_entity;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return issuing_entity.matches(i) or
+                colliding_entity.matches(i) or
+                event.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -334,6 +351,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_CREATE_ENTITY;
@@ -363,6 +385,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -396,6 +423,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -433,6 +465,11 @@ namespace vdis
             return &request_id;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_STOP_FREEZE;
@@ -464,6 +501,11 @@ namespace vdis
         inline const uint32_t *get_request_id(void) const
         {
             return &request_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -507,6 +549,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &originator;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return originator.matches(i) or recipient.matches(i);
         }
 
         void clear(void);
@@ -705,6 +752,11 @@ namespace vdis
         em_emission_pdu_t(void);
         virtual ~em_emission_pdu_t(void);
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return emitting_entity.matches(i) or event.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_EM_EMISSION;
@@ -740,6 +792,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &designating_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return designating_id.matches(i) or designated_id.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -786,6 +843,11 @@ namespace vdis
             return &entity_id;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return entity_id.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_TRANSMITTER;
@@ -819,6 +881,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &entity_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return entity_id.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -856,6 +923,11 @@ namespace vdis
             return PDU_TYPE_RECEIVER;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return entity_id.matches(i) or transmitter_entity.matches(i);
+        }
+
         void clear(void);
         void print(std::ostream &) const;
         void read(byte_stream_t &);
@@ -886,6 +958,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &layer1.emitter;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return layer1.emitter.matches(i) or layer1.event.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -999,6 +1076,11 @@ namespace vdis
             return &process_id;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return process_id.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_ENVIRONMENTAL_PROCESS;
@@ -1018,7 +1100,7 @@ namespace vdis
         id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
         uint8_t                         force_id;                   // 1 byte
-        uint8_t                         modifications;              // 1 byte
+        object_modification_t           modifications;              // 1 byte
         object_type_t                   object_type;                // 4 bytes
         location24_t                    location;                   // 24 bytes
         orientation_t                   orientation;                // 12 bytes
@@ -1035,6 +1117,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &object_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return object_id.matches(i) or referenced_object_id.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const
@@ -1074,6 +1161,11 @@ namespace vdis
             return &object_id;
         }
 
+        inline bool contains_id(const id_t &i) const
+        {
+            return object_id.matches(i) or referenced_object_id.matches(i);
+        }
+
         inline pdu_type_e pdu_base_type(void) const
         {
             return PDU_TYPE_LINEAR_OBJECT_STATE;
@@ -1088,12 +1180,11 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct areal_object_state_pdu_t : pdu_base_t
     {
-        // TODO: specific_areal_appearance_t
         id_t                            object_id;                  // 6 bytes
         id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes
         uint8_t                         force_id;                   // 1 byte
-        uint8_t                         modifications;              // 1 byte
+        object_modification_t           modifications;              // 1 byte
         object_type_t                   object_type;                // 4 bytes
         uint32_t                        specific_appearance;        // 4 bytes
         generic_object_appearance_t     generic_appearance;         // 2 bytes
@@ -1113,6 +1204,11 @@ namespace vdis
         inline const id_t *get_initator(void) const
         {
             return &object_id;
+        }
+
+        inline bool contains_id(const id_t &i) const
+        {
+            return object_id.matches(i) or referenced_object_id.matches(i);
         }
 
         inline pdu_type_e pdu_base_type(void) const

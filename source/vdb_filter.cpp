@@ -70,6 +70,19 @@ bool vdb::filter::filter_by_header(const pdu_data_t &data)
              data.get_pdu_family());
      }
 
+     if (logger::is_enabled(logger::EXTRA_VERBOSE) and not pass)
+     {
+         LOG_VERBOSE(
+             "Filtered out PDU with exercise/type/family: %d/%s/%s",
+             (int)data.get_pdu_exercise(),
+             vdis::enumerations::get_name(
+                 ENUM_PDU_TYPE,
+                 data.get_pdu_type()).c_str(),
+             vdis::enumerations::get_name(
+                  ENUM_PDU_FAMILY,
+                  data.get_pdu_family()).c_str());
+     }
+
      return pass;
 }
 
@@ -88,6 +101,7 @@ bool vdb::filter::filter_by_range(uint32_t index, bool &past_end)
         if (options::pdu_index_range.find(index) ==
             options::pdu_index_range.end())
         {
+            LOG_VERBOSE("Filtered out PDU at index %d...", index);
             pass = false;
         }
     }
@@ -112,6 +126,9 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
             {
                 if (not pdu.base()->contains_id(*itor))
                 {
+                    LOG_VERBOSE(
+                        "Filtered out PDU that does not contain ID %s...",
+                        to_string(*itor).c_str());
                     pass = false;
                 }
 
@@ -126,6 +143,9 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
             {
                 if (pdu.base()->contains_id(*itor))
                 {
+                    LOG_VERBOSE(
+                        "Filtered out PDU that contains ID %s...",
+                        to_string(*itor).c_str());
                     pass = false;
                 }
             }

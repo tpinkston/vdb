@@ -2782,11 +2782,11 @@ void vdis::environmental_process_pdu_t::write(byte_stream_t &stream)
 vdis::point_object_state_pdu_t::point_object_state_pdu_t(void) :
     update(0),
     force_id(0),
-    modifications(0),
     specific_appearance(0),
     padding16(0),
     padding32(0)
 {
+    modifications.clear();
     generic_appearance.clear();
 }
 
@@ -2804,7 +2804,7 @@ void vdis::point_object_state_pdu_t::clear(void)
     referenced_object_id.clear();
     update = 0;
     force_id = 0;
-    modifications = 0;
+    modifications.clear();
     object_type.clear();
     location.clear();
     orientation.clear();
@@ -2833,14 +2833,30 @@ void vdis::point_object_state_pdu_t::print(std::ostream &out) const
         << referenced_object_id << std::endl
         << prefix << "update " << (int)update << std::endl
         << prefix << "force_id " << (force_id_e)force_id << std::endl
-        << prefix << "modifications " << (int)modifications << std::endl
-        << prefix << "object_type " << object_type << " "
+        << prefix << "modifications "
+        << to_bin_string(modifications.value) << std::endl;
+
+    modifications.print(prefix, out);
+
+    out << prefix << "object_type " << object_type << " "
         << object_type.description() << std::endl
         << prefix << "location.gcc " << location << std::endl
         << prefix << "location.gdc " << geodetic_location << std::endl
         << prefix << "orientation " << orientation << std::endl
         << prefix << "specific_appearance "
         << to_bin_string(specific_appearance, true) << std::endl;
+
+    switch(object_type.get() & 0xFFFFFF00U)
+    {
+        case 0x01010300U: // Craters (1.1.3.*)
+        {
+            point_appearance_v4_t
+                entity_appearance;
+
+            entity_appearance.value = specific_appearance;
+            entity_appearance.print(prefix + "specific_appearance.", out);
+        }
+    }
 
     generic_appearance.print(prefix, out);
 
@@ -2860,7 +2876,7 @@ void vdis::point_object_state_pdu_t::read(byte_stream_t &stream)
     referenced_object_id.read(stream);
     stream.read(update);
     stream.read(force_id);
-    stream.read(modifications);
+    modifications.read(stream);
     object_type.read(stream);
     location.read(stream);
     orientation.read(stream);
@@ -2880,7 +2896,7 @@ void vdis::point_object_state_pdu_t::write(byte_stream_t &stream)
     referenced_object_id.write(stream);
     stream.write(update);
     stream.write(force_id);
-    stream.write(modifications);
+    modifications.write(stream);
     object_type.write(stream);
     location.write(stream);
     orientation.write(stream);
@@ -3017,12 +3033,11 @@ void vdis::linear_object_state_pdu_t::write(byte_stream_t &stream)
 vdis::areal_object_state_pdu_t::areal_object_state_pdu_t(void) :
     update(0),
     force_id(0),
-    modifications(0),
     specific_appearance(0),
     point_count(0),
     points(0)
 {
-
+    modifications.clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -3054,7 +3069,7 @@ void vdis::areal_object_state_pdu_t::clear(void)
     referenced_object_id.clear();
     update = 0;
     force_id = 0;
-    modifications = 0;
+    modifications.clear();
     object_type.clear();
     specific_appearance = 0;
     generic_appearance.clear();
@@ -3078,8 +3093,12 @@ void vdis::areal_object_state_pdu_t::print(std::ostream &out) const
         << referenced_object_id << std::endl
         << prefix << "update " << (int)update << std::endl
         << prefix << "force_id " << (force_id_e)force_id << std::endl
-        << prefix << "modifications " << (int)modifications << std::endl
-        << prefix << "object_type " << object_type << " "
+        << prefix << "modifications "
+        << to_bin_string(modifications.value) << std::endl;
+
+    modifications.print(prefix, out);
+
+    out << prefix << "object_type " << object_type << " "
         << object_type.description() << std::endl
         << prefix << "specific_appearance "
         << to_bin_string(specific_appearance, true) << std::endl;
@@ -3123,7 +3142,7 @@ void vdis::areal_object_state_pdu_t::read(byte_stream_t &stream)
     referenced_object_id.read(stream);
     stream.read(update);
     stream.read(force_id);
-    stream.read(modifications);
+    modifications.read(stream);
     object_type.read(stream);
     stream.read(specific_appearance);
     generic_appearance.read(stream);
@@ -3151,7 +3170,7 @@ void vdis::areal_object_state_pdu_t::write(byte_stream_t &stream)
     referenced_object_id.write(stream);
     stream.write(update);
     stream.write(force_id);
-    stream.write(modifications);
+    modifications.write(stream);
     object_type.write(stream);
     stream.write(specific_appearance);
     generic_appearance.write(stream);

@@ -1761,6 +1761,42 @@ void vdis::exercise_state_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::object_modification_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    if (bits.modified_location)
+    {
+        out << prefix << "modifications.location "
+            << (yes_no_e)bits.modified_location << std::endl;
+    }
+
+    if (bits.modified_orientation)
+    {
+        out << prefix << "modification.orientation "
+            << (yes_no_e)bits.modified_orientation << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "modifications.padding(6 bits) "
+            << (int)bits.padding << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::object_modification_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::object_modification_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::generic_object_appearance_t::print(
     const string_t &prefix,
     std::ostream &out) const
@@ -1806,13 +1842,18 @@ void vdis::linear_segment_t::print(
     convert(location, geodetic_location);
 
     out << prefix << "number " << (int)number << std::endl
-        << prefix << "modifications " << (int)modifications << std::endl;
+        << prefix << "modifications "
+        << to_bin_string(modifications.value) << std::endl;
 
+    modifications.print(prefix, out);
     generic_appearance.print(prefix, out);
 
     out << prefix << "specific_appearance "
-        << to_bin_string(specific_appearance, true) << std::endl
-        << prefix << "location.gcc " << location << std::endl
+        << to_bin_string(specific_appearance, true) << std::endl;
+
+    // TODO
+
+    out << prefix << "location.gcc " << location << std::endl
         << prefix << "location.gdc " << geodetic_location << std::endl
         << prefix << "orientation " << orientation << std::endl;
 
@@ -1835,7 +1876,7 @@ void vdis::linear_segment_t::print(
 void vdis::linear_segment_t::read(byte_stream_t &stream)
 {
     stream.read(number);
-    stream.read(modifications);
+    modifications.read(stream);
     generic_appearance.read(stream);
     stream.read(specific_appearance);
     location.read(stream);
@@ -1851,7 +1892,7 @@ void vdis::linear_segment_t::read(byte_stream_t &stream)
 void vdis::linear_segment_t::write(byte_stream_t &stream)
 {
     stream.write(number);
-    stream.write(modifications);
+    modifications.write(stream);
     generic_appearance.write(stream);
     stream.write(specific_appearance);
     location.write(stream);

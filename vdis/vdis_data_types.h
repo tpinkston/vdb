@@ -819,6 +819,29 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union object_modification_t
+    {
+        struct bits_t
+        {
+            uint8_t                 modified_location:1;        // Bit 0
+            uint8_t                 modified_orientation:1;     // Bit 1
+            uint8_t                 padding:6;                  // Bits 2-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     union generic_object_appearance_t
     {
         struct bits_t
@@ -850,7 +873,7 @@ namespace vdis
     {
         // TODO: specific_linear_appearance_t
         uint8_t                     number;                     // 1 byte
-        uint8_t                     modifications;              // 1 byte
+        object_modification_t       modifications;              // 1 byte
         generic_object_appearance_t generic_appearance;         // 2 bytes
         uint32_t                    specific_appearance;        // 4 bytes
         location24_t                location;                   // 24 bytes
@@ -878,7 +901,16 @@ namespace vdis
         inline float32_t height(void) const { return segment_height; }
         inline float32_t depth(void) const { return segment_depth; }
 
-        void clear(void);
+        inline void clear(void)
+        {
+            number = 0;
+            modifications.clear();
+            generic_appearance.clear();
+            specific_appearance = 0;
+            location.clear();
+            orientation.clear();
+        }
+
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);

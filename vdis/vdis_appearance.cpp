@@ -294,6 +294,16 @@ void vdis::land_platform_appearance_bits_t::print(
 }
 
 // ----------------------------------------------------------------------------
+void vdis::point_appearance_v4_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "diameter " << (int)diameter << std::endl
+        << prefix << "unused(24 bits) "
+        << to_bin_string((uint32_t)unused, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
 void vdis::areal_appearance_v1_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
