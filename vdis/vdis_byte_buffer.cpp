@@ -112,8 +112,43 @@ uint8_t vdis::byte_buffer_t::operator[](uint32_t index) const
 }
 
 // ----------------------------------------------------------------------------
+std::string vdis::byte_buffer_t::str(void) const
+{
+    std::string
+        string;
+
+    if (data_buffer and (data_length > 0))
+    {
+        char *temp_buffer = new char[data_length + 1];
+
+        // Copy buffer into temporary string buffer
+        //
+        std::memcpy(temp_buffer, data_buffer, data_length);
+
+        temp_buffer[data_length] = 0;
+
+        // Convert non-printable characters to space characters
+        //
+        for(uint32_t i = 0; i < data_length; ++i)
+        {
+            if (not is_printable_character(temp_buffer[i]))
+            {
+                temp_buffer[i] = ' ';
+            }
+        }
+
+        string = temp_buffer;
+
+        delete[] temp_buffer;
+        temp_buffer = 0;
+    }
+
+    return string;
+}
+
+// ----------------------------------------------------------------------------
 void vdis::byte_buffer_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     static const uint32_t
@@ -145,7 +180,7 @@ void vdis::byte_buffer_t::print(
 
     for(uint32_t i = 0; i < data_length;)
     {
-        string_t
+        std::string
             header = vdis::to_string(i);
         std::ostringstream
             ascii,
@@ -324,7 +359,7 @@ void vdis::byte_buffer_t::reset(const byte_buffer_t &buffer)
 // ----------------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &out, const vdis::byte_buffer_t &o)
 {
-    o.print(string_t(), out);
+    o.print(std::string(), out);
 
     return out;
 }

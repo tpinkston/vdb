@@ -193,10 +193,15 @@ void vdis::fixed_datum_record_t::write(byte_stream_t &stream)
 uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
 {
     uint32_t length_bits = 0;
+    uint32_t length_bytes = 0;
 
     // Value should be in bits not bytes
     //
     stream.read(length_bits);
+
+    LOG_EXTRA_VERBOSE(
+        "Variable datum record length in bits is %d...",
+        length_bits);
 
     if ((length_bits % 64) > 0)
     {
@@ -208,7 +213,11 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
     {
         // Convert value in bits to bytes
         //
-        uint32_t length_bytes = (length_bits / 8);
+        length_bytes = (length_bits / 8);
+
+        LOG_EXTRA_VERBOSE(
+            "Variable datum record length in bytes is %d...",
+            length_bytes);
 
         if (length_bytes > 0)
         {
@@ -229,7 +238,7 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
         }
     }
 
-    return length_bits;
+    return length_bytes;
 }
 
 // ----------------------------------------------------------------------------
@@ -556,13 +565,13 @@ void vdis::sling_load_capability_t::write(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 string_t vdis::force_id_affiliation_t::force_name(void) const
 {
-    if (name.length())
+    if (name.length() > 0)
     {
-        return (const char *)name.buffer();
+        return name.str();
     }
     else
     {
-        return "(NULL)";
+        return "NULL";
     }
 }
 
@@ -587,8 +596,10 @@ void vdis::force_id_affiliation_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    out << prefix << "force_id_affiliation.force " << force_enum() << std::endl
-        << prefix << "force_id_affiliation.name " << force_name() << std::endl;
+    out << prefix << "force_id_affiliation.force "
+        << force_enum() << std::endl
+        << prefix << "force_id_affiliation.name '"
+        << force_name() << "'" << std::endl;
 }
 
 // ----------------------------------------------------------------------------

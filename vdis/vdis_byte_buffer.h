@@ -26,7 +26,9 @@ namespace vdis
 
         uint8_t operator[](uint32_t index) const;
 
-        void print(const string_t &, std::ostream &) const;
+        std::string str(void) const;
+
+        void print(const std::string &, std::ostream &) const;
 
         void read(byte_stream_t &);
         void read(byte_stream_t &, uint32_t size);
