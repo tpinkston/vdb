@@ -9,7 +9,7 @@
 
 namespace
 {
-    const string_t
+    const std::string
         separator = "----------------------------------------------------";
 
     // ------------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace
 
 vdb::file_reader_t
     *vdb::summary::reader_ptr = 0;
-string_t
+std::string
     vdb::summary::filename,
     vdb::summary::current_source;
 uint64_t
@@ -34,7 +34,7 @@ uint64_t
     vdb::summary::last_pdu_time = 0;
 vdb::source_data_node_t
     vdb::summary::all_sources;
-std::map<string_t, vdb::source_data_node_t>
+std::map<std::string, vdb::source_data_node_t>
     vdb::summary::source_data;
 std::map<vdis::id_t, vdb::entity_data_node_t>
     vdb::summary::entity_data;
@@ -52,7 +52,7 @@ void vdb::designator_node_t::print(std::ostream &out) const
 {
     std::map<uint8_t, uint32_t>::const_iterator
         itor;
-    string_t
+    std::string
         name;
 
     out << "      Target: " << vdis::entity_marking(target) << std::endl
@@ -130,7 +130,7 @@ void vdb::collision_node_t::print(std::ostream &out) const
 // ----------------------------------------------------------------------------
 void vdb::warfare_data_node_t::print(std::ostream &out) const
 {
-    string_t
+    std::string
         result_string = vdis::enumerations::get_name(
             ENUM_DETONATION_RESULT,
             result);
@@ -611,7 +611,7 @@ void vdb::summary::print_results(std::ostream &out)
 {
     struct stat
         file_stat;
-    std::map<string_t, source_data_node_t>::const_iterator
+    std::map<std::string, source_data_node_t>::const_iterator
         source_itor = source_data.begin();
     std::map<vdis::id_t, entity_data_node_t>::const_iterator
         entity_itor = entity_data.begin();
@@ -630,9 +630,12 @@ void vdb::summary::print_results(std::ostream &out)
         out << "[" << strerror(errno) << "]" << std::endl;
     }
 
-    static_cast<standard_reader_t*>(reader_ptr)->header.print(
-        string_t(),
-        out);
+    if (not options::use_pcap)
+    {
+        static_cast<standard_reader_t*>(reader_ptr)->header.print(
+            std::string(),
+            out);
+    }
 
     if (first_pdu_time > 0)
     {

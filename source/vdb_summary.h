@@ -104,7 +104,7 @@ namespace vdb
             force_id;
         vdis::entity_type_t
             type;
-        string_t
+        std::string
             source;
         std::vector<collision_node_t>
             collisions;
@@ -189,7 +189,7 @@ namespace vdb
 
         static file_reader_t
             *reader_ptr;
-        static string_t
+        static std::string
             filename,
             current_source;
         static uint64_t
@@ -197,7 +197,7 @@ namespace vdb
             last_pdu_time;
         static source_data_node_t
             all_sources;
-        static std::map<string_t, source_data_node_t>
+        static std::map<std::string, source_data_node_t>
             source_data;
         static std::map<vdis::id_t, entity_data_node_t>
             entity_data;
