@@ -203,7 +203,7 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
         "Variable datum record length in bits is %d...",
         length_bits);
 
-    if ((length_bits % 64) > 0)
+    if ((length_bits % 8) > 0)
     {
         LOG_WARNING(
             "Reading variable datum content with invalid length: %d",
@@ -215,9 +215,21 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
         //
         length_bytes = (length_bits / 8);
 
-        LOG_EXTRA_VERBOSE(
-            "Variable datum record length in bytes is %d...",
-            length_bytes);
+        if ((length_bytes % 8) > 0)
+        {
+            // This is okay as long as there is padding to 8-byte boundary
+            // after the record.
+            //
+            LOG_WARNING(
+                "Variable datum content length in bytes is invalid: %d",
+                length_bytes);
+        }
+        else
+        {
+            LOG_EXTRA_VERBOSE(
+                "Variable datum record length in bytes is %d...",
+                length_bytes);
+        }
 
         if (length_bytes > 0)
         {
@@ -349,7 +361,7 @@ void vdis::default_variable_datum_content_t::print(
 {
     if (buffer.length() > 0)
     {
-        buffer.print((prefix + "data"), out);
+        buffer.print((prefix + "data."), out);
     }
     else
     {
@@ -364,7 +376,14 @@ void vdis::default_variable_datum_content_t::read(byte_stream_t &stream)
 
     // Convert length in bits to length in bytes
     //
-    buffer.read(stream, (length / 8));
+    buffer.read(stream, length);
+
+    uint32_t padding = padding_length(length, 8);
+
+    if (padding > 0)
+    {
+        stream.skip(padding);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -400,7 +419,7 @@ void vdis::damage_status_t::read(byte_stream_t &stream)
 {
     const uint32_t length = read_length(stream);
 
-    if (length != LENGTH_BITS)
+    if (length != (LENGTH_BITS / 8))
     {
         LOG_ERROR(
             "Inconsistent datum length for damage_status_t: %d/%d",
@@ -516,7 +535,7 @@ void vdis::sling_load_capability_t::read(byte_stream_t &stream)
 
     clear();
 
-    if (length < BASE_LENGTH_BITS)
+    if (length < (BASE_LENGTH_BITS / 8))
     {
         LOG_ERROR(
             "Inconsistent datum length for sling_load_capability_t: %d/%d",
