@@ -2839,7 +2839,7 @@ void vdis::point_object_state_pdu_t::print(std::ostream &out) const
     modifications.print(prefix, out);
 
     out << prefix << "object_type " << object_type << " "
-        << object_type.description() << std::endl
+        << object_type.description(OBJECT_GEOMETRY_POINT) << std::endl
         << prefix << "location.gcc " << location << std::endl
         << prefix << "location.gdc " << geodetic_location << std::endl
         << prefix << "orientation " << orientation << std::endl
@@ -2848,13 +2848,37 @@ void vdis::point_object_state_pdu_t::print(std::ostream &out) const
 
     switch(object_type.get() & 0xFFFFFF00U)
     {
+        case 0x01010100U: // Abatis (1.1.1.*)
+        case 0x01010200U: // Log Cribs (1.1.2.*)
+        case 0x01020100U: // Vehicle Defilades (1.2.1.*)
+        case 0x01020200U: // Infantry Fighting Positions (1.2.2.*)
+        {
+            point_appearance_v2_t point_appearance;
+            point_appearance.value = specific_appearance;
+            point_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
+        case 0x00050100U: // Smoke Ground Bursts (0.5.1.*)
+        case 0x00050200U: // Smoke Air Bursts (0.5.2.*)
+        {
+            point_appearance_v3_t point_appearance;
+            point_appearance.value = specific_appearance;
+            point_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
         case 0x01010300U: // Craters (1.1.3.*)
         {
-            point_appearance_v4_t
-                entity_appearance;
-
-            entity_appearance.value = specific_appearance;
-            entity_appearance.print(prefix + "specific_appearance.", out);
+            point_appearance_v4_t point_appearance;
+            point_appearance.value = specific_appearance;
+            point_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
+        case 0x01040300U: // Ribbon Bridges (1.4.3.*)
+        {
+            point_appearance_v5_t point_appearance;
+            point_appearance.value = specific_appearance;
+            point_appearance.print(prefix + "specific_appearance.", out);
+            break;
         }
     }
 
@@ -2969,8 +2993,10 @@ void vdis::linear_object_state_pdu_t::print(std::ostream &out) const
         << prefix << "requestor_id " << requestor_id << std::endl
         << prefix << "receiver_id " << receiver_id << std::endl
         << prefix << "object_type " << object_type << " "
-        << object_type.description() << std::endl
+        << object_type.description(OBJECT_GEOMETRY_LINEAR) << std::endl
         << prefix << "segments.count " << (int)segment_count << std::endl;
+
+    linear_segment_t::using_type(&object_type);
 
     for(uint8_t i = 0; segments and (i < segment_count); ++i)
     {
@@ -2981,6 +3007,8 @@ void vdis::linear_object_state_pdu_t::print(std::ostream &out) const
                 out);
         }
     }
+
+    linear_segment_t::using_type(0);
 }
 
 // ----------------------------------------------------------------------------
@@ -3099,17 +3127,19 @@ void vdis::areal_object_state_pdu_t::print(std::ostream &out) const
     modifications.print(prefix, out);
 
     out << prefix << "object_type " << object_type << " "
-        << object_type.description() << std::endl
+        << object_type.description(OBJECT_GEOMETRY_AREAL) << std::endl
         << prefix << "specific_appearance "
         << to_bin_string(specific_appearance, true) << std::endl;
 
-    if ((object_type.get() & 0xFFFFFF00U) == 0x00010100U)
+    switch(object_type.get() & 0xFFFFFF00U)
     {
-        areal_appearance_v1_t
-            entity_appearance;
-
-        entity_appearance.value = specific_appearance;
-        entity_appearance.print(prefix + "specific_appearance.", out);
+        case 0x00010100U: // Minefields (0.1.1.*)
+        {
+            areal_appearance_v1_t areal_appearance;
+            areal_appearance.value = specific_appearance;
+            areal_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
     }
 
     generic_appearance.print(prefix, out);

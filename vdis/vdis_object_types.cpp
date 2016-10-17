@@ -6,14 +6,14 @@
 
 namespace
 {
-    const string_t
+    const std::string
         empty_string;
 }
 
-std::map<uint32_t, string_t>
-    vdis::object_types::descriptions;
-std::map<uint32_t, vdis::object_geometry_e>
-    vdis::object_types::geometries;
+std::map<uint32_t, std::string>
+    vdis::object_types::point_descriptions,
+    vdis::object_types::linear_descriptions,
+    vdis::object_types::areal_descriptions;
 bool
     vdis::object_types::loaded = false;
 
@@ -25,69 +25,63 @@ void vdis::object_types::load(void)
         add_all();
         loaded = true;
 
-        LOG_VERBOSE("Loaded %d object types...", descriptions.size());
+        LOG_VERBOSE(
+            "Loaded %d point object types...",
+            point_descriptions.size());
+        LOG_VERBOSE(
+            "Loaded %d linear object types...",
+            linear_descriptions.size());
+        LOG_VERBOSE(
+            "Loaded %d areal object types...",
+            areal_descriptions.size());
     }
 }
 
 // ----------------------------------------------------------------------------
-void vdis::object_types::print(std::ostream &stream)
+void vdis::object_types::print(std::ostream &out)
 {
-    std::map<uint32_t, string_t>::const_iterator
-        description = descriptions.begin();
-    std::map<uint32_t, object_geometry_e>::const_iterator
-        geometry;
-    object_type_t
-        object_type;
-
-    while(description != descriptions.end())
-    {
-        geometry = geometries.find(description->first);
-
-        object_type.set(description->first);
-
-        stream << object_type << ",";
-
-        if (geometry != geometries.end())
-        {
-            stream << (object_geometry_e)geometry->second;
-        }
-        else
-        {
-            stream << "unknown geometry";
-        }
-
-        stream << ",\"" << description->second << "\"" << std::endl;
-
-        ++description;
-    }
+    print(point_descriptions, OBJECT_GEOMETRY_POINT, out);
+    print(linear_descriptions, OBJECT_GEOMETRY_LINEAR, out);
+    print(areal_descriptions, OBJECT_GEOMETRY_AREAL, out);
 }
 
 // ----------------------------------------------------------------------------
-const string_t &vdis::object_types::get_description(uint32_t value)
+const std::string &vdis::object_types::get_description(
+    object_geometry_e geometry,
+    uint32_t value)
 {
-    std::map<uint32_t, string_t>::const_iterator
-        search_itor = descriptions.find(value);
+    const std::map<uint32_t, std::string>
+        *descriptions_ptr = 0;
 
-    if (search_itor != descriptions.end())
+    switch(geometry)
     {
-        return search_itor->second;
+        case OBJECT_GEOMETRY_POINT:
+            descriptions_ptr = &point_descriptions;
+            break;
+        case OBJECT_GEOMETRY_LINEAR:
+            descriptions_ptr = &linear_descriptions;
+            break;
+        case OBJECT_GEOMETRY_AREAL:
+            descriptions_ptr = &areal_descriptions;
+            break;
+        default:
+            LOG_WARNING(
+                "Invalid object geometry: %s",
+                enumerations::get_name(ENUM_OBJECT_GEOMETRY, geometry).c_str());
+    }
+
+    if (descriptions_ptr)
+    {
+        std::map<uint32_t, std::string>::const_iterator
+            search_itor = descriptions_ptr->find(value);
+
+        if (search_itor != descriptions_ptr->end())
+        {
+            return search_itor->second;
+        }
     }
 
     return empty_string;
-}
-
-// ----------------------------------------------------------------------------
-vdis::object_geometry_e vdis::object_types::get_geometry(uint32_t value)
-{
-    std::map<uint32_t, object_geometry_e>::const_iterator
-        search_itor = geometries.find(value);
-
-    if (search_itor != geometries.end())
-    {
-        return search_itor->second;
-    }
-
-    return OBJECT_GEOMETRY_UNKNOWN;
 }
 
 // ----------------------------------------------------------------------------
@@ -125,10 +119,11 @@ bool vdis::object_types::get_parent(
 
 // ----------------------------------------------------------------------------
 bool vdis::object_types::get_valid_parent(
+    const object_geometry_e geometry,
     const object_type_t &child,
     object_type_t &parent)
 {
-    std::map<uint32_t, string_t>::const_iterator
+    std::map<uint32_t, std::string>::const_iterator
         search_itor;
     object_type_t
         temp_child = child,
@@ -138,20 +133,42 @@ bool vdis::object_types::get_valid_parent(
 
     while(get_parent(temp_child, temp_parent) and not success)
     {
-        search_itor = descriptions.find(temp_parent.get());
+        std::string description = get_description(geometry, temp_parent.get());
 
-        if (search_itor != descriptions.end())
+        if (description.empty())
+        {
+            temp_child = temp_parent;
+        }
+        else
         {
             parent = temp_parent;
             success = true;
         }
-        else
-        {
-            temp_child = temp_parent;
-        }
     }
 
     return success;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::object_types::print(
+    const std::map<uint32_t, std::string> &descriptions,
+    object_geometry_e geometry,
+    std::ostream &out)
+{
+    std::map<uint32_t, std::string>::const_iterator
+        description = descriptions.begin();
+    object_type_t
+        object_type;
+
+    while(description != descriptions.end())
+    {
+        object_type.set(description->first);
+
+        out << object_type << "," << geometry
+            << ",\"" << description->second << "\"" << std::endl;
+
+        ++description;
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -175,31 +192,41 @@ void vdis::object_types::add(
 
     value = type.get();
 
-    if (description_ptr)
+    if (not description_ptr)
     {
-        descriptions[value] = description_ptr;
+        LOG_ERROR(
+            "No description for object type %d!",
+            to_string(type).c_str());
     }
-
-    if (geometry_ptr)
+    else if (not geometry_ptr)
     {
-        string_t
+        LOG_ERROR(
+            "No geometry for object type %d!",
+            to_string(type).c_str());
+    }
+    else
+    {
+        std::string
             geometry = to_lowercase(geometry_ptr);
 
         if (geometry == "point")
         {
-            geometries[value] = OBJECT_GEOMETRY_POINT;
+            point_descriptions[value] = description_ptr;
         }
         else if (geometry == "linear")
         {
-            geometries[value] = OBJECT_GEOMETRY_LINEAR;
+            linear_descriptions[value] = description_ptr;
         }
         else if (geometry == "areal")
         {
-            geometries[value] = OBJECT_GEOMETRY_AREAL;
+            areal_descriptions[value] = description_ptr;
         }
         else
         {
-            geometries[value] = OBJECT_GEOMETRY_UNKNOWN;
+            LOG_ERROR(
+                "Loading invalid object geometry '%s' for object type %d!",
+                geometry.c_str(),
+                to_string(type).c_str());
         }
     }
 }

@@ -127,6 +127,8 @@ namespace vdb
 
         vdis::force_id_e
             force_id;
+        vdis::object_geometry_e
+            geometry;
         vdis::object_type_t
             type;
     };
@@ -326,7 +328,8 @@ inline vdb::entity_data_node_t::~entity_data_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::object_data_node_t::object_data_node_t(void) :
-    force_id(vdis::FORCE_ID_OTHER)
+    force_id(vdis::FORCE_ID_OTHER),
+    geometry(vdis::OBJECT_GEOMETRY_UNKNOWN)
 {
 
 }
@@ -336,6 +339,7 @@ inline vdb::object_data_node_t::object_data_node_t(
     const object_data_node_t &copy
 ) :
     force_id(copy.force_id),
+    geometry(copy.geometry),
     type(copy.type)
 {
 

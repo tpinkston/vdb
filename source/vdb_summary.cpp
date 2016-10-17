@@ -580,6 +580,7 @@ void vdb::summary::process(const vdis::point_object_state_pdu_t &pdu)
         &node = object_data[pdu.object_id];
 
     node.force_id = (vdis::force_id_e)pdu.force_id;
+    node.geometry = vdis::OBJECT_GEOMETRY_POINT;
     node.type = pdu.object_type;
 }
 
@@ -590,6 +591,7 @@ void vdb::summary::process(const vdis::linear_object_state_pdu_t &pdu)
         &node = object_data[pdu.object_id];
 
     node.force_id = (vdis::force_id_e)pdu.force_id;
+    node.geometry = vdis::OBJECT_GEOMETRY_LINEAR;
     node.type = pdu.object_type;
 }
 
@@ -600,6 +602,7 @@ void vdb::summary::process(const vdis::areal_object_state_pdu_t &pdu)
         &node = object_data[pdu.object_id];
 
     node.force_id = (vdis::force_id_e)pdu.force_id;
+    node.geometry = vdis::OBJECT_GEOMETRY_AREAL;
     node.type = pdu.object_type;
 }
 
@@ -718,9 +721,10 @@ void vdb::summary::print_results(std::ostream &out)
             const object_data_node_t &node = object_itor->second;
 
             out << "  " << object_itor->first << ": "
-                << color::get(node.force_id) << node.type.description()
+                << color::get(node.force_id)
+                << node.type.description(node.geometry)
                 << color::none << ", " << node.type << " "
-                << (vdis::object_geometry_e)node.type.geometry()
+                << (vdis::object_geometry_e)node.geometry
                 << std::endl;
 
             ++object_itor;

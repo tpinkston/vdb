@@ -134,9 +134,7 @@ namespace vdis
         void set(uint32_t value);
         uint32_t get(void) const;
 
-        string_t description(void) const;
-
-        object_geometry_e geometry(void) const;
+        string_t description(object_geometry_e geometry) const;
 
         bool operator==(const object_type_t &) const;
         bool operator!=(const object_type_t &) const;
@@ -871,7 +869,6 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct linear_segment_t
     {
-        // TODO: specific_linear_appearance_t
         uint8_t                     number;                     // 1 byte
         object_modification_t       modifications;              // 1 byte
         generic_object_appearance_t generic_appearance;         // 2 bytes
@@ -914,9 +911,14 @@ namespace vdis
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
+
+        static void using_type(const object_type_t *type_ptr);
     };
 }
 
+// Stream out operators for structures that get printed on a single line
+// with the need for prefixes on multiple lines
+//
 std::ostream &operator<<(std::ostream &, const vdis::simulation_id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::entity_type_t &);

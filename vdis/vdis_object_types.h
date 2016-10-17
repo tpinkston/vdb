@@ -15,9 +15,9 @@ namespace vdis
 
         static void print(std::ostream &stream);
 
-        static const string_t &get_description(uint32_t value);
-
-        static object_geometry_e get_geometry(uint32_t value);
+        static const std::string &get_description(
+            object_geometry_e geometry,
+            uint32_t value);
 
         static bool get_parent(
             const object_type_t &child,
@@ -25,11 +25,17 @@ namespace vdis
         );
 
         static bool get_valid_parent(
+            const object_geometry_e geometry,
             const object_type_t &child,
             object_type_t &parent
         );
 
       private:
+
+        static void print(
+            const std::map<uint32_t, std::string> &descriptions,
+            object_geometry_e geometry,
+            std::ostream &stream);
 
         static void add_all(void);
 
@@ -42,10 +48,10 @@ namespace vdis
             const char *geometry_ptr
         );
 
-        static std::map<uint32_t, string_t>
-            descriptions;
-        static std::map<uint32_t, object_geometry_e>
-            geometries;
+        static std::map<uint32_t, std::string>
+            point_descriptions,
+            linear_descriptions,
+            areal_descriptions;
         static bool
             loaded;
     };

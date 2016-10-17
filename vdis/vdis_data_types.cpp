@@ -1,3 +1,4 @@
+#include "vdis_appearance.h"
 #include "vdis_byte_stream.h"
 #include "vdis_data_types.h"
 #include "vdis_entity_types.h"
@@ -11,6 +12,8 @@ namespace
     const float32_t
         TIME_UNIT_TO_SECONDS = (3600.0 / 2147483647.0),
         SECONDS_TO_TIME_UNITS = (1.0 / TIME_UNIT_TO_SECONDS);
+    const vdis::object_type_t
+        *object_type_ptr = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -307,19 +310,19 @@ uint32_t vdis::object_type_t::get(void) const
 }
 
 // ----------------------------------------------------------------------------
-string_t vdis::object_type_t::description(void) const
+string_t vdis::object_type_t::description(object_geometry_e geometry) const
 {
     string_t
-        description = object_types::get_description(get());
+        description = object_types::get_description(geometry, get());
 
     if (description.empty())
     {
         object_type_t
             parent;
 
-        if (object_types::get_valid_parent(*this, parent))
+        if (object_types::get_valid_parent(geometry, *this, parent))
         {
-            description = object_types::get_description(parent.get());
+            description = object_types::get_description(geometry, parent.get());
             description += " (Parent)";
         }
         else
@@ -329,12 +332,6 @@ string_t vdis::object_type_t::description(void) const
     }
 
     return description;
-}
-
-// ----------------------------------------------------------------------------
-vdis::object_geometry_e vdis::object_type_t::geometry(void) const
-{
-    return object_types::get_geometry(get());
 }
 
 // ----------------------------------------------------------------------------
@@ -1838,6 +1835,13 @@ void vdis::linear_segment_t::print(
 {
     geodetic_location_t
         geodetic_location;
+    uint32_t
+        object_type = 0;
+
+    if (object_type_ptr)
+    {
+        object_type = object_type_ptr->get();
+    }
 
     convert(location, geodetic_location);
 
@@ -1851,7 +1855,31 @@ void vdis::linear_segment_t::print(
     out << prefix << "specific_appearance "
         << to_bin_string(specific_appearance, true) << std::endl;
 
-    // TODO
+    switch(object_type & 0xFFFFFF00U)
+    {
+        case 0x01010100U: // Tank Ditches (1.1.1.*)
+        case 0x01010200U: // Concertina Wires (1.1.2.*)
+        {
+            linear_appearance_v1_t object_appearance;
+            object_appearance.value = specific_appearance;
+            object_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
+        case 0x00050100U: // Exhaust Smoke (0.5.1.*)
+        {
+            linear_appearance_v2_t object_appearance;
+            object_appearance.value = specific_appearance;
+            object_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
+        case 0x01060100U: // Minefield Lane Markers (1.6.1.*)
+        {
+            linear_appearance_v3_t object_appearance;
+            object_appearance.value = specific_appearance;
+            object_appearance.print(prefix + "specific_appearance.", out);
+            break;
+        }
+    }
 
     out << prefix << "location.gcc " << location << std::endl
         << prefix << "location.gdc " << geodetic_location << std::endl
@@ -1902,6 +1930,12 @@ void vdis::linear_segment_t::write(byte_stream_t &stream)
     stream.write(segment_height);
     stream.write(segment_depth);
     stream.write(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_segment_t::using_type(const object_type_t *type_ptr)
+{
+    object_type_ptr = type_ptr;
 }
 
 // ----------------------------------------------------------------------------

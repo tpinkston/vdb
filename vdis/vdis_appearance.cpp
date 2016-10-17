@@ -294,12 +294,166 @@ void vdis::land_platform_appearance_bits_t::print(
 }
 
 // ----------------------------------------------------------------------------
+void vdis::point_appearance_v2_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "breach ";
+
+    switch(breach)
+    {
+        case 0:
+            out << "none(0[0x00])" << std::endl;
+            break;
+        case 1:
+            out << "breached(1[0x01])" << std::endl;
+            break;
+        case 2:
+            out << "cleared(2[0x02])" << std::endl;
+            break;
+        default:
+            out << (int)breach << std::endl;
+    }
+
+    out << prefix << "unused(30 bits) "
+        << to_bin_string((uint32_t)unused, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_appearance_v3_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "opacity " << (int)opacity << std::endl
+        << prefix << "size " << (int)size << std::endl
+        << prefix << "height " << (int)height << std::endl
+        << prefix << "burst_count " << (int)burst_count << std::endl
+        << prefix << "chemical ";
+
+    switch(chemical)
+    {
+        case 0:
+            out << "other(0[0x00])" << std::endl;
+            break;
+        case 1:
+            out << "hydrochloric(1[0x01])" << std::endl;
+            break;
+        case 2:
+            out << "white_phosphorous(2[0x02])" << std::endl;
+            break;
+        case 3:
+            out << "red_phosphorous(3[0x03])" << std::endl;
+            break;
+        default:
+            out << (int)chemical << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::point_appearance_v4_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
     out << prefix << "diameter " << (int)diameter << std::endl
         << prefix << "unused(24 bits) "
+        << to_bin_string((uint32_t)unused, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::point_appearance_v5_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "segment_count " << (int)segment_count << std::endl
+        << prefix << "unused(24 bits) "
+        << to_bin_string((uint32_t)unused, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_appearance_v1_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "breach ";
+
+    switch(breach)
+    {
+        case 0:
+            out << "none(0[0x00])" << std::endl;
+            break;
+        case 1:
+            out << "slight(1[0x01])" << std::endl;
+            break;
+        case 2:
+            out << "moderate(2[0x02])" << std::endl;
+            break;
+        case 3:
+            out << "cleared(3[0x03])" << std::endl;
+            break;
+        default:
+            out << (int)breach << std::endl;
+    }
+
+    out << prefix << "unused(14 bits) "
+        << to_bin_string((uint16_t)unused, true) << std::endl
+        << prefix << "breach_length " << (int)breach_length << std::endl
+        << prefix << "breach_position " << (int)breach_position << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_appearance_v2_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "opacity " << (int)opacity << std::endl
+        << prefix << "attached " << (yes_no_e)attached << std::endl
+        << prefix << "chemical ";
+
+    switch(chemical)
+    {
+        case 0:
+            out << "other(0[0x00])" << std::endl;
+            break;
+        case 1:
+            out << "hydrochloric(1[0x01])" << std::endl;
+            break;
+        case 2:
+            out << "white_phosphorous(2[0x02])" << std::endl;
+            break;
+        case 3:
+            out << "red_phosphorous(3[0x03])" << std::endl;
+            break;
+        default:
+            out << (int)chemical << std::endl;
+    }
+
+    out << prefix << "unused(21 bits) "
+        << to_bin_string((uint32_t)unused, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::linear_appearance_v3_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "visible_side ";
+
+    switch(visible_side)
+    {
+        case 0:
+            out << "left(0[0x00])" << std::endl;
+            break;
+        case 1:
+            out << "right(1[0x01])" << std::endl;
+            break;
+        case 2:
+            out << "left_and_right(2[0x02])" << std::endl;
+            break;
+        default:
+            out << (int)visible_side << std::endl;
+    }
+
+    out << prefix << "unused(30 bits) "
         << to_bin_string((uint32_t)unused, true) << std::endl;
 }
 

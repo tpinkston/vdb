@@ -1095,7 +1095,6 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct point_object_state_pdu_t : pdu_base_t
     {
-        // TODO: specific_point_appearance_t
         id_t                            object_id;                  // 6 bytes
         id_t                            referenced_object_id;       // 6 bytes
         uint16_t                        update;                     // 2 bytes

@@ -96,8 +96,8 @@ namespace vdis
     //
     struct point_appearance_v2_bits_t
     {
-        uint32_t            breach:8;               // Bits 0-7
-        uint32_t            unused:24;              // Bits 8-31
+        uint32_t            breach:2;               // Bits 0-1
+        uint32_t            unused:30;              // Bits 2-31
 
         void print(const string_t &prefix, std::ostream &out) const;
     };
@@ -144,8 +144,8 @@ namespace vdis
     //
     struct linear_appearance_v1_bits_t
     {
-        uint32_t            breach:8;               // Bits 0-7
-        uint32_t            unused:8;               // Bits 8-15
+        uint32_t            breach:2;               // Bits 0-1
+        uint32_t            unused:14;              // Bits 2-15
         uint32_t            breach_length:8;        // Bits 16-23
         uint32_t            breach_position:8;      // Bits 24-31
 
@@ -160,7 +160,7 @@ namespace vdis
         uint32_t            opacity:8;              // Bits 0-7
         uint32_t            attached:1;             // Bit 8
         uint32_t            chemical:2;             // Bits 9-10
-        uint32_t            unused:19;              // Bits 11-31
+        uint32_t            unused:21;              // Bits 11-31
 
         void print(const string_t &prefix, std::ostream &out) const;
     };
