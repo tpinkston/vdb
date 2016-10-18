@@ -560,6 +560,11 @@ namespace vdis
         emitter_beam_t(void);
         ~emitter_beam_t(void);
 
+        inline const emitter_target_t *target(uint32_t i) const
+        {
+            return (targets and (i < target_count)) ? targets[i] : 0;
+        }
+
         void clear(void);
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
@@ -580,6 +585,11 @@ namespace vdis
 
         emitter_system_t(void);
         ~emitter_system_t(void);
+
+        inline const emitter_beam_t *beam(uint32_t i) const
+        {
+            return (beams and (i < beam_count)) ? beams[i] : 0;
+        }
 
         void clear(void);
         void print(const string_t &, std::ostream &) const;

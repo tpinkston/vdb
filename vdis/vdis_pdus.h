@@ -185,6 +185,16 @@ namespace vdis
             return (records and (i < record_count)) ? records[i] : 0;
         }
 
+        inline force_id_e force_enum(void) const
+        {
+            return (force_id_e)force;
+        }
+
+        inline uint32_t damage(void) const
+        {
+            return (appearance & 0x0018U) >> 3;
+        }
+
         inline const id_t *get_initator(void) const
         {
             return &id;
@@ -272,6 +282,11 @@ namespace vdis
             return (records and (i < record_count)) ? records[i] : 0;
         }
 
+        inline detonation_result_e result_enum(void) const
+        {
+            return (detonation_result_e)result;
+        }
+
         inline const id_t *get_initator(void) const
         {
             return &shooter;
@@ -307,6 +322,11 @@ namespace vdis
 
         collision_pdu_t(void);
         virtual ~collision_pdu_t(void) { }
+
+        inline collision_e collision_type_enum(void) const
+        {
+            return (collision_e)collision_type;
+        }
 
         inline const id_t *get_initator(void) const
         {
@@ -455,6 +475,16 @@ namespace vdis
         stop_freeze_pdu_t(void);
         virtual ~stop_freeze_pdu_t(void) { }
 
+        inline sf_reason_codes_e reason_enum(void) const
+        {
+            return (sf_reason_codes_e)reason;
+        }
+
+        inline frozen_behavior_e behavior_enum(void) const
+        {
+            return (frozen_behavior_e)behavior;
+        }
+
         inline const id_t *get_initator(void) const
         {
             return &originator;
@@ -492,6 +522,16 @@ namespace vdis
 
         acknowledge_pdu_t(void);
         virtual ~acknowledge_pdu_t(void) { }
+
+        inline ack_acknowledge_flag_e acknowledge_flag_enum(void) const
+        {
+            return (ack_acknowledge_flag_e)acknowledge_flag;
+        }
+
+        inline ack_response_flag_e response_flag_enum(void) const
+        {
+            return (ack_response_flag_e)response_flag;
+        }
 
         inline const id_t *get_initator(void) const
         {
@@ -752,6 +792,11 @@ namespace vdis
         em_emission_pdu_t(void);
         virtual ~em_emission_pdu_t(void);
 
+        inline const emitter_system_t *system(uint32_t i) const
+        {
+            return (systems and (i < system_count)) ? systems[i] : 0;
+        }
+
         inline bool contains_id(const id_t &i) const
         {
             return emitting_entity.matches(i) or event.matches(i);
@@ -788,6 +833,21 @@ namespace vdis
 
         designator_pdu_t(void);
         virtual ~designator_pdu_t(void);
+
+        inline desig_spot_type_e spot_type_enum(void) const
+        {
+            return (desig_spot_type_e)spot_type;
+        }
+
+        inline desig_system_name_e system_name_enum(void) const
+        {
+            return (desig_system_name_e)system_name;
+        }
+
+        inline laser_function_e function_enum(void) const
+        {
+            return (laser_function_e)function;
+        }
 
         inline const id_t *get_initator(void) const
         {

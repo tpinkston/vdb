@@ -2127,17 +2127,17 @@ void vdis::designator_pdu_t::print(std::ostream &out) const
         << entity_marking(designating_id) << std::endl
         << prefix << "designated_id "
         << entity_marking(designated_id) << std::endl
-        << prefix << "spot_type " << (desig_spot_type_e)spot_type << std::endl
-        << prefix << "system_name " << (desig_system_name_e)system_name << std::endl
+        << prefix << "spot_type " << spot_type_enum() << std::endl
+        << prefix << "system_name " << system_name_enum() << std::endl
         << prefix << "code " << (int)code << std::endl
-        << prefix << "power " << to_string(power) << std::endl
-        << prefix << "wavelength " << to_string(wavelength) << std::endl
+        << prefix << "power(watts) " << to_string(power) << std::endl
+        << prefix << "wavelength(microns) " << to_string(wavelength) << std::endl
         << prefix << "spot_offset " << spot_offset << std::endl
         << prefix << "spot_location " << spot_location << std::endl
         << prefix << "algorithm " << (dead_reckoning_e)algorithm << std::endl
         << prefix << "flash_rate " << (int)flash_rate << std::endl
         << prefix << "system_number " << (int)system_number << std::endl
-        << prefix << "function " << (laser_function_e)function << std::endl
+        << prefix << "function " << function_enum() << std::endl
         << prefix << "beam_offset " << beam_offset << std::endl;
 }
 
