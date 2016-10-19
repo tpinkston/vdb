@@ -231,9 +231,9 @@ uint64_t vdis::entity_type_t::get(void) const
 }
 
 // ----------------------------------------------------------------------------
-string_t vdis::entity_type_t::description(void) const
+std::string vdis::entity_type_t::description(void) const
 {
-    string_t
+    std::string
         description;;
 
     if (not entity_types::get_description(get(), description))
@@ -310,9 +310,9 @@ uint32_t vdis::object_type_t::get(void) const
 }
 
 // ----------------------------------------------------------------------------
-string_t vdis::object_type_t::description(object_geometry_e geometry) const
+std::string vdis::object_type_t::description(object_geometry_e geometry) const
 {
-    string_t
+    std::string
         description = object_types::get_description(geometry, get());
 
     if (description.empty())
@@ -353,7 +353,7 @@ void vdis::object_type_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-void vdis::marking_t::str(const string_t &name)
+void vdis::marking_t::str(const std::string &name)
 {
     character_set = ENTITY_MARKING_ASCII;
 
@@ -364,11 +364,11 @@ void vdis::marking_t::str(const string_t &name)
 }
 
 // ----------------------------------------------------------------------------
-string_t vdis::marking_t::str(void) const
+std::string vdis::marking_t::str(void) const
 {
     const bool
         ASCII = is_printable_character(character_set);
-    string_t
+    std::string
         string;
     uint32_t
         sum = 0;
@@ -486,7 +486,7 @@ void vdis::entity_capabilities_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::entity_capabilities_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "capabilities.value "
@@ -551,6 +551,22 @@ void vdis::entity_capabilities_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::offset12_t::read(byte_stream_t &stream)
+{
+    stream.read(x);
+    stream.read(y);
+    stream.read(z);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::offset12_t::write(byte_stream_t &stream)
+{
+    stream.write(x);
+    stream.write(y);
+    stream.write(z);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::location12_t::read(byte_stream_t &stream)
 {
     stream.read(x);
@@ -580,6 +596,22 @@ void vdis::location24_t::write(byte_stream_t &stream)
     stream.write(x);
     stream.write(y);
     stream.write(z);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::geodetic_location_t::read(byte_stream_t &stream)
+{
+    stream.read(latitude);
+    stream.read(longitude);
+    stream.read(elevation);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::geodetic_location_t::write(byte_stream_t &stream)
+{
+    stream.write(latitude);
+    stream.write(longitude);
+    stream.write(elevation);
 }
 
 // ----------------------------------------------------------------------------
@@ -625,7 +657,7 @@ void vdis::dead_reckoning_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::dead_reckoning_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "dead_reckoning.algorithm "
@@ -738,7 +770,7 @@ void vdis::pdu_header_t::reset(pdu_type_e pdu_type)
 
 // ----------------------------------------------------------------------------
 void vdis::pdu_header_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "protocol " << protocol_enum() << std::endl
@@ -779,7 +811,7 @@ void vdis::pdu_header_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::sling_line_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "length " << to_string(line_length, 1, 2) << std::endl
@@ -802,7 +834,7 @@ void vdis::sling_line_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::burst_descriptor_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "munition " << munition
@@ -835,7 +867,7 @@ void vdis::burst_descriptor_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::spread_spectrum_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "frequency_hopping "
@@ -862,7 +894,7 @@ void vdis::spread_spectrum_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::encoding_scheme_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "encoding_class "
@@ -894,7 +926,7 @@ void vdis::encoding_scheme_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::modulation_type_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     major_modulation_e
@@ -945,7 +977,7 @@ void vdis::modulation_type_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::emitter_target_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "entity " << entity_marking(entity) << std::endl
@@ -1042,7 +1074,7 @@ void vdis::emitter_beam_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::emitter_beam_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "data_length " << (int)data_length << std::endl
@@ -1203,7 +1235,7 @@ void vdis::emitter_system_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::emitter_system_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "data_length " << (int)data_length << std::endl
@@ -1274,7 +1306,7 @@ void vdis::emitter_system_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_change_options_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "change_options.bits "
@@ -1325,7 +1357,7 @@ void vdis::iff_change_options_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_system_id_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "type " << (iff_system_type_e)type << std::endl
@@ -1355,7 +1387,7 @@ void vdis::iff_system_id_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_operational_data_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "status " << (int)status << std::endl
@@ -1402,7 +1434,7 @@ void vdis::iff_operational_data_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_parameter_data_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "radiated_power(dBm) "
@@ -1453,7 +1485,7 @@ void vdis::iff_parameter_data_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_layer1_data_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "emitter " << entity_marking(emitter) << std::endl
@@ -1551,7 +1583,7 @@ void vdis::iff_layer2_data_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::iff_layer2_data_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "number " << (int)number << std::endl
@@ -1666,7 +1698,7 @@ void vdis::environment_record_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::environment_record_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "type " << (env_geometry_rec_type_e)type << std::endl
@@ -1730,7 +1762,7 @@ void vdis::environment_record_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::exercise_state_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "id " << (int)id << std::endl
@@ -1759,7 +1791,7 @@ void vdis::exercise_state_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::object_modification_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     if (bits.modified_location)
@@ -1795,7 +1827,7 @@ void vdis::object_modification_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::generic_object_appearance_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "generic_appearance.value "
@@ -1830,7 +1862,7 @@ void vdis::generic_object_appearance_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::linear_segment_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     geodetic_location_t
@@ -1939,6 +1971,749 @@ void vdis::linear_segment_t::using_type(const object_type_t *type_ptr)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::ncm3_engine_rates_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "generator(%) "
+        << to_string(generator, 1, 2) << std::endl
+        << prefix << "turbine(%) "
+        << to_string(turbine, 1, 2) << std::endl
+        << prefix << "fuel_flow(lbs/hr) "
+        << to_string(fuel_flow, 1, 2) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_engine_rates_t::read(byte_stream_t &stream)
+{
+    stream.read(generator);
+    stream.read(turbine);
+    stream.read(fuel_flow);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_engine_rates_t::write(byte_stream_t &stream)
+{
+    stream.write(generator);
+    stream.write(turbine);
+    stream.write(fuel_flow);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_engine_transmission_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.high_temperature)
+    {
+        out << prefix << "high_temperature yes" << std::endl;
+    }
+
+    if (bits.low_pressure)
+    {
+        out << prefix << "low_pressure yes" << std::endl;
+    }
+
+    if (bits.debris)
+    {
+        out << prefix << "debris yes" << std::endl;
+    }
+
+    if (bits.chips)
+    {
+        out << prefix << "chips yes" << std::endl;
+    }
+
+    if (bits.engine_chips)
+    {
+        out << prefix << "padding yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(3 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_engine_transmission_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_engine_transmission_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_transmission_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.high_temperature)
+    {
+        out << prefix << "high_temperature yes" << std::endl;
+    }
+
+    if (bits.low_pressure_auxiliary)
+    {
+        out << prefix << "low_pressure_auxiliary yes" << std::endl;
+    }
+
+    if (bits.low_pressure_main)
+    {
+        out << prefix << "low_pressure_main yes" << std::endl;
+    }
+
+    if (bits.debris)
+    {
+        out << prefix << "debris yes" << std::endl;
+    }
+
+    if (bits.chips)
+    {
+        out << prefix << "chips yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(3 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_transmission_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_transmission_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_comb_transmission_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.high_temperature)
+    {
+        out << prefix << "high_temperature yes" << std::endl;
+    }
+
+    if (bits.low_pressure_auxiliary)
+    {
+        out << prefix << "low_pressure_auxiliary yes" << std::endl;
+    }
+
+    if (bits.low_pressure_main)
+    {
+        out << prefix << "low_pressure_main yes" << std::endl;
+    }
+
+    if (bits.debris_right)
+    {
+        out << prefix << "debris_right yes" << std::endl;
+    }
+
+    if (bits.debris_left)
+    {
+        out << prefix << "debris_left yes" << std::endl;
+    }
+
+    if (bits.chips)
+    {
+        out << prefix << "chips yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(2 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_comb_transmission_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_comb_transmission_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_shaft_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.low_pressure)
+    {
+        out << prefix << "low_pressure yes" << std::endl;
+    }
+
+    if (bits.chips)
+    {
+        out << prefix << "chips yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(6 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_shaft_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_shaft_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_ground_contact_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.right_switch)
+    {
+        out << prefix << "right_switch yes" << std::endl;
+    }
+
+    if (bits.left_switch)
+    {
+        out << prefix << "left_switch yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(6 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_ground_contact_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_ground_contact_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_control_malfunctions_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.pump_fail)
+    {
+        out << prefix << "pump_fail yes" << std::endl;
+    }
+
+    if (bits.return_line_filter)
+    {
+        out << prefix << "return_line_filter yes" << std::endl;
+    }
+
+    if (bits.pressure_line_filter)
+    {
+        out << prefix << "pressure_line_filter yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(5 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_control_malfunctions_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_control_malfunctions_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_utility_malfunctions_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.utility_pump_fail)
+    {
+        out << prefix << "utility_pump_fail yes" << std::endl;
+    }
+
+    if (bits.apu_pump_fail)
+    {
+        out << prefix << "apu_pump_fail yes" << std::endl;
+    }
+
+    if (bits.return_line_filter)
+    {
+        out << prefix << "return_line_filter yes" << std::endl;
+    }
+
+    if (bits.pressure_line_filter)
+    {
+        out << prefix << "pressure_line_filter yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(4 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_utility_malfunctions_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_utility_malfunctions_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_uh72_controls_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.hoist_cable_cut)
+    {
+        out << prefix << "hoist_cable_cut yes" << std::endl;
+    }
+
+    if (bits.water_bucket_valve_open)
+    {
+        out << prefix << "water_bucket_valve_open yes" << std::endl;
+    }
+
+    if (bits.over_torque_warning)
+    {
+        out << prefix << "over_torque_warning yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(5 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_uh72_controls_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_uh72_controls_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hook_safety_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.uh60_emergency_release)
+    {
+        out << prefix << "uh60_emergency_release yes" << std::endl;
+    }
+
+    if (bits.hook_safe)
+    {
+        out << prefix << "hook_safe yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(6 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hook_safety_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hook_safety_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_flare_state_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value, true) << std::endl;
+
+    if (bits.safe)
+    {
+        out << prefix << "safe yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(6 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_flare_state_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_flare_state_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_cargo_hook_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.locked_open)
+    {
+        out << prefix << "locked_open yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(15 bits) "
+            << to_bin_string((uint16_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_cargo_hook_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_cargo_hook_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_water_bucket_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "fill_level " << to_string(fill_level, 1, 2) << std::endl
+        << prefix << "size " << (int)size << std::endl
+        << prefix << "padding(8 bits) " << to_bin_string(padding) << std::endl
+        << prefix << "size " << (yes_no_e)releasing << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_water_bucket_t::read(byte_stream_t &stream)
+{
+    stream.read(fill_level);
+    stream.read(size);
+    stream.read(padding);
+    stream.read(releasing);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_water_bucket_t::write(byte_stream_t &stream)
+{
+    stream.write(fill_level);
+    stream.write(size);
+    stream.write(padding);
+    stream.write(releasing);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_status_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.cable_reset)
+    {
+        out << prefix << "cable_reset yes" << std::endl;
+    }
+
+    if (bits.cable_cut)
+    {
+        out << prefix << "cable_cut yes" << std::endl;
+    }
+
+    if (bits.device_open)
+    {
+        out << prefix << "device_open yes" << std::endl;
+    }
+
+    if (bits.device_active)
+    {
+        out << prefix << "device_active yes" << std::endl
+            << prefix << "device_type "
+            << (ncm3_hoist_device_e)bits.device_type << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(2 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_status_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_status_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "rescue_device_location "
+        << rescue_device_location << std::endl
+        << prefix << "rescue_device_orientation "
+        << rescue_device_orientation << std::endl
+        << prefix << "boom_angle "
+        << to_string(boom_angle, 1, 2) << std::endl
+        << prefix << "hook_location "
+        << hook_location << std::endl
+        << prefix << "hook_orientation "
+        << hook_orientation << std::endl;
+
+    status.print((prefix + "status."), out);
+
+    out << prefix << "padding(3 bytes) "
+        << to_hex_string(padding[0]) << "-"
+        << to_hex_string(padding[1]) << "-"
+        << to_hex_string(padding[2]) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_t::read(byte_stream_t &stream)
+{
+    rescue_device_location.read(stream);
+    rescue_device_orientation.read(stream);
+    stream.read(boom_angle);
+    hook_location.read(stream);
+    hook_orientation.read(stream);
+    status.read(stream);
+    stream.read(padding, 3);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hoist_t::write(byte_stream_t &stream)
+{
+    rescue_device_location.write(stream);
+    rescue_device_orientation.write(stream);
+    stream.write(boom_angle);
+    hook_location.write(stream);
+    hook_orientation.write(stream);
+    status.write(stream);
+    stream.write(padding, 3);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_system_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "padding(16 bits) "
+        << to_bin_string(padding, true) << std::endl
+        << prefix << "temperature(C) "
+        << (int)temperature << std::endl
+        << prefix << "pressure(psi) "
+        << (int)pressure << std::endl
+        << prefix << "reservoir_level(%) "
+        << (int)reservoir_level << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_system_t::read(byte_stream_t &stream)
+{
+    stream.read(padding);
+    stream.read(temperature);
+    stream.read(pressure);
+    stream.read(reservoir_level);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_system_t::write(byte_stream_t &stream)
+{
+    stream.write(padding);
+    stream.write(temperature);
+    stream.write(pressure);
+    stream.write(reservoir_level);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_maintenance_cautions_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "padding(8 bits) "
+        << to_bin_string(padding) << std::endl;
+
+    engine_transmission1.print((prefix + "engine_transmission1."), out);
+    engine_transmission2.print((prefix + "engine_transmission2."), out);
+    forward_transmission.print((prefix + "forward_transmission."), out);
+    combined_transmission.print((prefix + "combined_transmission."), out);
+    aft_transmission.print((prefix + "aft_transmission."), out);
+    aft_shaft.print((prefix + "aft_shaft."), out);
+    ground_contact.print((prefix + "ground_contact."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_maintenance_cautions_t::read(byte_stream_t &stream)
+{
+    stream.read(padding);
+    engine_transmission1.read(stream);
+    engine_transmission2.read(stream);
+    forward_transmission.read(stream);
+    combined_transmission.read(stream);
+    aft_transmission.read(stream);
+    aft_shaft.read(stream);
+    ground_contact.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_maintenance_cautions_t::write(byte_stream_t &stream)
+{
+    stream.write(padding);
+    engine_transmission1.write(stream);
+    engine_transmission2.write(stream);
+    forward_transmission.write(stream);
+    combined_transmission.write(stream);
+    aft_transmission.write(stream);
+    aft_shaft.write(stream);
+    ground_contact.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_cautions_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "padding(8 bits) "
+        << to_bin_string(padding) << std::endl;
+
+    flight_control1.print((prefix + "flight_control1."), out);
+    flight_control2.print((prefix + "flight_control2."), out);
+    utility.print((prefix + "utility."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_cautions_t::read(byte_stream_t &stream)
+{
+    stream.read(padding);
+    flight_control1.read(stream);
+    flight_control2.read(stream);
+    utility.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_cautions_t::write(byte_stream_t &stream)
+{
+    stream.write(padding);
+    flight_control1.write(stream);
+    flight_control2.write(stream);
+    utility.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_gauges_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    flight_control1.print((prefix + "flight_control1."), out);
+    flight_control2.print((prefix + "flight_control2."), out);
+    utility.print((prefix + "utility."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_gauges_t::read(byte_stream_t &stream)
+{
+    flight_control1.read(stream);
+    flight_control2.read(stream);
+    utility.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_hydraulic_gauges_t::write(byte_stream_t &stream)
+{
+    flight_control1.write(stream);
+    flight_control2.write(stream);
+    utility.write(stream);
+}
+
+// ----------------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &out, const vdis::simulation_id_t &o)
 {
     out << (int)o.site << "." << (int)o.application;
@@ -1985,6 +2760,16 @@ std::ostream &operator<<(std::ostream &out, const vdis::object_type_t &o)
 std::ostream &operator<<(std::ostream &out, const vdis::marking_t &o)
 {
     return (out << o.str());
+}
+
+// ----------------------------------------------------------------------------
+std::ostream &operator<<(std::ostream &out, const vdis::offset12_t &o)
+{
+    out << vdis::to_string(o.x) << ", "
+        << vdis::to_string(o.y) << ", "
+        << vdis::to_string(o.z);
+
+    return out;
 }
 
 // ----------------------------------------------------------------------------

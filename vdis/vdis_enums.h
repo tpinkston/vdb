@@ -137,6 +137,11 @@
 #include "mun_cat.h"
 #include "munition_status.h"
 #include "nature.h"
+#include "ncm3_attach_state.h"
+#include "ncm3_configuration.h"
+#include "ncm3_gun_trigger.h"
+#include "ncm3_hoist_device.h"
+#include "ncm3_hook_animation.h"
 #include "object_damage.h"
 #include "object_geometry.h"
 #include "object_kind.h"
@@ -358,6 +363,11 @@
 #define ENUM_MUN_CAT "MUN_CAT"
 #define ENUM_MUNITION_STATUS "MUNITION_STATUS"
 #define ENUM_NATURE "NATURE"
+#define ENUM_NCM3_ATTACH_STATE "NCM3_ATTACH_STATE"
+#define ENUM_NCM3_CONFIGURATION "NCM3_CONFIGURATION"
+#define ENUM_NCM3_GUN_TRIGGER "NCM3_GUN_TRIGGER"
+#define ENUM_NCM3_HOIST_DEVICE "NCM3_HOIST_DEVICE"
+#define ENUM_NCM3_HOOK_ANIMATION "NCM3_HOOK_ANIMATION"
 #define ENUM_OBJECT_DAMAGE "OBJECT_DAMAGE"
 #define ENUM_OBJECT_GEOMETRY "OBJECT_GEOMETRY"
 #define ENUM_OBJECT_KIND "OBJECT_KIND"
@@ -1090,6 +1100,31 @@ inline std::ostream &operator<<(std::ostream &out, vdis::munition_status_e value
 inline std::ostream &operator<<(std::ostream &out, vdis::nature_e value)
 {
     return vdis::enumerations::print(ENUM_NATURE, value, out);
+}
+
+inline std::ostream &operator<<(std::ostream &out, vdis::ncm3_attach_state_e value)
+{
+    return vdis::enumerations::print(ENUM_NCM3_ATTACH_STATE, value, out);
+}
+
+inline std::ostream &operator<<(std::ostream &out, vdis::ncm3_configuration_e value)
+{
+    return vdis::enumerations::print(ENUM_NCM3_CONFIGURATION, value, out);
+}
+
+inline std::ostream &operator<<(std::ostream &out, vdis::ncm3_gun_trigger_e value)
+{
+    return vdis::enumerations::print(ENUM_NCM3_GUN_TRIGGER, value, out);
+}
+
+inline std::ostream &operator<<(std::ostream &out, vdis::ncm3_hoist_device_e value)
+{
+    return vdis::enumerations::print(ENUM_NCM3_HOIST_DEVICE, value, out);
+}
+
+inline std::ostream &operator<<(std::ostream &out, vdis::ncm3_hook_animation_e value)
+{
+    return vdis::enumerations::print(ENUM_NCM3_HOOK_ANIMATION, value, out);
 }
 
 inline std::ostream &operator<<(std::ostream &out, vdis::object_damage_e value)

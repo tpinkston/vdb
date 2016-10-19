@@ -87,7 +87,7 @@ void logger::log_message(
     bool
         console_logging = console_logging_out;
 
-    if (level == logger::ERROR)
+    if ((level == logger::ERROR) or (level == logger::WARNING))
     {
         stream_ptr = &err;
         console_logging = console_logging_err;

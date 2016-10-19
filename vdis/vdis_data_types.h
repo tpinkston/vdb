@@ -102,7 +102,7 @@ namespace vdis
         void set(uint64_t value);
         uint64_t get(void) const;
 
-        string_t description(void) const;
+        std::string description(void) const;
 
         bool operator==(const entity_type_t &) const;
         bool operator!=(const entity_type_t &) const;
@@ -134,7 +134,7 @@ namespace vdis
         void set(uint32_t value);
         uint32_t get(void) const;
 
-        string_t description(object_geometry_e geometry) const;
+        std::string description(object_geometry_e geometry) const;
 
         bool operator==(const object_type_t &) const;
         bool operator!=(const object_type_t &) const;
@@ -154,8 +154,8 @@ namespace vdis
         marking_t(void) { clear(); }
         ~marking_t(void) { }
 
-        void str(const string_t &name);
-        string_t str(void) const;
+        void str(const std::string &name);
+        std::string str(void) const;
 
         inline entity_marking_e marking_type(void) const
         {
@@ -194,7 +194,25 @@ namespace vdis
         bits_t                      bits;
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct offset12_t
+    {
+        float32_t                   x;                          // 4 bytes
+        float32_t                   y;                          // 4 bytes
+        float32_t                   z;                          // 4 bytes
+
+        inline void clear(void)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -248,6 +266,9 @@ namespace vdis
             longitude = 0;
             elevation = 0;
         }
+
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
     };
 
     // ------------------------------------------------------------------------
@@ -310,7 +331,7 @@ namespace vdis
         }
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -388,7 +409,7 @@ namespace vdis
 
         bool is_valid(void) const;
         void reset(pdu_type_e);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -405,7 +426,7 @@ namespace vdis
             line_length = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -438,7 +459,7 @@ namespace vdis
             rate = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -462,7 +483,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -484,7 +505,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -505,7 +526,7 @@ namespace vdis
             radio_system = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -524,7 +545,7 @@ namespace vdis
             beam = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -566,7 +587,7 @@ namespace vdis
         }
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -592,7 +613,7 @@ namespace vdis
         }
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -627,7 +648,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -648,7 +669,7 @@ namespace vdis
             options.clear();
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -681,7 +702,7 @@ namespace vdis
             parameter_6 = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -710,7 +731,7 @@ namespace vdis
             system_specific_data[2] = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -737,7 +758,7 @@ namespace vdis
             operational_data.clear();
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -767,7 +788,7 @@ namespace vdis
         ~iff_layer2_data_t(void);
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -785,7 +806,7 @@ namespace vdis
         ~environment_record_t(void);
 
         void clear(void);
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -821,7 +842,7 @@ namespace vdis
             requested_state = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -844,7 +865,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -871,7 +892,7 @@ namespace vdis
             value = 0;
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
     };
@@ -918,11 +939,462 @@ namespace vdis
             orientation.clear();
         }
 
-        void print(const string_t &, std::ostream &) const;
+        void print(const std::string &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
 
         static void using_type(const object_type_t *type_ptr);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_engine_rates_t
+    {
+        float32_t                   generator;                  // 4 bytes (%)
+        float32_t                   turbine;                    // 4 bytes (%)
+        float32_t                   fuel_flow;                  // 4 bytes
+
+        inline void clear(void)
+        {
+            generator = 0;
+            turbine = 0;
+            fuel_flow = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_engine_transmission_t
+    {
+        struct bits_t
+        {
+            uint8_t                 high_temperature:1;         // Bit 0
+            uint8_t                 low_pressure:1;             // Bit 1
+            uint8_t                 debris:1;                   // Bit 2
+            uint8_t                 chips:1;                    // Bit 3
+            uint8_t                 engine_chips:1;             // Bit 4
+            uint8_t                 padding:3;                  // Bits 5-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_transmission_t
+    {
+        struct bits_t
+        {
+            uint8_t                 high_temperature:1;         // Bit 0
+            uint8_t                 low_pressure_auxiliary:1;   // Bit 1
+            uint8_t                 low_pressure_main:1;        // Bit 2
+            uint8_t                 debris:1;                   // Bit 3
+            uint8_t                 chips:1;                    // Bit 4
+            uint8_t                 padding:3;                  // Bits 5-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_comb_transmission_t
+    {
+        struct bits_t
+        {
+            uint8_t                 high_temperature:1;         // Bit 0
+            uint8_t                 low_pressure_auxiliary:1;   // Bit 1
+            uint8_t                 low_pressure_main:1;        // Bit 2
+            uint8_t                 debris_right:1;             // Bit 3
+            uint8_t                 debris_left:1;              // Bit 3
+            uint8_t                 chips:1;                    // Bit 5
+            uint8_t                 padding:2;                  // Bits 6-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_shaft_t
+    {
+        struct bits_t
+        {
+            uint8_t                 low_pressure:1;             // Bit 0
+            uint8_t                 chips:1;                    // Bit 1
+            uint8_t                 padding:6;                  // Bits 2-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    union ncm3_ground_contact_t
+    {
+        struct bits_t
+        {
+            uint8_t                 right_switch:1;             // Bit 0
+            uint8_t                 left_switch:1;              // Bit 1
+            uint8_t                 padding:6;                  // Bits 2-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_control_malfunctions_t
+    {
+        struct bits_t
+        {
+            uint8_t                 pump_fail:1;                // Bit 0
+            uint8_t                 return_line_filter:1;       // Bit 1
+            uint8_t                 pressure_line_filter:1;     // Bit 2
+            uint8_t                 padding:5;                  // Bits 3-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_utility_malfunctions_t
+    {
+        struct bits_t
+        {
+            uint8_t                 utility_pump_fail:1;        // Bit 0
+            uint8_t                 apu_pump_fail:1;            // Bit 1
+            uint8_t                 return_line_filter:1;       // Bit 2
+            uint8_t                 pressure_line_filter:1;     // Bit 3
+            uint8_t                 padding:4;                  // Bits 4-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_uh72_controls_t
+    {
+        struct bits_t
+        {
+            uint8_t                 hoist_cable_cut:1;          // Bit 0
+            uint8_t                 water_bucket_valve_open:1;  // Bit 1
+            uint8_t                 over_torque_warning:1;      // Bit 2
+            uint8_t                 padding:5;                  // Bits 3-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hook_safety_t
+    {
+        struct bits_t
+        {
+            uint8_t                 uh60_emergency_release:1;   // Bit 0
+            uint8_t                 hook_safe:1;                // Bit 1
+            uint8_t                 padding:6;                  // Bits 2-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_flare_state_t
+    {
+        struct bits_t
+        {
+            uint16_t                safe:1;                     // Bit 0
+            uint16_t                padding:15;                 // Bits 1-15
+        };
+
+        uint16_t                    value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_cargo_hook_t
+    {
+        struct bits_t
+        {
+            uint16_t                locked_open:1;              // Bit 0
+            uint16_t                padding:15;                 // Bits 1-15
+        };
+
+        uint16_t                    value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_water_bucket_t
+    {
+        float32_t                   fill_level;                 // 4 bytes
+        uint16_t                    size;                       // 2 bytes
+        uint8_t                     padding;                    // 1 byte
+        uint8_t                     releasing;                  // 1 byte
+
+        inline void clear(void)
+        {
+            fill_level = 0;
+            size = 0;
+            padding = 0;
+            releasing = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hoist_status_t
+    {
+        // device_type: 0=jungle_penetrator, 1=rescue_strop
+        struct bits_t
+        {
+            uint8_t                 cable_reset:1;              // Bit 0
+            uint8_t                 cable_cut:1;                // Bit 1
+            uint8_t                 device_open:1;              // Bit 2
+            uint8_t                 device_active:1;            // Bit 3
+            uint8_t                 device_type:1;              // Bits 4-5
+            uint8_t                 padding:2;                  // Bits 6-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hoist_t
+    {
+        location24_t                rescue_device_location;     // 24 bytes
+        orientation_t               rescue_device_orientation;  // 12 bytes
+        float32_t                   boom_angle;                 // 4 bytes
+        location24_t                hook_location;              // 24 bytes
+        orientation_t               hook_orientation;           // 12 bytes
+        ncm3_hoist_status_t         status;                     // 1 byte
+        uint8_t                     padding[3];                 // 3 bytes
+
+        inline void clear(void)
+        {
+            rescue_device_location.clear();
+            rescue_device_orientation.clear();
+            boom_angle = 0;
+            hook_location.clear();
+            hook_orientation.clear();
+            status.clear();
+            padding[0] = 0;
+            padding[1] = 0;
+            padding[2] = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hydraulic_system_t
+    {
+        uint16_t                     padding;                   // 2 bytes
+        uint16_t                     temperature;               // 2 bytes
+        uint16_t                     pressure;                  // 2 bytes
+        uint16_t                     reservoir_level;           // 2 bytes
+
+        inline void clear(void)
+        {
+            padding = 0;
+            temperature = 0;
+            pressure = 0;
+            reservoir_level = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_maintenance_cautions_t
+    {
+        uint8_t                     padding;                    // 1 byte
+        ncm3_engine_transmission_t  engine_transmission1;       // 1 byte
+        ncm3_engine_transmission_t  engine_transmission2;       // 1 byte
+        ncm3_transmission_t         forward_transmission;       // 1 byte
+        ncm3_comb_transmission_t    combined_transmission;      // 1 byte
+        ncm3_transmission_t         aft_transmission;           // 1 byte
+        ncm3_shaft_t                aft_shaft;                  // 1 byte
+        ncm3_ground_contact_t       ground_contact;             // 1 byte
+
+        inline void clear(void)
+        {
+            padding = 0;
+            engine_transmission1.clear();
+            engine_transmission2.clear();
+            forward_transmission.clear();
+            combined_transmission.clear();
+            aft_transmission.clear();
+            aft_shaft.clear();
+            ground_contact.clear();
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hydraulic_cautions_t
+    {
+        uint8_t                     padding;                    // 1 byte
+        ncm3_control_malfunctions_t flight_control1;            // 1 byte
+        ncm3_control_malfunctions_t flight_control2;            // 1 byte
+        ncm3_utility_malfunctions_t utility;                    // 1 byte
+
+        inline void clear(void)
+        {
+            padding = 0;
+            flight_control1.clear();
+            flight_control2.clear();
+            utility.clear();
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
+    struct ncm3_hydraulic_gauges_t
+    {
+        ncm3_hydraulic_system_t     flight_control1;            // 8 bytes
+        ncm3_hydraulic_system_t     flight_control2;            // 8 bytes
+        ncm3_hydraulic_system_t     utility;                    // 8 bytes
+
+        inline void clear(void)
+        {
+            flight_control1.clear();
+            flight_control2.clear();
+            utility.clear();
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
     };
 }
 
@@ -934,6 +1406,7 @@ std::ostream &operator<<(std::ostream &, const vdis::id_t &);
 std::ostream &operator<<(std::ostream &, const vdis::entity_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::object_type_t &);
 std::ostream &operator<<(std::ostream &, const vdis::marking_t &);
+std::ostream &operator<<(std::ostream &, const vdis::offset12_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location12_t &);
 std::ostream &operator<<(std::ostream &, const vdis::location24_t &);
 std::ostream &operator<<(std::ostream &, const vdis::geodetic_location_t &);

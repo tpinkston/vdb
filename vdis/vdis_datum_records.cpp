@@ -164,7 +164,7 @@ bool vdis::write_variable_datum_records(
 
 // ----------------------------------------------------------------------------
 void vdis::fixed_datum_record_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "datum_id " << datum_id_enum() << std::endl
@@ -215,21 +215,9 @@ uint32_t vdis::variable_datum_content_t::read_length(byte_stream_t &stream)
         //
         length_bytes = (length_bits / 8);
 
-        if ((length_bytes % 8) > 0)
-        {
-            // This is okay as long as there is padding to 8-byte boundary
-            // after the record.
-            //
-            LOG_WARNING(
-                "Variable datum content length in bytes is invalid: %d",
-                length_bytes);
-        }
-        else
-        {
-            LOG_EXTRA_VERBOSE(
-                "Variable datum record length in bytes is %d...",
-                length_bytes);
-        }
+        LOG_EXTRA_VERBOSE(
+            "Variable datum record length in bytes is %d...",
+            length_bytes);
 
         if (length_bytes > 0)
         {
@@ -287,7 +275,7 @@ void vdis::variable_datum_record_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::variable_datum_record_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "datum_id " << datum_id_enum() << std::endl;
@@ -311,25 +299,35 @@ void vdis::variable_datum_record_t::read(byte_stream_t &stream)
     switch(id)
     {
         case DATUM_IDS_DID_STATUS_DAMAGE_AGGR:
-        {
             content_ptr = new damage_status_t;
             break;
-        }
         case DATUM_IDS_DID_SLING_LOAD_CAPABILITY:
-        {
             content_ptr = new sling_load_capability_t;
             break;
-        }
         case DATUM_IDS_DID_TASK_ORG_FORCE_ID_AFFILIATION:
-        {
             content_ptr = new force_id_affiliation_t;
             break;
-        }
+        case DATUM_IDS_DID_AVCATT_TO_NCM3_01:
+            content_ptr = new avcatt_to_ncm3_01_t;
+            break;
+        case DATUM_IDS_DID_NCM3_TO_AVCATT_01:
+            content_ptr = new ncm3_to_avcatt_01_t;
+            break;
+        case DATUM_IDS_DID_AVCATT_TO_NCM3_02:
+            content_ptr = new avcatt_to_ncm3_02_t;
+            break;
+        case DATUM_IDS_DID_NCM3_TO_AVCATT_02:
+            content_ptr = new ncm3_to_avcatt_02_t;
+            break;
+        case DATUM_IDS_DID_AVCATT_TO_NCM3_03:
+            content_ptr = new avcatt_to_ncm3_03_t;
+            break;
+        case DATUM_IDS_DID_NCM3_TO_AVCATT_03:
+            content_ptr = new ncm3_to_avcatt_03_t;
+            break;
         default:
-        {
             content_ptr = new default_variable_datum_content_t;
             break;
-        }
     }
 
     LOG_EXTRA_VERBOSE("Reading variable datum content: %p", content_ptr);
@@ -356,7 +354,7 @@ void vdis::variable_datum_record_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::default_variable_datum_content_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     if (buffer.length() > 0)
@@ -397,7 +395,7 @@ void vdis::default_variable_datum_content_t::write(byte_stream_t &stream)
 
 // ----------------------------------------------------------------------------
 void vdis::damage_status_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "damage_status.casualties "
@@ -424,7 +422,7 @@ void vdis::damage_status_t::read(byte_stream_t &stream)
         LOG_ERROR(
             "Inconsistent datum length for damage_status_t: %d/%d",
             length,
-            LENGTH_BITS);
+            (LENGTH_BITS / 8));
     }
 
     stream.read(casualties);
@@ -502,7 +500,7 @@ void vdis::sling_load_capability_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::sling_load_capability_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "sling_load_capability.payload "
@@ -540,7 +538,7 @@ void vdis::sling_load_capability_t::read(byte_stream_t &stream)
         LOG_ERROR(
             "Inconsistent datum length for sling_load_capability_t: %d/%d",
             length,
-            BASE_LENGTH_BITS);
+            (BASE_LENGTH_BITS / 8));
     }
 
     payload.read(stream);
@@ -582,7 +580,7 @@ void vdis::sling_load_capability_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
-string_t vdis::force_id_affiliation_t::force_name(void) const
+std::string vdis::force_id_affiliation_t::force_name(void) const
 {
     if (name.length() > 0)
     {
@@ -612,7 +610,7 @@ void vdis::force_id_affiliation_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdis::force_id_affiliation_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "force_id_affiliation.force "
@@ -649,4 +647,489 @@ void vdis::force_id_affiliation_t::write(byte_stream_t &stream)
     stream.write(force);
     stream.write(padding);
     stream.write(name);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_01_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "avcatt_to_ncm3_01.");
+
+    out << ncm3_prefix << "ownship_gcc "
+        << ownship_gcc << std::endl
+        << ncm3_prefix << "ownship_gdc "
+        << ownship_gdc << std::endl
+        << ncm3_prefix << "ownship_orientation "
+        << ownship_orientation << std::endl
+        << ncm3_prefix << "ownship_velocity "
+        << ownship_velocity << std::endl
+        << ncm3_prefix << "load_id "
+        << entity_marking(load_id) << std::endl
+        << ncm3_prefix << "frozen "
+        << (yes_no_e)frozen << std::endl
+        << ncm3_prefix << "load_gcc "
+        << load_gcc << std::endl
+        << ncm3_prefix << "load_attached "
+        << (yes_no_e)load_attached << std::endl
+        << ncm3_prefix << "load_orientation "
+        << load_orientation << std::endl
+        << ncm3_prefix << "search_light "
+        << (on_off_e)search_light << std::endl
+        << ncm3_prefix << "search_light_azimuth "
+        << search_light_azimuth << std::endl
+        << ncm3_prefix << "search_light_elevation "
+        << search_light_elevation << std::endl
+        << ncm3_prefix << "water_bucket_full "
+        << (yes_no_e)water_bucket_full << std::endl
+        << ncm3_prefix << "place_survivor_on_hoist "
+        << place_survivor_on_hoist << std::endl
+        << ncm3_prefix << "survivor_id "
+        << entity_marking(survivor_id) << std::endl
+        << ncm3_prefix << "hook_type "
+        << (hook_type_e)hook_type << std::endl
+        << ncm3_prefix << "malfunction "
+        << (yes_no_e)malfunction << std::endl
+        << ncm3_prefix << "collision "
+        << (yes_no_e)collision << std::endl
+        << ncm3_prefix << "ownship_appearance "
+        << to_bin_string(ownship_appearance, true) << std::endl
+        << ncm3_prefix << "ownship_update "
+        << ownship_update << std::endl
+        << ncm3_prefix << "sling_tightness_center(%) "
+        << to_string(sling_tightness_center) << std::endl
+        << ncm3_prefix << "sling_tightness_forward(%) "
+        << to_string(sling_tightness_forward) << std::endl
+        << ncm3_prefix << "sling_tightness_aft(%) "
+        << to_string(sling_tightness_aft) << std::endl
+        << ncm3_prefix << "rotor_roll "
+        << to_string(rotor_roll) << std::endl
+        << ncm3_prefix << "rotor_pitch "
+        << to_string(rotor_pitch) << std::endl
+        << ncm3_prefix << "rotor_coning_forward(%) "
+        << to_string(rotor_coning_forward) << std::endl
+        << ncm3_prefix << "rotor_coning_aft(%) "
+        << to_string(rotor_coning_aft) << std::endl
+        << ncm3_prefix << "rotor_speed(%) "
+        << to_string(rotor_speed) << std::endl
+        << ncm3_prefix << "lift_vibration_frequency(%) "
+        << to_string(lift_vibration_frequency) << std::endl
+        << ncm3_prefix << "lift_vibration_amplitude(%) "
+        << to_string(lift_vibration_amplitude) << std::endl;
+
+    engine_rates1.print((ncm3_prefix + "engine_rates1."), out);
+    engine_rates2.print((ncm3_prefix + "engine_rates2."), out);
+
+    out << ncm3_prefix << "total_airspeed(ft/s) "
+        << to_string(total_airspeed) << std::endl
+        << ncm3_prefix << "weight_on_wheel_left "
+        << (yes_no_e)weight_on_wheel_left << std::endl
+        << ncm3_prefix << "weight_on_wheel_right "
+        << (yes_no_e)weight_on_wheel_right << std::endl
+        << ncm3_prefix << "weight_on_wheel_aft "
+        << (yes_no_e)weight_on_wheel_aft << std::endl
+        << ncm3_prefix << "groundspeed_x(ft/s) "
+        << groundspeed_x << std::endl
+        << ncm3_prefix << "groundspeed_y(ft/s) "
+        << groundspeed_y << std::endl
+        << ncm3_prefix << "gear_squeal_left "
+        << (yes_no_e)gear_squeal_left << std::endl
+        << ncm3_prefix << "gear_squeal_right "
+        << (yes_no_e)gear_squeal_right << std::endl
+        << ncm3_prefix << "gear_squeal_aft "
+        << (yes_no_e)gear_squeal_aft << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_01_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for avcatt_to_ncm3_01_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    ownship_gcc.read(stream);
+    ownship_gdc.read(stream);
+    ownship_orientation.read(stream);
+    ownship_velocity.read(stream);
+    load_id.read(stream);
+    stream.read(frozen);
+    load_gcc.read(stream);
+    stream.read(load_attached);
+    load_orientation.read(stream);
+    stream.read(search_light);
+    stream.read(search_light_azimuth);
+    stream.read(search_light_elevation);
+    stream.read(water_bucket_full);
+    stream.read(place_survivor_on_hoist);
+    survivor_id.read(stream);
+    stream.read(hook_type);
+    stream.read(malfunction);
+    stream.read(collision);
+    stream.read(ownship_appearance);
+    stream.read(ownship_update);
+    stream.read(sling_tightness_center);
+    stream.read(sling_tightness_forward);
+    stream.read(sling_tightness_aft);
+    stream.read(rotor_roll);
+    stream.read(rotor_pitch);
+    stream.read(rotor_coning_forward);
+    stream.read(rotor_coning_aft);
+    stream.read(rotor_speed);
+    stream.read(lift_vibration_frequency);
+    stream.read(lift_vibration_amplitude);
+    engine_rates1.read(stream);
+    engine_rates2.read(stream);
+    stream.read(total_airspeed);
+    stream.read(weight_on_wheel_left);
+    stream.read(weight_on_wheel_right);
+    stream.read(weight_on_wheel_aft);
+    stream.read(groundspeed_x);
+    stream.read(groundspeed_y);
+    stream.read(gear_squeal_left);
+    stream.read(gear_squeal_right);
+    stream.read(gear_squeal_aft);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_01_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    ownship_gcc.write(stream);
+    ownship_gdc.write(stream);
+    ownship_orientation.write(stream);
+    ownship_velocity.write(stream);
+    load_id.write(stream);
+    stream.write(frozen);
+    load_gcc.write(stream);
+    stream.write(load_attached);
+    load_orientation.write(stream);
+    stream.write(search_light);
+    stream.write(search_light_azimuth);
+    stream.write(search_light_elevation);
+    stream.write(water_bucket_full);
+    stream.write(place_survivor_on_hoist);
+    survivor_id.write(stream);
+    stream.write(hook_type);
+    stream.write(malfunction);
+    stream.write(collision);
+    stream.write(ownship_appearance);
+    stream.write(ownship_update);
+    stream.write(sling_tightness_center);
+    stream.write(sling_tightness_forward);
+    stream.write(sling_tightness_aft);
+    stream.write(rotor_roll);
+    stream.write(rotor_pitch);
+    stream.write(rotor_coning_forward);
+    stream.write(rotor_coning_aft);
+    stream.write(rotor_speed);
+    stream.write(lift_vibration_frequency);
+    stream.write(lift_vibration_amplitude);
+    engine_rates1.write(stream);
+    engine_rates2.write(stream);
+    stream.write(total_airspeed);
+    stream.write(weight_on_wheel_left);
+    stream.write(weight_on_wheel_right);
+    stream.write(weight_on_wheel_aft);
+    stream.write(groundspeed_x);
+    stream.write(groundspeed_y);
+    stream.write(gear_squeal_left);
+    stream.write(gear_squeal_right);
+    stream.write(gear_squeal_aft);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_01_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "ncm3_to_avcatt_01.");
+
+    out << ncm3_prefix << "configuration "
+        << (ncm3_configuration_e)configuration << std::endl
+        << ncm3_prefix << "gun_trigger_left "
+        << (ncm3_gun_trigger_e)gun_trigger_left << std::endl
+        << ncm3_prefix << "gun_trigger_right "
+        << (ncm3_gun_trigger_e)gun_trigger_right << std::endl
+        << ncm3_prefix << "gun_trigger_aft "
+        << (ncm3_gun_trigger_e)gun_trigger_aft << std::endl
+        << ncm3_prefix << "hook_animation_state "
+        << (ncm3_hook_animation_e)hook_animation_state << std::endl
+        << ncm3_prefix << "released_water "
+        << (yes_no_e)released_water << std::endl
+        << ncm3_prefix << "released_cargo "
+        << (yes_no_e)released_cargo << std::endl
+        << ncm3_prefix << "released_flare "
+        << (yes_no_e)released_flare << std::endl
+        << ncm3_prefix << "hoist_medic_state "
+        << (ncm3_attach_state_e)hoist_medic_state << std::endl
+        << ncm3_prefix << "hoist_survivor_state "
+        << (ncm3_attach_state_e)hoist_survivor_state << std::endl
+        << ncm3_prefix << "hoist_available "
+        << (yes_no_e)hoist_available << std::endl
+        << ncm3_prefix << "medic_orientation "
+        << medic_orientation << std::endl
+        << ncm3_prefix << "medic_location "
+        << medic_location << std::endl
+        << ncm3_prefix << "survivor_location "
+        << survivor_location << std::endl
+        << ncm3_prefix << "survivor_orientation "
+        << survivor_orientation << std::endl
+        << ncm3_prefix << "sling_load_offset "
+        << sling_load_offset << std::endl
+        << ncm3_prefix << "sling_load_orientation "
+        << sling_load_orientation << std::endl
+        << ncm3_prefix << "padding(32 bits) "
+        << to_bin_string(padding, true) << std::endl;
+ }
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_01_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for ncm3_to_avcatt_01_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    stream.read(configuration);
+    stream.read(gun_trigger_left);
+    stream.read(gun_trigger_right);
+    stream.read(gun_trigger_aft);
+    stream.read(hook_animation_state);
+    stream.read(released_water);
+    stream.read(released_cargo);
+    stream.read(released_flare);
+    stream.read(hoist_medic_state);
+    stream.read(hoist_survivor_state);
+    stream.read(hoist_available);
+    medic_orientation.read(stream);
+    medic_location.read(stream);
+    survivor_location.read(stream);
+    survivor_orientation.read(stream);
+    sling_load_offset.read(stream);
+    sling_load_orientation.read(stream);
+    stream.read(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_01_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    stream.write(configuration);
+    stream.write(gun_trigger_left);
+    stream.write(gun_trigger_right);
+    stream.write(gun_trigger_aft);
+    stream.write(hook_animation_state);
+    stream.write(released_water);
+    stream.write(released_cargo);
+    stream.write(released_flare);
+    stream.write(hoist_medic_state);
+    stream.write(hoist_survivor_state);
+    stream.write(hoist_available);
+    medic_orientation.write(stream);
+    medic_location.write(stream);
+    survivor_location.write(stream);
+    survivor_orientation.write(stream);
+    sling_load_offset.write(stream);
+    sling_load_orientation.write(stream);
+    stream.write(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_02_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "avcatt_to_ncm3_02.");
+
+    maintenance_cautions.print((ncm3_prefix + "maintenance_cautions."), out);
+    hydraulic_cautions.print((ncm3_prefix + "hydraulic_cautions."), out);
+    hydraulic_gauges.print((ncm3_prefix + "hydraulic_gauges."), out);
+    hook_safety.print((ncm3_prefix + "hook_safety."), out);
+    uh72_controls.print((ncm3_prefix + "uh72_controls."), out);
+
+    out << ncm3_prefix << "padding(32 bits) "
+        << to_bin_string(padding, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_02_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for avcatt_to_ncm3_02_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    maintenance_cautions.read(stream);
+    hydraulic_cautions.read(stream);
+    hydraulic_gauges.read(stream);
+    hook_safety.read(stream);
+    uh72_controls.read(stream);
+    stream.read(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_02_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    maintenance_cautions.write(stream);
+    hydraulic_cautions.write(stream);
+    hydraulic_gauges.write(stream);
+    hook_safety.write(stream);
+    uh72_controls.write(stream);
+    stream.write(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_02_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "ncm3_to_avcatt_02.");
+
+    flare_state.print((ncm3_prefix + "flare_state."), out);
+    cargo_hook_state.print((ncm3_prefix + "cargo_hook_state."), out);
+
+    out << ncm3_prefix << "padding(32 bits) "
+        << to_bin_string(padding, true) << std::endl;
+
+    water_bucket_state.print((ncm3_prefix + "water_bucket_state."), out);
+    hoist_data.print((ncm3_prefix + "hoist_data."), out);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_02_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for ncm3_to_avcatt_02_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    flare_state.read(stream);
+    cargo_hook_state.read(stream);
+    stream.read(padding);
+    water_bucket_state.read(stream);
+    hoist_data.read(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_02_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    flare_state.write(stream);
+    cargo_hook_state.write(stream);
+    stream.write(padding);
+    water_bucket_state.write(stream);
+    hoist_data.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_03_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "avcatt_to_ncm3_03.");
+
+    out << ncm3_prefix << "flare_count " << (int)flare_count << std::endl
+        << ncm3_prefix << "padding(5 bytes) "
+        << to_hex_string(padding[0]) << "-"
+        << to_hex_string(padding[1]) << "-"
+        << to_hex_string(padding[2]) << "-"
+        << to_hex_string(padding[3]) << "-"
+        << to_hex_string(padding[4]) << std::endl
+        << ncm3_prefix << "missile_audio_warning "
+        << (yes_no_e)missile_audio_warning << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_03_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for avcatt_to_ncm3_03_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    stream.read(flare_count);
+    stream.read(padding, 5);
+    stream.read(missile_audio_warning);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::avcatt_to_ncm3_03_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    stream.write(flare_count);
+    stream.write(padding, 5);
+    stream.write(missile_audio_warning);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_03_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    const std::string ncm3_prefix = (prefix + "ncm3_to_avcatt_03.");
+
+    out << ncm3_prefix << "padding(8 bytes) "
+        << to_hex_string(padding, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_03_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    clear();
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for ncm3_to_avcatt_03_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    stream.read(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::ncm3_to_avcatt_03_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    stream.write(padding);
 }
