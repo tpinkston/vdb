@@ -121,15 +121,13 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
         if (not options::include_entity_ids.empty())
         {
             itor = options::include_entity_ids.begin();
+            pass = false;
 
-            while(pass and (itor != options::include_entity_ids.end()))
+            while((itor != options::include_entity_ids.end()) and not pass)
             {
-                if (not pdu.base()->contains_id(*itor))
+                if (pdu.base()->contains_id(*itor))
                 {
-                    LOG_VERBOSE(
-                        "Filtered out PDU that does not contain ID %s...",
-                        to_string(*itor).c_str());
-                    pass = false;
+                    pass = true;
                 }
 
                 ++itor;

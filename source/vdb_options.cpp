@@ -396,10 +396,12 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, true, success))
         {
-            success = parse_entity_ids(
+            success = parse_integer_set(
                 "--range",
-                value.c_str(),
-                include_entity_ids);
+				value.c_str(),
+                0x0,
+                0xFFFFFFFF,
+                pdu_index_range);
         }
     }
     else if (name == "quiet")
@@ -700,6 +702,12 @@ bool vdb::options::parse_entity_ids(
     {
         vdis::tokenize_csv(std::string(value_ptr), values);
 
+        if (DEBUG)
+        {
+            std::cout << "DEBUG: parse_entity_ids: '" << name_ptr
+                      << "'='" << value_ptr << "'" << std::endl;
+        }
+
         for(uint32_t i = 0; success and (i < values.size()); ++i)
         {
             success = parse_entity_id(name_ptr, values[i].c_str(), ids);
@@ -786,6 +794,12 @@ bool vdb::options::parse_entity_id(
                 (uint16_t)id[2] };
 
             ids.insert(entity_id);
+
+            if (DEBUG)
+            {
+                std::cout << "DEBUG: parse_entity_id: '"
+                		  << value_ptr << "' -> " << entity_id << std::endl;
+            }
         }
         else
         {

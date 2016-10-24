@@ -283,7 +283,8 @@ void vdb::capture::start(void)
             bytes_received += (uint64_t)bytes_read;
             pdus_received += 1U;
 
-            if (filter::filter_by_header(data))
+            if (filter::filter_by_header(data) and
+                filter::filter_by_metadata(data))
             {
                 pdu_ptr = data.generate_pdu();
 
