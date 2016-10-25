@@ -42,22 +42,40 @@ std::map<vdis::id_t, vdb::object_data_node_t>
     vdb::summary::object_data;
 
 // ----------------------------------------------------------------------------
-bool vdb::designator_node_t::matches(const vdis::designator_pdu_t &pdu) const
-{
-    return (pdu.designated_id == target) && (pdu.code == code);
-}
-
-// ----------------------------------------------------------------------------
 void vdb::designator_node_t::print(std::ostream &out) const
 {
+    std::map<vdis::id_t, uint32_t>::const_iterator
+        target_itor = targets.begin();
+    std::map<uint16_t, uint32_t>::const_iterator
+        code_itor = codes.begin();
     std::map<uint8_t, uint32_t>::const_iterator
         itor;
     std::string
         name;
 
-    out << "      Target: " << vdis::entity_marking(target) << std::endl
-        << "      Code: " << (int)code << ", Count: " << (int)total_count
-        << ", Power: " << vdis::to_string(minimum_power, 1, 2) << " min, "
+    out << "      System Number: " << (int)system_number
+        << " (total count: " << total_count << ")" << std::endl
+        << "      Targets: " << std::endl;
+
+    while(target_itor != targets.end())
+    {
+        out << "        " << vdis::entity_marking(target_itor->first)
+            << " (count: " << target_itor->second << ")" << std::endl;
+
+        ++target_itor;
+    }
+
+    out << "      Codes: " << std::endl;
+
+    while(code_itor != codes.end())
+    {
+        out << "        " << (int)code_itor->first
+            << " (count: " << code_itor->second << ")" << std::endl;
+
+        ++code_itor;
+    }
+
+    out << "      Power: " << vdis::to_string(minimum_power, 1, 2) << " min, "
         << vdis::to_string(maximum_power, 1, 2) << " max, "
         << vdis::to_string(average_power, 1, 2) << " average" << std::endl
         << "      Functions: " << std::endl;
@@ -225,14 +243,17 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
 
     if (options::summary_lasers and not designations.empty())
     {
-        out << "    Designations(" << designations.size() << "):"
-               << std::endl;
+        std::map<uint8_t, designator_node_t>::const_iterator
+            laser_itor = designations.begin();
 
-        for(uint32_t i = 0; i < designations.size(); ++i)
+        out << "    Designations:" << std::endl;
+
+        while(laser_itor != designations.end())
         {
             out << "      " << separator << std::endl;
 
-            designations[i].print(out);
+            laser_itor->second.print(out);
+            ++laser_itor;
         }
 
         out << "      " << separator << std::endl;
@@ -332,8 +353,7 @@ bool vdb::summary::process_pdu_data(const pdu_data_t &data)
 
     if (filter::filter_by_range(data.get_index(), past_end))
     {
-        if (filter::filter_by_header(data) and
-            filter::filter_by_metadata(data))
+        if (filter::filter_by_header(data) and filter::filter_by_metadata(data))
         {
             const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
@@ -519,58 +539,54 @@ void vdb::summary::process(const vdis::designator_pdu_t &pdu)
     entity_data_node_t
         &node = entity_data[pdu.designating_id];
     designator_node_t
-        *designator_ptr = 0;
-    uint32_t
-        count = node.designations.size();
+        &designator = node.designations[pdu.system_number];
 
     node.id = pdu.designating_id;
+    designator.system_number = pdu.system_number;
 
-    for(uint32_t i = 0; (i < count) and not designator_ptr; ++i)
+    if (pdu.power > designator.maximum_power)
     {
-        if (node.designations[i].matches(pdu))
-        {
-            designator_ptr = &node.designations[i];
-        }
+        designator.maximum_power = pdu.power;
     }
 
-    if (not designator_ptr)
+    if (pdu.power < designator.minimum_power)
     {
-        designator_node_t
-            designator;
-
-        designator.target = pdu.designated_id;
-        designator.code = pdu.code;
-
-        node.designations.push_back(designator);
-
-        designator_ptr = &node.designations[count];
-    }
-
-    if (pdu.power > designator_ptr->maximum_power)
-    {
-        designator_ptr->maximum_power = pdu.power;
-    }
-
-    if (pdu.power < designator_ptr->minimum_power)
-    {
-        designator_ptr->minimum_power = pdu.power;
+        designator.minimum_power = pdu.power;
     }
 
     if (pdu.power != 0)
     {
-        designator_ptr->average_power += pdu.power;
+        designator.average_power += pdu.power;
 
-        if (designator_ptr->total_count > 0)
+        if (designator.total_count > 0)
         {
-            designator_ptr->average_power /= 2.0f;
+            designator.average_power /= 2.0f;
         }
     }
 
-    increment(designator_ptr->functions, pdu.function);
-    increment(designator_ptr->spot_types, pdu.spot_type);
-    increment(designator_ptr->system_names, pdu.system_name);
+    if (designator.codes.find(pdu.code) != designator.codes.end())
+    {
+        designator.codes[pdu.code]++;
+    }
+    else
+    {
+        designator.codes[pdu.code] = 1;
+    }
 
-    designator_ptr->total_count++;
+    if (designator.targets.find(pdu.designated_id) != designator.targets.end())
+    {
+        designator.targets[pdu.designated_id]++;
+    }
+    else
+    {
+        designator.targets[pdu.designated_id] = 1;
+    }
+
+    increment(designator.functions, pdu.function);
+    increment(designator.spot_types, pdu.spot_type);
+    increment(designator.system_names, pdu.system_name);
+
+    designator.total_count++;
 }
 
 // ----------------------------------------------------------------------------

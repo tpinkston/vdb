@@ -12,9 +12,9 @@ Commands:
   capture    -C  Captures VDIS traffic, optionally stores PDUs in a file
   playback   -P  Plays back VDIS traffic captured in specific file
   list       -L  Lists PDUs in capture file, requires a file argument
-  summary    -Q  Summarizes capture file contents
-  comment        Adds comment to capture file
-  uncomment      Remove all or specific comment from capture file
+  summary    -S  Summarizes capture file contents
+  comment    -W  Adds comment to capture file
+  uncomment  -U  Remove all or specific comment from capture file
   enums      -M  Prints all known VDIS enumerations in CSV form
   entities       Prints all known VDIS entity types in CSV form
   objects        Prints all known VDIS object types in CSV form
@@ -25,7 +25,7 @@ Global options (for all commands):
   -q --quiet              Print as little as possible
   -v --verbose            Print more than usual (debugging, -vv extra verbose)
   -w --warnings           Show warnings (suppressed by default)
-  -S --suppress           Suppress any error messages
+  -R --suppress           Suppress any error messages
      --examples           Prints example commands
   -V --version            Prints version information
 
@@ -41,12 +41,13 @@ Filter options (playback, list, summary):
   -r --range=RANGE        Use only PDUs in specified range (indexes)
 
 Filter options (capture, playback, list, summary):
-  -e --exercise=E1,...    Include provided exercise numbers (numeric)
-  -E --xexercise=E1,...   Exclude provided exercise numbers (numeric)
-  -t --type=T1,...        Include PDUs with PDU types (numeric)
-  -T --xtype=T1,...       Exclude PDUs except PDU types (numeric)
-  -f --family=F1,...      Include PDUs with PDU families (numeric)
-  -F --xfamily=F1,...     Exclude PDUs with PDU families (numeric)
+  -H --hostname=H1,...    Include PDUs from specified host(s)
+  -e --exercise=E1,...    Include PDUs with exercise number(s) (numeric)
+  -E --xexercise=E1,...   Exclude PDUs with exercise number(s) (numeric)
+  -t --type=T1,...        Include PDUs with PDU type(s) (numeric)
+  -T --xtype=T1,...       Exclude PDUs except PDU type(s) (numeric)
+  -f --family=F1,...      Include PDUs with PDU family(s) (numeric)
+  -F --xfamily=F1,...     Exclude PDUs with PDU family(s) (numeric)
   -i --ids=I1,...         Include PDUs containing specified entity ID(s)
   -I --xids=I1,...        Exclude PDUs containing specified entity ID(s)
 
@@ -56,7 +57,7 @@ Display options (capture, playback):
   -x --extract            Print PDU data extraction (overrides -s)
   -d --dump               Print PDU hex dump (overrides -s and -x)
 
-Summary options:
+Summary command options:
      --collisions         Print collision info for all entities
      --emissions          Print emission (radar/IFF) info for all entities
      --fires              Print fire/detonation info for all entities

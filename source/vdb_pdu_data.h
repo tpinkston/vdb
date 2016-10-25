@@ -40,6 +40,7 @@ namespace vdb
 
         const uint8_t *get_address_buffer(void) const;
 
+        const std::string &get_hostname(void) const { return hostname; }
         uint16_t get_hostname_length(void) const;
 
         void set_source(
@@ -52,7 +53,7 @@ namespace vdb
             uint16_t socket_port
         );
 
-        string_t get_source(void) const;
+        std::string get_source(void) const;
 
         void set_pdu_buffer(const uint8_t *buffer, uint32_t length);
 
@@ -75,7 +76,7 @@ namespace vdb
         //
         void clear(void);
 
-        void print(const string_t &prefix, std::ostream &stream) const;
+        void print(const std::string &prefix, std::ostream &stream) const;
 
         uint32_t length(void) const;
 
@@ -95,7 +96,7 @@ namespace vdb
         uint64_t                time;                           // 8 bytes
         uint32_t                padding;                        // 4 bytes
         pdu_data_status_t       status;                         // 2 bytes
-        string_t                hostname;                       // 2+ bytes
+        std::string             hostname;                       // 2+ bytes
         uint8_t                 address[ADDRESS_LENGTH];        // 16 bytes
         uint16_t                port;                           // 2 bytes
         uint16_t                ip_version;                     // 2 bytes
@@ -145,7 +146,7 @@ inline void vdb::pdu_data_t::set_pdu_length(uint32_t length)
 // ----------------------------------------------------------------------------
 inline std::ostream &operator<<(std::ostream &out, const vdb::pdu_data_t &data)
 {
-    data.print(string_t(), out);
+    data.print(std::string(), out);
 
     return out;
 }

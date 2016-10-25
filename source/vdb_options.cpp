@@ -14,6 +14,8 @@ namespace vdb
         options::command_names;
     std::vector<std::string>
         options::command_arguments;
+    std::set<std::string>
+        options::include_hostnames;
     std::set<vdis::id_t>
         options::include_entity_ids,
         options::exclude_entity_ids;
@@ -396,9 +398,9 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, true, success))
         {
-            success = parse_integer_set(
+            success = parse_integer_set_in_range(
                 "--range",
-				value.c_str(),
+                value.c_str(),
                 0x0,
                 0xFFFFFFFF,
                 pdu_index_range);
@@ -579,6 +581,13 @@ bool vdb::options::parse_short_options(
             case 'h':
                 show_help = true;
                 break;
+            case 'H':
+                success = parse_string_set(
+                    "-H",
+                    next_argument,
+                    include_hostnames);
+                advance = true;
+                break;
             case 'i':
                 success = parse_entity_ids(
                     "-i",
@@ -618,11 +627,8 @@ bool vdb::options::parse_short_options(
             case 'q':
                 quiet_mode = true;
                 break;
-            case 'Q':
-                command = USER_COMMAND_SUMMARY;
-                break;
             case 'r':
-                success = parse_integer_set(
+                success = parse_integer_set_in_range(
                     "-r",
                     next_argument,
                     0x0,
@@ -630,11 +636,14 @@ bool vdb::options::parse_short_options(
                     pdu_index_range);
                 advance = true;
                 break;
+            case 'R':
+                logger::set_enabled(logger::ERROR, false);
+                break;
             case 's':
                 show_pdu_summary = true;
                 break;
             case 'S':
-                logger::set_enabled(logger::ERROR, false);
+                command = USER_COMMAND_SUMMARY;
                 break;
             case 't':
                 success = parse_integer_set(
@@ -660,11 +669,17 @@ bool vdb::options::parse_short_options(
                     logger::set_enabled(logger::VERBOSE, true);
                 }
                 break;
+            case 'U':
+                command = USER_COMMAND_UNCOMMENT;
+                break;
             case 'V':
                 show_version = true;
                 break;
             case 'w':
                 logger::set_enabled(logger::WARNING, true);
+                break;
+            case 'W':
+                command = USER_COMMAND_COMMENT;
                 break;
             case 'x':
                 show_pdu_extracted = true;
@@ -677,6 +692,50 @@ bool vdb::options::parse_short_options(
                           << std::endl;
                 success = false;
                 break;
+        }
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::options::parse_string_set(
+    const char *name_ptr,
+    const char *value_ptr,
+    std::set<std::string> &set)
+{
+    std::vector<std::string>
+        values;
+    bool
+        success = false;
+
+    if (not value_ptr)
+    {
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+    }
+    else
+    {
+        vdis::tokenize_csv(std::string(value_ptr), values);
+
+        if (DEBUG)
+        {
+            std::cout << "DEBUG: parse_string_set: '" << name_ptr
+                      << "'='" << value_ptr << "'" << std::endl;
+        }
+
+        for(uint32_t i = 0; (i < values.size()) and not success; ++i)
+        {
+            if (not vdis::trim(values[i]).empty())
+            {
+                set.insert(values[i]);
+                success = true;
+            }
+        }
+
+        if (not success)
+        {
+            std::cerr << "vdb: invalid value for option: "
+                      << name_ptr << std::endl;
         }
     }
 
@@ -798,7 +857,7 @@ bool vdb::options::parse_entity_id(
             if (DEBUG)
             {
                 std::cout << "DEBUG: parse_entity_id: '"
-                		  << value_ptr << "' -> " << entity_id << std::endl;
+                          << value_ptr << "' -> " << entity_id << std::endl;
             }
         }
         else
@@ -820,7 +879,12 @@ bool vdb::options::parse_integer_set(
     std::set<uint32_t>
         temp_set;
     bool
-        success = parse_integer_set(name_ptr, value_ptr, 0, 255, temp_set);
+        success = parse_integer_set_in_range(
+            name_ptr,
+            value_ptr,
+            0,
+            255,
+            temp_set);
 
     if (success)
     {
@@ -837,7 +901,7 @@ bool vdb::options::parse_integer_set(
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_integer_set(
+bool vdb::options::parse_integer_set_in_range(
     const char *name_ptr,
     const char *value_ptr,
     int64_t min,

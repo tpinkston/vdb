@@ -56,7 +56,7 @@ void vdb::pdu_data_t::set_source(
 // Returns the source as string (include address, port and hostname
 // if available).
 //
-string_t vdb::pdu_data_t::get_source(void) const
+std::string vdb::pdu_data_t::get_source(void) const
 {
     std::ostringstream stream;
 
@@ -101,7 +101,7 @@ vdis::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
     //
     const vdis::pdu_type_e
         pdu_type = (vdis::pdu_type_e)get_pdu_type();
-    const string_t
+    const std::string
         pdu_type_string = vdis::enumerations::get_name(ENUM_PDU_TYPE, pdu_type);
     vdis::pdu_t
         *pdu_ptr = 0;
@@ -169,7 +169,7 @@ void vdb::pdu_data_t::clear(void)
 
 // ----------------------------------------------------------------------------
 void vdb::pdu_data_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &stream) const
 {
     stream << prefix << "PDU " << index

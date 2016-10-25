@@ -38,6 +38,8 @@ namespace vdb
             command_names;
         static std::vector<std::string>
             command_arguments;
+        static std::set<std::string>
+            include_hostnames;
         static std::set<vdis::id_t>
             include_entity_ids,
             exclude_entity_ids;
@@ -98,6 +100,12 @@ namespace vdb
             bool &advance
         );
 
+        static bool parse_string_set(
+            const char *name_ptr,
+            const char *value_ptr,
+            std::set<std::string> &set
+        );
+
         static bool parse_entity_ids(
             const char *name_ptr,
             const char *value_ptr,
@@ -116,7 +124,7 @@ namespace vdb
             std::set<uint8_t> &set
         );
 
-        static bool parse_integer_set(
+        static bool parse_integer_set_in_range(
             const char *name_ptr,
             const char *value_ptr,
             int64_t min,

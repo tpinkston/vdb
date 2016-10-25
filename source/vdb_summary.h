@@ -37,23 +37,24 @@ namespace vdb
     {
       public:
 
-    	designator_node_t(void);
-    	designator_node_t(const designator_node_t &copy);
+        designator_node_t(void);
+        designator_node_t(const designator_node_t &copy);
         ~designator_node_t(void);
-
-        bool matches(const vdis::designator_pdu_t &pdu) const;
 
         void print(std::ostream &out) const;
 
-        vdis::id_t
-            target;
+        uint8_t
+            system_number;
         uint16_t
-            code,
             total_count;
         float32_t
             minimum_power,
             maximum_power,
             average_power;
+        std::map<uint16_t, uint32_t>
+            codes;
+        std::map<vdis::id_t, uint32_t>
+            targets;
         std::map<uint8_t, uint32_t>
             functions,
             spot_types,
@@ -108,7 +109,7 @@ namespace vdb
             source;
         std::vector<collision_node_t>
             collisions;
-        std::vector<designator_node_t>
+        std::map<uint8_t, designator_node_t>
             designations;
         std::map<vdis::id_t, warfare_data_node_t>
             fires;
@@ -234,7 +235,7 @@ inline vdb::collision_node_t::~collision_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::designator_node_t::designator_node_t(void) :
-    code(0),
+    system_number(0),
     total_count(0),
     minimum_power(999999.0),
     maximum_power(0),
@@ -247,12 +248,13 @@ inline vdb::designator_node_t::designator_node_t(void) :
 inline vdb::designator_node_t::designator_node_t(
     const vdb::designator_node_t::designator_node_t &copy
 ) :
-    target(copy.target),
-    code(copy.code),
+    system_number(copy.system_number),
     total_count(copy.total_count),
     minimum_power(copy.minimum_power),
     maximum_power(copy.maximum_power),
     average_power(copy.average_power),
+    codes(copy.codes),
+    targets(copy.targets),
     functions(copy.functions),
     spot_types(copy.spot_types),
     system_names(copy.system_names)
