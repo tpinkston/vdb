@@ -42,7 +42,8 @@ namespace vdb
         options::show_pdu_dump = false,
         options::show_pdu_extracted = false,
         options::show_pdu_summary = false,
-        options::summary_extra = false,
+        options::associations = false,
+        options::extra = false,
         options::summary_collisions = false,
         options::summary_emissions = false,
         options::summary_fires = false,
@@ -434,11 +435,18 @@ bool vdb::options::parse_long_option(const char *current_argument)
             show_pdu_extracted = true;
         }
     }
+    else if (name == "associations")
+    {
+        if (verify_long_argument_value(name, value, false, success))
+        {
+            associations = true;
+        }
+    }
     else if (name == "extra")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            summary_extra = true;
+            extra = true;
         }
     }
     else if (name == "collisions")
@@ -685,7 +693,7 @@ bool vdb::options::parse_short_options(
                 show_pdu_extracted = true;
                 break;
             case 'X':
-                summary_extra = true;
+                extra = true;
                 break;
             default:
                 std::cerr << "vdb: invalid option: -" << argument[i]

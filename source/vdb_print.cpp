@@ -154,43 +154,43 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
     {
         case vdis::PDU_TYPE_ENTITY_STATE:
         {
-            const vdis::entity_state_pdu_t &p = SCAST(
+            const vdis::entity_state_pdu_t *p = SCAST(
                 vdis::entity_state_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.id << "  " << p.marking
+                out << "  " << p->id << "  " << p->marking
                     << "  " << vdis::enumerations::get_name(
                         ENUM_FORCE_ID,
-                        p.force_enum());
+                        p->force_enum());
 
-                switch(p.type.kind_enum())
+                switch(p->type.kind_enum())
                 {
                     case vdis::ENT_KIND_LIFEFORMS:
                         out << "  " << vdis::enumerations::get_name(
                             ENUM_LF_HEALTH,
-                            p.damage());
+                            p->damage());
                         break;
                     default:
                         out << "  " << vdis::enumerations::get_name(
                             ENUM_SEVERITY,
-                            p.damage());
+                            p->damage());
                         break;
                 }
 
-                out << "  " << p.type << " '" << p.type.description() << "'  "
-                    << std::endl;
+                out << "  " << p->type << " '" << p->type.description()
+                    << "'  " << std::endl;
 
-                for(uint8_t i = 0; i < p.record_count; ++i)
+                for(uint8_t i = 0; i < p->record_count; ++i)
                 {
                     const vdis::variable_parameter_record_t
-                        *record_ptr = p.record(i);
+                        *record_ptr = p->record(i);
 
                     if (record_ptr)
                     {
                         out << "  record[" << (int)i << "] = "
-                            << record_ptr->record_type() << std::endl;
+                            << record_ptr->type() << std::endl;
                     }
                 }
             }
@@ -199,16 +199,16 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
         }
         case vdis::PDU_TYPE_FIRE:
         {
-            const vdis::fire_pdu_t &p = SCAST(
+            const vdis::fire_pdu_t *p = SCAST(
                 vdis::fire_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.event << ": " << p.shooter
-                    << "->" << p.target << std::endl
-                    << "  " << p.burst_descriptor.munition
-                    << " '" << p.burst_descriptor.munition.description() << "'"
+                out << "  " << p->event << ": " << p->shooter
+                    << "->" << p->target << std::endl
+                    << "  " << p->burst_descriptor.munition
+                    << " '" << p->burst_descriptor.munition.description() << "'"
                     << std::endl;
             }
 
@@ -216,231 +216,243 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
         }
         case vdis::PDU_TYPE_DETONATION:
         {
-            const vdis::detonation_pdu_t &p = RCAST(
+            const vdis::detonation_pdu_t *p = SCAST(
                 vdis::detonation_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.event << ": " << p.shooter
-                    << "->" << p.target << std::endl
-                    << "  " << p.burst_descriptor.munition
-                    << " '" << p.burst_descriptor.munition.description() << "'"
+                out << "  " << p->event << ": " << p->shooter
+                    << "->" << p->target << std::endl
+                    << "  " << p->burst_descriptor.munition
+                    << " '" << p->burst_descriptor.munition.description() << "'"
                     << std::endl
-                    << "  " << p.result_enum() << std::endl;
+                    << "  " << p->result_enum() << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_COLLISION:
         {
-            const vdis::collision_pdu_t &p = RCAST(
+            const vdis::collision_pdu_t *p = SCAST(
                 vdis::collision_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.collision_type_enum() << std::endl
-                    << "  " << p.issuing_entity
-                    << "->" << p.colliding_entity << std::endl;
+                out << "  " << p->collision_type_enum() << std::endl
+                    << "  " << p->issuing_entity
+                    << "->" << p->colliding_entity << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_CREATE_ENTITY:
         {
-            const vdis::create_entity_pdu_t &p = RCAST(
+            const vdis::create_entity_pdu_t *p = SCAST(
                 vdis::create_entity_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_REMOVE_ENTITY:
         {
-            const vdis::remove_entity_pdu_t &p = RCAST(
+            const vdis::remove_entity_pdu_t *p = SCAST(
                 vdis::remove_entity_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_START_RESUME:
         {
-            const vdis::start_resume_pdu_t &p = RCAST(
+            const vdis::start_resume_pdu_t *p = SCAST(
                 vdis::start_resume_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << "real time: " << p.real_time << std::endl
-                    << "  " << "sim time: " << p.simulation_time << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << "real time: " << p->real_time << std::endl
+                    << "  " << "sim time: " << p->simulation_time << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_STOP_FREEZE:
         {
-            const vdis::stop_freeze_pdu_t &p = RCAST(
+            const vdis::stop_freeze_pdu_t *p = SCAST(
                 vdis::stop_freeze_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << "real time: " << p.real_time << std::endl
-                    << "  " << p.reason_enum() << std::endl
-                    << "  " << p.behavior_enum() << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << "real time: " << p->real_time << std::endl
+                    << "  " << p->reason_enum() << std::endl
+                    << "  " << p->behavior_enum() << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_ACKNOWLEDGE:
         {
-            const vdis::acknowledge_pdu_t &p = RCAST(
+            const vdis::acknowledge_pdu_t *p = SCAST(
                 vdis::acknowledge_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << p.acknowledge_flag_enum() << std::endl
-                    << "  " << p.response_flag_enum() << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << p->acknowledge_flag_enum() << std::endl
+                    << "  " << p->response_flag_enum() << std::endl;
             }
 
             break;
         }
         case vdis::PDU_TYPE_ACTION_REQUEST:
         {
-            const vdis::action_request_pdu_t &p = RCAST(
+            const vdis::action_request_pdu_t *p = SCAST(
                 vdis::action_request_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << p.request_id
-                    << "->" << p.action_id_enum() << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << p->request_id
+                    << "->" << p->action_id_enum() << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_ACTION_RESPONSE:
         {
-            const vdis::action_response_pdu_t &p = RCAST(
+            const vdis::action_response_pdu_t *p = SCAST(
                 vdis::action_response_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << p.request_id
-                    << "->" << p.request_status_enum() << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << p->request_id
+                    << "->" << p->request_status_enum() << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_DATA_QUERY:
         {
-            const vdis::data_query_pdu_t &p = RCAST(
+            const vdis::data_query_pdu_t *p = SCAST(
                 vdis::data_query_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << p.request_id << "->" << p.time_interval
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << p->request_id << "->" << p->time_interval
                     << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_SET_DATA:
         {
-            const vdis::set_data_pdu_t &p = RCAST(
+            const vdis::set_data_pdu_t *p = SCAST(
                 vdis::set_data_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_DATA:
         {
-            const vdis::data_pdu_t &p = RCAST(
+            const vdis::data_pdu_t *p = SCAST(
                 vdis::data_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_EVENT_REPORT:
         {
-            const vdis::event_report_pdu_t &p = RCAST(
+            const vdis::event_report_pdu_t *p = SCAST(
                 vdis::event_report_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl
-                    << "  " << p.event_type_enum() << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl
+                    << "  " << p->event_type_enum() << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_COMMENT:
         {
-            const vdis::comment_pdu_t &p = RCAST(
+            const vdis::comment_pdu_t *p = SCAST(
                 vdis::comment_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << p.originator << "->" << p.recipient << std::endl;
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
 
-                print_datum_record_summary(p, out);
+                print_datum_record_summary(*p, out);
             }
 
             break;
         }
         case vdis::PDU_TYPE_EM_EMISSION:
         {
-            const vdis::em_emission_pdu_t &p = RCAST(
+            const vdis::em_emission_pdu_t *p = SCAST(
                 vdis::em_emission_pdu_t,
                 pdu.base());
 
-            for(uint8_t i = 0; &p and (i < p.system_count); ++i)
+            for(uint8_t i = 0; p and (i < p->system_count); ++i)
             {
                 const vdis::emitter_system_t
-                    *system_ptr = p.system(i);
+                    *system_ptr = p->system(i);
 
                 if (system_ptr)
                 {
@@ -482,21 +494,22 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
         }
         case vdis::PDU_TYPE_DESIGNATOR:
         {
-            const vdis::designator_pdu_t &p = RCAST(
+            const vdis::designator_pdu_t *p = SCAST(
                 vdis::designator_pdu_t,
                 pdu.base());
 
-            if (&p)
+            if (p)
             {
-                out << "  " << (int)p.system_number
-                    << "->" << p.designated_id << "  " << (int)p.code
-                    << "  " << vdis::to_string(p.power, 1, 3) << " watts"
+                out << "  " << (int)p->system_number
+                    << "->" << p->designated_id << "  " << (int)p->code
+                    << "  " << vdis::to_string(p->power, 1, 3) << " watts"
                     << std::endl
-                    << "  " << p.function_enum() << "  " << p.spot_type_enum();
+                    << "  " << p->function_enum() << "  "
+                    << p->spot_type_enum();
 
-                if (p.system_name > 0)
+                if (p->system_name > 0)
                 {
-                    out << "  " << p.system_name_enum();
+                    out << "  " << p->system_name_enum();
                 }
 
                 out << std::endl;

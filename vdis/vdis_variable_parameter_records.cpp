@@ -22,7 +22,7 @@ vdis::variable_parameter_record_t **vdis::read_variable_parameter_records(
 
     for(uint32_t i = 0; i < count; ++i)
     {
-        records[i] = new variable_parameter_record_t({ 0, 0 });
+        records[i] = new variable_parameter_record_t;
 
         LOG_EXTRA_VERBOSE(
             "Reading VP record %d/%d@%p with stream at index %d/%d...",
@@ -59,7 +59,6 @@ void vdis::variable_parameter_record_t::clear(void)
         delete content_ptr;
     }
 
-    type = 0;
     content_ptr = 0;
 }
 
@@ -68,7 +67,7 @@ void vdis::variable_parameter_record_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    out << prefix << "type " << record_type() << std::endl;
+    out << prefix << "type " << type() << std::endl;
 
     if (content_ptr)
     {
@@ -93,6 +92,7 @@ void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
     {
         // Read the record type (1 byte)
         //
+        uint8_t type = 0;
         stream.read(type);
 
         LOG_EXTRA_VERBOSE(
@@ -138,7 +138,7 @@ void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
             }
             default:
             {
-                content_ptr = new default_variable_content_t;
+                content_ptr = new default_variable_content_t(type);
                 break;
             }
         }
@@ -151,6 +151,13 @@ void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
 void vdis::variable_parameter_record_t::write(byte_stream_t &stream)
 {
     // TODO
+}
+
+// ----------------------------------------------------------------------------
+vdis::default_variable_content_t::default_variable_content_t(uint8_t type) :
+    record_type(type)
+{
+
 }
 
 // ----------------------------------------------------------------------------
@@ -186,9 +193,9 @@ void vdis::articulated_part_t::print(
         << prefix << "articulated_part.part_id "
         << part_id << std::endl
         << prefix << "articulated_part.type "
-        << type() << std::endl
+        << part_type_enum() << std::endl
         << prefix << "articulated_part.metric "
-        << metric() << std::endl
+        << part_metric_enum() << std::endl
         << prefix << "articulated_part.value "
         << to_string(value) << std::endl
         << prefix << "articulated_part.padding "
@@ -223,17 +230,17 @@ void vdis::entity_association_t::print(
     out << prefix << "entity_association.change_indicator "
         << (int)change_indicator << std::endl
         << prefix << "entity_association.status "
-        << association_status() << std::endl
+        << association_status_enum() << std::endl
         << prefix << "entity_association.type "
-        << association_type() << std::endl
+        << association_type_enum() << std::endl
         << prefix << "entity_association.entity_id "
         << entity_id << std::endl
         << prefix << "entity_association.station "
         << (int)station << std::endl
         << prefix << "entity_association.connection_type "
-        << connection() << std::endl
+        << connection_type_enum() << std::endl
         << prefix << "entity_association.group_membership "
-        << membership() << std::endl
+        << membership_enum() << std::endl
         << prefix << "entity_association.group_number "
         << (int)group_number << std::endl;
 }
@@ -242,8 +249,8 @@ void vdis::entity_association_t::print(
 void vdis::entity_association_t::read(byte_stream_t &stream)
 {
     stream.read(change_indicator);
-    stream.read(status);
-    stream.read(type);
+    stream.read(association_status);
+    stream.read(association_type);
     entity_id.read(stream);
     stream.read(station);
     stream.read(connection_type);
@@ -255,8 +262,8 @@ void vdis::entity_association_t::read(byte_stream_t &stream)
 void vdis::entity_association_t::write(byte_stream_t &stream)
 {
     stream.write(change_indicator);
-    stream.write(status);
-    stream.write(type);
+    stream.write(association_status);
+    stream.write(association_type);
     entity_id.write(stream);
     stream.write(station);
     stream.write(connection_type);
@@ -270,7 +277,7 @@ void vdis::entity_offset_t::print(
     std::ostream &out) const
 {
     out << prefix << "entity_offset.offset_type "
-        << offset_type() << std::endl
+        << offset_type_enum() << std::endl
         << prefix << "entity_offset.padding "
         << (int)padding << std::endl
         << prefix << "entity_offset.position "
@@ -280,7 +287,7 @@ void vdis::entity_offset_t::print(
 // ----------------------------------------------------------------------------
 void vdis::entity_offset_t::read(byte_stream_t &stream)
 {
-    stream.read(type);
+    stream.read(offset_type);
     stream.read(padding);
     position.read(stream);
 }
@@ -288,7 +295,7 @@ void vdis::entity_offset_t::read(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 void vdis::entity_offset_t::write(byte_stream_t &stream)
 {
-    stream.write(type);
+    stream.write(offset_type);
     stream.write(padding);
     position.write(stream);
 }
@@ -299,11 +306,11 @@ void vdis::legacy_extended_lifeform_appearance_t::print(
     std::ostream &out) const
 {
     out << prefix << "legacy_ext_lifeform_app.paint_scheme "
-        << cloth_scheme() << std::endl
+        << cloth_scheme_enum() << std::endl
         << prefix << "legacy_ext_lifeform_app.primary_color "
-        << color_primary() << std::endl
+        << color_primary_enum() << std::endl
         << prefix << "legacy_ext_lifeform_app.secondary_color "
-        << color_secondary() << std::endl
+        << color_secondary_enum() << std::endl
         << prefix << "legacy_ext_lifeform_app.equipment "
         << (int)equipment << std::endl // TODO
         << prefix << "legacy_ext_lifeform_app.status "
@@ -404,13 +411,13 @@ void vdis::extended_platform_appearance_t::print(
     if (paint != 0)
     {
         out << prefix << "ext_platform_app.paint_scheme "
-            << paint_scheme() << std::endl;
+            << paint_scheme_enum() << std::endl;
     }
 
     if (decal != 0)
     {
         out << prefix << "ext_platform_app.decal_scheme "
-            << decal_scheme() << std::endl;
+            << decal_scheme_enum() << std::endl;
     }
 
     if (primary_condition != 0)
@@ -427,7 +434,7 @@ void vdis::extended_platform_appearance_t::print(
     if (primary_color != 0)
     {
         out << prefix << "ext_platform_app.primary_color "
-            << color_primary() << std::endl;
+            << color_primary_enum() << std::endl;
     }
 
     if (secondary_condition != 0)
@@ -444,7 +451,7 @@ void vdis::extended_platform_appearance_t::print(
     if (secondary_color != 0)
     {
         out << prefix << "ext_platform_app.secondary_color "
-            << color_secondary() << std::endl;
+            << color_secondary_enum() << std::endl;
     }
 
     if (lights != 0)
@@ -551,12 +558,13 @@ void vdis::extended_status_t::print(
     if (bits.present_domain != 0)
     {
         out << prefix << "status.present_domain "
-            << present_domain() << std::endl;
+            << present_domain_enum() << std::endl;
     }
 
     if (bits.disguise != 0)
     {
-        out << prefix << "status.disguise " << disguise_status() << std::endl;
+        out << prefix << "status.disguise "
+            << disguise_status_enum() << std::endl;
     }
 
     if (bits.invincible != 0)
@@ -573,22 +581,22 @@ void vdis::conditional_materials_t::print(
 {
     if (bits.cleanliness != 0)
     {
-        out << prefix << "cleanliness " << cleanliness() << std::endl;
+        out << prefix << "cleanliness " << cleanliness_enum() << std::endl;
     }
 
     if (bits.damage != 0)
     {
-        out << prefix << "damage " << damage() << std::endl;
+        out << prefix << "damage " << damage_enum() << std::endl;
     }
 
     if (bits.material != 0)
     {
-        out << prefix << "material " << material() << std::endl;
+        out << prefix << "material " << material_enum() << std::endl;
     }
 
     if (bits.rust != 0)
     {
-        out << prefix << "rust " << rust() << std::endl;
+        out << prefix << "rust " << rust_enum() << std::endl;
     }
 }
 

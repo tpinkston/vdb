@@ -24,6 +24,8 @@ namespace vdis
     {
         virtual ~variable_parameter_content_t(void) { }
 
+        virtual vp_record_type_e type(void) const = 0;
+
         virtual void print(const string_t &, std::ostream &) const = 0;
         virtual void read(byte_stream_t &) = 0;
         virtual void write(byte_stream_t &) = 0;
@@ -34,14 +36,14 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct variable_parameter_record_t
     {
-        uint8_t                          type;               // 1 byte
         variable_parameter_content_t    *content_ptr;        // 15 bytes
 
+        variable_parameter_record_t(void) : content_ptr(0) { }
         ~variable_parameter_record_t(void);
 
-        inline vp_record_type_e record_type(void) const
+        inline vp_record_type_e type(void) const
         {
-            return (vp_record_type_e)type;
+            return content_ptr ? content_ptr->type() : VP_RECORD_TYPE_END;
         }
 
         void clear(void);
@@ -53,7 +55,21 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct default_variable_content_t : variable_parameter_content_t
     {
+        uint8_t                 record_type;                // 1 byte
         uint8_t                 buffer[VP_RECORD_DATA_SIZE];
+
+        default_variable_content_t(uint8_t type);
+
+        inline vp_record_type_e type(void) const
+        {
+            return (vp_record_type_e)record_type;
+        }
+
+        inline void clear(void)
+        {
+            record_type = (uint8_t)VP_RECORD_TYPE_END;
+            std::memset(buffer, 0, VP_RECORD_DATA_SIZE);
+        }
 
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
@@ -69,12 +85,17 @@ namespace vdis
         float32_t               value;                  // 4 bytes
         uint32_t                padding;                // 4 bytes
 
-        inline articulated_parts_e type(void) const
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_ARTICULATED_PART;
+        }
+
+        inline articulated_parts_e part_type_enum(void) const
         {
             return (articulated_parts_e)(type_metric & ~0x1F);
         }
 
-        inline articulated_parts_metric_e metric(void) const
+        inline articulated_parts_metric_e part_metric_enum(void) const
         {
             return (articulated_parts_metric_e)(type_metric & 0x1F);
         }
@@ -88,32 +109,55 @@ namespace vdis
     struct entity_association_t : variable_parameter_content_t
     {
         uint8_t                 change_indicator;       // 1 byte
-        uint8_t                 status;                 // 1 byte
-        uint8_t                 type;                   // 1 byte
+        uint8_t                 association_status;     // 1 byte
+        uint8_t                 association_type;       // 1 byte
         id_t                    entity_id;              // 6 bytes
         uint16_t                station;                // 2 bytes
         uint8_t                 connection_type;        // 1 byte
         uint8_t                 group_membership;       // 1 byte
         uint16_t                group_number;           // 2 bytes
 
-        inline ent_assoc_status_e association_status(void) const
+        inline vp_record_type_e type(void) const
         {
-            return (ent_assoc_status_e)status;
+            return VP_RECORD_TYPE_ENTITY_ASSOC;
         }
 
-        inline phys_assoc_type_e association_type(void) const
+        inline ent_assoc_status_e association_status_enum(void) const
         {
-            return (phys_assoc_type_e)type;
+            return (ent_assoc_status_e)association_status;
         }
 
-        inline phys_conn_type_e connection(void) const
+        inline phys_assoc_type_e association_type_enum(void) const
+        {
+            return (phys_assoc_type_e)association_type;
+        }
+
+        inline phys_conn_type_e connection_type_enum(void) const
         {
             return (phys_conn_type_e)connection_type;
         }
 
-        inline grp_mem_type_e membership(void) const
+        inline grp_mem_type_e membership_enum(void) const
         {
             return (grp_mem_type_e)group_membership;
+        }
+
+        inline bool operator==(const entity_association_t &other) const
+        {
+            if (change_indicator != other.change_indicator)     return false;
+            if (association_status != other.association_status) return false;
+            if (association_type != other.association_type)     return false;
+            if (entity_id != other.entity_id)                   return false;
+            if (station != other.station)                       return false;
+            if (connection_type != other.connection_type)       return false;
+            if (group_membership != other.group_membership)     return false;
+            if (group_number != other.group_number)             return false;
+            return true;
+        }
+
+        inline bool operator!=(const entity_association_t &other) const
+        {
+            return (not (*this == other));
         }
 
         void print(const string_t &, std::ostream &) const;
@@ -124,13 +168,18 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct entity_offset_t : variable_parameter_content_t
     {
-        uint8_t                 type;                   // 1 byte
+        uint8_t                 offset_type;            // 1 byte
         uint16_t                padding;                // 2 bytes
         location12_t            position;               // 12 bytes
 
-        inline offset_type_e offset_type(void) const
+        inline vp_record_type_e type(void) const
         {
-            return (offset_type_e)type;
+            return VP_RECORD_TYPE_ENTITY_OFFSET;
+        }
+
+        inline offset_type_e offset_type_enum(void) const
+        {
+            return (offset_type_e)offset_type;
         }
 
         void print(const string_t &, std::ostream &) const;
@@ -150,17 +199,22 @@ namespace vdis
         uint16_t                attributes;             // 2 bytes
         uint32_t                unused2;                // 4 bytes
 
-        inline lf_cloth_scheme_e cloth_scheme(void) const
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_EXT_LIFEFORM_APP;
+        }
+
+        inline lf_cloth_scheme_e cloth_scheme_enum(void) const
         {
             return (lf_cloth_scheme_e)clothing_scheme;
         }
 
-        inline colors_e color_primary(void) const
+        inline colors_e color_primary_enum(void) const
         {
             return (colors_e)primary_color;
         }
 
-        inline colors_e color_secondary(void) const
+        inline colors_e color_secondary_enum(void) const
         {
             return (colors_e)secondary_color;
         }
@@ -191,22 +245,27 @@ namespace vdis
         uint32_t                lights;                 // 4 bytes
         uint8_t                 thermal_indicators;     // 1 byte
 
-        inline pl_paint_scheme_e paint_scheme(void) const
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_EXT_PLATFORM_APP;
+        }
+
+        inline pl_paint_scheme_e paint_scheme_enum(void) const
         {
             return (pl_paint_scheme_e)paint;
         }
 
-        inline pl_decal_scheme_e decal_scheme(void) const
+        inline pl_decal_scheme_e decal_scheme_enum(void) const
         {
             return (pl_decal_scheme_e)decal;
         }
 
-        inline colors_e color_primary(void) const
+        inline colors_e color_primary_enum(void) const
         {
             return (colors_e)primary_color;
         }
 
-        inline colors_e color_secondary(void) const
+        inline colors_e color_secondary_enum(void) const
         {
             return (colors_e)secondary_color;
         }
@@ -221,6 +280,11 @@ namespace vdis
     {
         uint8_t                 padding[12];            // 12 bytes
 
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_EXT_SUPPLY_APP;
+        }
+
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
         void write(byte_stream_t &);
@@ -230,6 +294,11 @@ namespace vdis
     struct extended_cultural_feature_appearance_t : extended_appearance_t
     {
         uint8_t                 padding[12];            // 12 bytes
+
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_EXT_CULT_FEAT_APP;
+        }
 
         void print(const string_t &, std::ostream &) const;
         void read(byte_stream_t &);
@@ -249,12 +318,12 @@ namespace vdis
         uint8_t                 value;
         bits_t                  bits;
 
-        inline present_domain_e present_domain(void) const
+        inline present_domain_e present_domain_enum(void) const
         {
             return (present_domain_e)bits.present_domain;
         }
 
-        inline disguise_status_e disguise_status(void) const
+        inline disguise_status_e disguise_status_enum(void) const
         {
             return (disguise_status_e)bits.disguise;
         }
@@ -286,22 +355,22 @@ namespace vdis
         uint8_t                 value;
         bits_t                  bits;
 
-        inline severity_e cleanliness(void) const
+        inline severity_e cleanliness_enum(void) const
         {
             return (severity_e)bits.cleanliness;
         }
 
-        inline severity_e damage(void) const
+        inline severity_e damage_enum(void) const
         {
             return (severity_e)bits.damage;
         }
 
-        inline pl_cond_mtl_e material(void) const
+        inline pl_cond_mtl_e material_enum(void) const
         {
             return (pl_cond_mtl_e)bits.material;
         }
 
-        inline severity_e rust(void) const
+        inline severity_e rust_enum(void) const
         {
             return (severity_e)bits.rust;
         }

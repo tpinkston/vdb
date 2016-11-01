@@ -92,7 +92,7 @@ void vdb::designator_node_t::print(std::ostream &out) const
         ++itor;
     }
 
-    if (options::summary_extra)
+    if (options::extra)
     {
         out << "      Spot types: " << std::endl;
 
@@ -137,7 +137,7 @@ void vdb::collision_node_t::print(std::ostream &out) const
         << "      Other entity: " << vdis::entity_marking(colliding_entity)
         << std::endl;
 
-    if (options::summary_extra)
+    if (options::extra)
     {
         out << "      Location: " << location << std::endl
             << "      Velocity: " << velocity << " ("
@@ -174,7 +174,7 @@ void vdb::warfare_data_node_t::print(std::ostream &out) const
     out << "      Munition: " << burst.munition << " '"
         << burst.munition.description() << "'" << std::endl;
 
-    if (options::summary_extra)
+    if (options::extra)
     {
         out << "      Fire: ";
 
@@ -221,7 +221,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
            << color::get(force_id) << marking << color::none << ", "
            << type << " '" << type.description() << "'" << std::endl;
 
-    if (options::summary_extra and not source.empty())
+    if (options::extra and not source.empty())
     {
         out << "    Source: " << color::bold_cyan << source
                << color::none << std::endl;
@@ -683,7 +683,7 @@ void vdb::summary::print_results(std::ostream &out)
 
     if (source_itor != source_data.end())
     {
-        if (options::summary_extra)
+        if (options::extra)
         {
             while(source_itor != source_data.end())
             {
@@ -714,7 +714,7 @@ void vdb::summary::print_results(std::ostream &out)
 
         print_results(all_sources, out);
 
-        if (options::summary_extra)
+        if (options::extra)
         {
             out << separator << std::endl;
         }

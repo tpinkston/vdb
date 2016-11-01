@@ -57,7 +57,11 @@ Display options (capture, playback):
   -x --extract            Print PDU data extraction (overrides -s)
   -d --dump               Print PDU hex dump (overrides -s and -x)
 
-Summary command options:
+Association options (capture, list):
+     --associations       Prints only info for associations (sling, mount, etc) 
+  -X --extra              Print extra information
+
+Summary command options (summary only):
      --collisions         Print collision info for all entities
      --emissions          Print emission (radar/IFF) info for all entities
      --fires              Print fire/detonation info for all entities

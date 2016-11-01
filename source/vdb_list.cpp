@@ -1,3 +1,4 @@
+#include "vdb_associations.h"
 #include "vdb_file_readers.h"
 #include "vdb_filter.h"
 #include "vdb_list.h"
@@ -92,7 +93,15 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
-                    print::print_pdu(data, *pdu_ptr, std::cout);
+                    if (options::associations)
+                    {
+                        associations::process_pdu(data, *pdu_ptr);
+                    }
+                    else
+                    {
+                        print::print_pdu(data, *pdu_ptr, std::cout);
+                    }
+
                     processed = true;
                 }
 

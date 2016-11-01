@@ -4,8 +4,8 @@
 #include "vdis_data_types.h"
 #include "vdis_enums.h"
 
-#define RCAST(T, t) *reinterpret_cast<const T *>(t)
-#define SCAST(T, t) *static_cast<const T *>(t)
+#define RCAST(T, t) reinterpret_cast<const T *>(t)
+#define SCAST(T, t) static_cast<const T *>(t)
 
 typedef struct timeval
     time_value_t;
