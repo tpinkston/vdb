@@ -71,6 +71,7 @@ namespace vdb
             scan_lasers,
             scan_fires,
             scan_collisions,
+            scan_entities,
             scan_objects,
             summary_collisions,
             summary_emissions,

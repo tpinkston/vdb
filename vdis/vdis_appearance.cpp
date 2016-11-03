@@ -1,6 +1,42 @@
 #include "vdis_appearance.h"
 
 // ----------------------------------------------------------------------------
+void vdis::print_appearance(
+    const std::string &prefix,
+    vdis::entity_type_t type,
+    uint32_t appearance,
+    std::ostream &out)
+{
+    if (type.kind_enum() == ENT_KIND_LIFEFORMS)
+    {
+        lifeform_appearance_t
+            entity_appearance;
+
+        entity_appearance.value = appearance;
+        entity_appearance.print(prefix + "lifeform_appearance.", out);
+    }
+    else if (type.kind_enum() == ENT_KIND_PLATFORMS)
+    {
+        if (type.domain_enum() == DOMAIN_AIR)
+        {
+            air_platform_appearance_t
+                entity_appearance;
+
+            entity_appearance.value = appearance;
+            entity_appearance.print(prefix + "air_platform_appearance.", out);
+        }
+        else if (type.domain_enum() == DOMAIN_LAND)
+        {
+            land_platform_appearance_t
+                entity_appearance;
+
+            entity_appearance.value = appearance;
+            entity_appearance.print(prefix + "land_platform_appearance.", out);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdis::lifeform_appearance_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const

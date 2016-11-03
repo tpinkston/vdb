@@ -63,6 +63,7 @@ Scan options (capture, list):
      --scan=lasers          Entity designators
      --scan=fires           Fires and detonations
      --scan=collisions      Entity collisions 
+     --scan=entities        Entity states
      --scan=objects         Object states
      --scan=all             All of the above
 

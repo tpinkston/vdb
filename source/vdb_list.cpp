@@ -1,6 +1,9 @@
 #include "vdb_associations.h"
+#include "vdb_entities.h"
 #include "vdb_file_readers.h"
 #include "vdb_filter.h"
+#include "vdb_fires.h"
+#include "vdb_lasers.h"
 #include "vdb_list.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
@@ -106,17 +109,22 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
 
                         if (options::scan_lasers)
                         {
-                            // TODO scan_lasers
+                            lasers::process_pdu(data, *pdu_ptr);
                         }
 
                         if (options::scan_fires)
                         {
-                            // TODO scan_fires
+                            fires::process_pdu(data, *pdu_ptr);
                         }
 
                         if (options::scan_collisions)
                         {
                             // TODO scan_collisions
+                        }
+
+                        if (options::scan_entities)
+                        {
+                            entities::process_pdu(data, *pdu_ptr);
                         }
 
                         if (options::scan_objects)

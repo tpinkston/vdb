@@ -1,9 +1,12 @@
 #include "vdb_associations.h"
 #include "vdb_capture.h"
 #include "vdb_common.h"
+#include "vdb_entities.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
 #include "vdb_filter.h"
+#include "vdb_fires.h"
+#include "vdb_lasers.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
@@ -334,12 +337,12 @@ void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
 
         if (options::scan_lasers)
         {
-            // TODO scan_lasers
+            lasers::process_pdu(data, pdu);
         }
 
         if (options::scan_fires)
         {
-            // TODO scan_fires
+            fires::process_pdu(data, pdu);
         }
 
         if (options::scan_collisions)
@@ -347,11 +350,16 @@ void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
             // TODO scan_collisions
         }
 
+        if (options::scan_entities)
+        {
+            entities::process_pdu(data, pdu);
+        }
+
         if (options::scan_objects)
         {
             // TODO scan_objects
         }
-    }
+   }
 }
 
 // ----------------------------------------------------------------------------

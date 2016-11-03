@@ -47,6 +47,7 @@ namespace vdb
         options::scan_lasers = false,
         options::scan_fires = false,
         options::scan_collisions = false,
+        options::scan_entities = false,
         options::scan_objects = false,
         options::summary_collisions = false,
         options::summary_emissions = false,
@@ -794,6 +795,10 @@ bool  vdb::options::parse_scans(
         {
             scan_collisions = true;
         }
+        else if (vdis::to_lowercase(*itor) == "entities")
+        {
+            scan_entities = true;
+        }
         else if (vdis::to_lowercase(*itor) == "objects")
         {
             scan_objects = true;
@@ -804,6 +809,7 @@ bool  vdb::options::parse_scans(
             scan_lasers = true;
             scan_fires = true;
             scan_collisions = true;
+            scan_entities = true;
             scan_objects = true;
         }
         else

@@ -5,6 +5,15 @@
 
 namespace vdis
 {
+    struct entity_type_t;
+
+    void print_appearance(
+        const std::string &prefix,
+        vdis::entity_type_t type,
+        uint32_t appearance,
+        std::ostream &out
+    );
+
     // ------------------------------------------------------------------------
     struct lifeform_appearance_bits_t
     {
@@ -203,6 +212,9 @@ namespace vdis
 
         inline void print(const string_t &prefix, std::ostream &out) const
         {
+            out << prefix << "value " << to_bin_string(value, true)
+                << std::endl;
+
             bits.print(prefix, out);
         }
 

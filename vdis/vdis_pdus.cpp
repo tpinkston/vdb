@@ -694,33 +694,7 @@ void vdis::entity_state_pdu_t::print(std::ostream &out) const
         << prefix << "appearance.value "
         << to_bin_string(appearance, true) << std::endl;
 
-    if (type.kind_enum() == ENT_KIND_LIFEFORMS)
-    {
-        lifeform_appearance_t
-            entity_appearance;
-
-        entity_appearance.value = appearance;
-        entity_appearance.print(prefix + "lifeform_appearance.", out);
-    }
-    else if (type.kind_enum() == ENT_KIND_PLATFORMS)
-    {
-        if (type.domain_enum() == DOMAIN_AIR)
-        {
-            air_platform_appearance_t
-                entity_appearance;
-
-            entity_appearance.value = appearance;
-            entity_appearance.print(prefix + "air_platform_appearance.", out);
-        }
-        else if (type.domain_enum() == DOMAIN_LAND)
-        {
-            land_platform_appearance_t
-                entity_appearance;
-
-            entity_appearance.value = appearance;
-            entity_appearance.print(prefix + "land_platform_appearance.", out);
-        }
-    }
+    vdis::print_appearance(prefix, type, appearance, out);
 
     dead_reckoning.print(prefix, out);
     capabilities.print(prefix, out);

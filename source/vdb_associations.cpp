@@ -34,7 +34,6 @@ void vdb::associations::process_pdu(
                     pdu.base());
 
                 process_request(data, request);
-
                 break;
             }
             case vdis::PDU_TYPE_ACTION_RESPONSE:
@@ -44,7 +43,6 @@ void vdb::associations::process_pdu(
                     pdu.base());
 
                 process_response(data, response);
-
                 break;
             }
             case vdis::PDU_TYPE_ENTITY_STATE:
@@ -54,7 +52,6 @@ void vdb::associations::process_pdu(
                     pdu.base());
 
                 process_entity_state(data, entity_state);
-
                 break;
             }
             default:
