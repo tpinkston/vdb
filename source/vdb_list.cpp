@@ -102,6 +102,11 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
                     }
                     else
                     {
+                        if (options::scan_entities)
+                        {
+                            entities::process_pdu(data, *pdu_ptr);
+                        }
+
                         if (options::scan_associations)
                         {
                             associations::process_pdu(data, *pdu_ptr);
@@ -120,11 +125,6 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
                         if (options::scan_collisions)
                         {
                             // TODO scan_collisions
-                        }
-
-                        if (options::scan_entities)
-                        {
-                            entities::process_pdu(data, *pdu_ptr);
                         }
 
                         if (options::scan_objects)
