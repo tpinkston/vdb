@@ -316,7 +316,7 @@ int vdb::summary::summarize_pdus(void)
 
         filename = options::command_arguments[0];
 
-        if (options::use_pcap)
+        if (options::pcap)
         {
             reader_ptr = new pcap_reader_t(filename);
         }
@@ -646,7 +646,7 @@ void vdb::summary::print_results(std::ostream &out)
         out << "[" << strerror(errno) << "]" << std::endl;
     }
 
-    if (not options::use_pcap)
+    if (not options::pcap)
     {
         static_cast<standard_reader_t*>(reader_ptr)->header.print(
             std::string(),

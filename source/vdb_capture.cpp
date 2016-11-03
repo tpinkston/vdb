@@ -112,7 +112,7 @@ void vdb::capture::open_socket(void)
     }
 
     socket_ptr = new vdis::receive_socket_t(
-        options::use_ipv6,
+        options::ipv6,
         port,
         address_ptr);
 }

@@ -33,15 +33,14 @@ namespace vdb
         options::network_interface;
     bool
         options::initialized = false,
-        options::quiet_mode = false,
-        options::use_ipv6 = false,
-        options::use_pcap = false,
-        options::show_version = false,
-        options::show_help = false,
-        options::show_examples = false,
-        options::show_pdu_dump = false,
-        options::show_pdu_extracted = false,
-        options::show_pdu_summary = false,
+        options::quiet = false,
+        options::ipv6 = false,
+        options::pcap = false,
+        options::version = false,
+        options::help = false,
+        options::examples = false,
+        options::dump = false,
+        options::extracted = false,
         options::extra = false,
         options::scanning = false,
         options::scan_associations = false,
@@ -247,7 +246,7 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            show_help = true;
+            help = true;
         }
     }
     else if (name == "mono")
@@ -289,14 +288,14 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            show_examples = true;
+            examples = true;
         }
     }
     else if (name == "version")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            show_version = true;
+            version = true;
         }
     }
     else if (name == "hostname")
@@ -393,14 +392,14 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            use_pcap = true;
+            pcap = true;
         }
     }
     else if (name == "ipv6")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            use_ipv6 = true;
+            ipv6 = true;
         }
     }
     else if (name == "iface")
@@ -426,28 +425,21 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            quiet_mode = true;
-        }
-    }
-    else if (name == "summarize")
-    {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            show_pdu_summary = true;
+            quiet = true;
         }
     }
     else if (name == "dump")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            show_pdu_dump = true;
+            dump = true;
         }
     }
     else if (name == "extract")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
-            show_pdu_extracted = true;
+            extracted = true;
         }
     }
     else if (name == "extra")
@@ -556,7 +548,7 @@ bool vdb::options::parse_short_options(
         switch(argument[i])
         {
             case '6':
-                use_ipv6 = true;
+                ipv6 = true;
                 break;
             case 'a':
                 success = parse_string(
@@ -577,7 +569,7 @@ bool vdb::options::parse_short_options(
                 command = USER_COMMAND_CAPTURE;
                 break;
             case 'd':
-                show_pdu_dump = true;
+                dump = true;
                 break;
             case 'e':
                 success = parse_integer_set(
@@ -608,7 +600,7 @@ bool vdb::options::parse_short_options(
                 advance = true;
                 break;
             case 'h':
-                show_help = true;
+                help = true;
                 break;
             case 'H':
                 success = parse_string_set(
@@ -654,13 +646,13 @@ bool vdb::options::parse_short_options(
                 advance = true;
                 break;
             case 'p':
-                use_pcap = true;
+                pcap = true;
                 break;
             case 'P':
                 command = USER_COMMAND_PLAYBACK;
                 break;
             case 'q':
-                quiet_mode = true;
+                quiet = true;
                 break;
             case 'r':
                 success = parse_integer_set_in_range(
@@ -673,9 +665,6 @@ bool vdb::options::parse_short_options(
                 break;
             case 'R':
                 logger::set_enabled(logger::ERROR, false);
-                break;
-            case 's':
-                show_pdu_summary = true;
                 break;
             case 'S':
                 command = USER_COMMAND_SUMMARY;
@@ -708,7 +697,7 @@ bool vdb::options::parse_short_options(
                 command = USER_COMMAND_UNCOMMENT;
                 break;
             case 'V':
-                show_version = true;
+                version = true;
                 break;
             case 'w':
                 logger::set_enabled(logger::WARNING, true);
@@ -717,7 +706,7 @@ bool vdb::options::parse_short_options(
                 command = USER_COMMAND_COMMENT;
                 break;
             case 'x':
-                show_pdu_extracted = true;
+                extracted = true;
                 break;
             case 'X':
                 extra = true;

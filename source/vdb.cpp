@@ -39,16 +39,16 @@ int main(int argc, char *argv[])
     }
     else
     {
-        if (vdb::options::show_version)
+        if (vdb::options::version)
         {
             print_version();
         }
 
-        if (vdb::options::show_help)
+        if (vdb::options::help)
         {
             print_help();
         }
-        else if (vdb::options::show_examples)
+        else if (vdb::options::examples)
         {
             print_examples();
         }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                     vdis::object_types::print(std::cout);
                     break;
                 default:
-                    if (not vdb::options::show_version)
+                    if (not vdb::options::version)
                     {
                         std::cerr << "vdb: missing command (try --help)"
                                   << std::endl;

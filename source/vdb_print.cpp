@@ -14,11 +14,11 @@ void vdb::print::print_pdu(
     const vdis::pdu_t &pdu,
     std::ostream &out)
 {
-    if (options::show_pdu_dump)
+    if (options::dump)
     {
         print_pdu_hex_dump(data, out);
     }
-    else if (options::show_pdu_extracted)
+    else if (options::extracted)
     {
         print_pdu_extracted(data, pdu, out);
     }
@@ -135,7 +135,7 @@ void vdb::print::print_pdu_normal(
 
     out << color::none << std::endl;
 
-    if (pdu.base() and options::show_pdu_summary)
+    if (pdu.base() and options::extra)
     {
         out << color::purple;
 

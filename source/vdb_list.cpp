@@ -44,7 +44,7 @@ int vdb::list::list_pdus(void)
         file_reader_t
             *reader_ptr = 0;
 
-        if (options::use_pcap)
+        if (options::pcap)
         {
             reader_ptr = new pcap_reader_t(filename);
         }
