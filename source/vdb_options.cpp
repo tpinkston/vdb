@@ -42,8 +42,13 @@ namespace vdb
         options::show_pdu_dump = false,
         options::show_pdu_extracted = false,
         options::show_pdu_summary = false,
-        options::associations = false,
         options::extra = false,
+        options::scanning = false,
+        options::scan_associations = false,
+        options::scan_lasers = false,
+        options::scan_fires = false,
+        options::scan_collisions = false,
+        options::scan_objects = false,
         options::summary_collisions = false,
         options::summary_emissions = false,
         options::summary_fires = false,
@@ -294,6 +299,16 @@ bool vdb::options::parse_long_option(const char *current_argument)
             show_version = true;
         }
     }
+    else if (name == "hostname")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            success = parse_string_set(
+                "--hostname",
+                value.c_str(),
+                include_hostnames);
+        }
+    }
     else if (name == "exercise")
     {
         if (verify_long_argument_value(name, value, true, success))
@@ -435,18 +450,22 @@ bool vdb::options::parse_long_option(const char *current_argument)
             show_pdu_extracted = true;
         }
     }
-    else if (name == "associations")
-    {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            associations = true;
-        }
-    }
     else if (name == "extra")
     {
         if (verify_long_argument_value(name, value, false, success))
         {
             extra = true;
+        }
+    }
+    else if (name == "scan")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            std::set<std::string> scans;
+
+            success =
+                parse_string_set("--hostname", value.c_str(), scans) and
+                parse_scans("--name", scans);
         }
     }
     else if (name == "collisions")
@@ -520,6 +539,8 @@ bool vdb::options::parse_short_options(
 {
     std::string
         argument = std::string(current_argument).substr(1);
+    std::set<std::string>
+        scans;
     bool
         success = true;
 
@@ -624,6 +645,12 @@ bool vdb::options::parse_short_options(
                     "-n",
                     next_argument,
                     network_interface);
+                advance = true;
+                break;
+            case 'N':
+                success =
+                    parse_string_set("-n", next_argument, scans) and
+                    parse_scans("-n", scans);
                 advance = true;
                 break;
             case 'p':
@@ -746,6 +773,62 @@ bool vdb::options::parse_string_set(
                       << name_ptr << std::endl;
         }
     }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool  vdb::options::parse_scans(
+    const char *name_ptr,
+    const std::set<std::string> &set)
+{
+    std::set<std::string>::const_iterator
+        itor = set.begin();
+    bool
+        success = true;
+
+    while(success and (itor != set.end()))
+    {
+        if (vdis::to_lowercase(*itor) == "associations")
+        {
+            scan_associations = true;
+        }
+        else if (vdis::to_lowercase(*itor) == "lasers")
+        {
+            scan_lasers = true;
+        }
+        else if (vdis::to_lowercase(*itor) == "fires")
+        {
+            scan_fires = true;
+        }
+        else if (vdis::to_lowercase(*itor) == "collisions")
+        {
+            scan_collisions = true;
+        }
+        else if (vdis::to_lowercase(*itor) == "objects")
+        {
+            scan_objects = true;
+        }
+        else if (vdis::to_lowercase(*itor) == "all")
+        {
+            scan_associations = true;
+            scan_lasers = true;
+            scan_fires = true;
+            scan_collisions = true;
+            scan_objects = true;
+        }
+        else
+        {
+            std::cerr << "vdb: invalid scan token '" << *itor << "'"
+                      << std::endl;
+
+            success = false;
+        }
+
+        ++itor;
+    }
+
+    scanning = true;
 
     return success;
 }

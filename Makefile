@@ -9,14 +9,14 @@ GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
 THIS_FILE=$(lastword $(MAKEFILE_LIST))
 
-build: pcap data help examples version builder
+build: data help examples version builder
 	@echo
 	@echo "build:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile
 .PHONY : build
 
 
-all: pcap data help examples version builder
+all: data help examples version builder
 	@echo
 	@echo "all:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile all
@@ -62,44 +62,6 @@ version:
 .PHONY : version 
 
 
-pcap:
-	@echo
-	@echo "pcap: ${PCAP_VERSION}"
-	@if [ -d ${PCAP_PATH} ]; then echo "Already decompressed..."; fi
-	@if [ ! -d ${PCAP_PATH} ]; then \
-		echo "Decompressing..."; \
-		cd ${BUILD_PATH}; \
-		tar -xf ${PCAP_VERSION}.tar.gz; \
-		find ${PCAP_VERSION} -name "*.h" -exec chmod -w {} \;; \
-		find ${PCAP_VERSION} -name "*.c" -exec chmod -w {} \;; \
-	fi
-	@if [ -e ${PCAP_PATH}/Makefile ]; then echo "Already configured..."; fi
-	@if [ ! -e ${PCAP_PATH}/Makefile ]; then \
-	echo "Configuring..."; \
-		cd ${PCAP_PATH}; \
-		./configure; \
-		echo; \
-	fi
-	@if [ -e ${PCAP_PATH}/libpcap.a ]; then echo "Already built..."; fi
-	@if [ ! -e ${PCAP_PATH}/libpcap.a ]; then \
-		echo "Building..."; \
-		cd ${PCAP_PATH}; \
-		$(MAKE) --no-print-directory -f Makefile; \
-		echo; \
-	fi
-.PHONY : pcap
-
-
-clean_pcap:
-	@if [ -e ${PCAP_PATH}/Makefile ]; then \
-		echo; \
-		echo "clean_pcap:"; \
-		cd ${PCAP_PATH}; \
-		$(MAKE) --no-print-directory -f Makefile clean; \
-	fi
-.PHONY : clean_pcap
-
-
 builder: ${BUILD_PATH}/CMakeLists.txt
 	@if [ ! -e ${BUILD_PATH}/Makefile ]; then \
 		echo; \
@@ -119,7 +81,7 @@ clean_builder:
 .PHONY : clean_builder
 
 
-clean: clean_pcap clean_builder
+clean: clean_builder
 	@echo
 	@echo "clean:"
 	@rm -fv vdb
@@ -137,6 +99,5 @@ clobber: clean
 	@rm -fv ${BUILD_PATH}/CMakeCache.txt
 	@rm -fv ${BUILD_PATH}/Makefile
 	@rm -rfv ${BUILD_PATH}/CMakeFiles  
-	@rm -rfv ${PCAP_PATH}  
 .PHONY : clobber
 

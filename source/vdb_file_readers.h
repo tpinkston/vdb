@@ -64,15 +64,7 @@ namespace vdb
 
         virtual bool next_entry(pdu_data_t &data);
     };
-}
 
-#ifdef lib_pcap_pcap_h
-
-typedef struct pcap_pkthdr
-    pcap_packet_header_t;
-
-namespace vdb
-{
     // ------------------------------------------------------------------------
     // Reader for PCAP format capture files
     //
@@ -89,19 +81,17 @@ namespace vdb
 
       private:
 
-        bool read_pcap_entry(
-            const pcap_packet_header_t &header,
-            vdis::byte_stream_t &stream,
-            pdu_data_t &data
-        );
-
-        pcap_t
-            *pcap_ptr;
-        uint32_t
-            index_counter;
+//        bool read_pcap_entry(
+//            const pcap_packet_header_t &header,
+//            vdis::byte_stream_t &stream,
+//            pdu_data_t &data
+//        );
+//
+//        pcap_t
+//            *pcap_ptr;
+//        uint32_t
+//            index_counter;
     };
 }
-
-#endif // lib_pcap_pcap_h
 
 #endif

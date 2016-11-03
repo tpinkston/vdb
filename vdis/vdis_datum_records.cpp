@@ -301,6 +301,12 @@ void vdis::variable_datum_record_t::read(byte_stream_t &stream)
         case DATUM_IDS_DID_STATUS_DAMAGE_AGGR:
             content_ptr = new damage_status_t;
             break;
+        case DATUM_IDS_DID_CARRIER_MOUNT_ID:
+            content_ptr = new carrier_mount_id_t;
+            break;
+        case DATUM_IDS_DID_MOUNT_DATA_ID:
+            content_ptr = new mount_dismount_t;
+            break;
         case DATUM_IDS_DID_SLING_LOAD_CAPABILITY:
             content_ptr = new sling_load_capability_t;
             break;
@@ -446,6 +452,86 @@ void vdis::damage_status_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::carrier_mount_id_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "carrier_mount_id.carrier "
+        << entity_marking(carrier) << std::endl
+        << prefix << "damage_status.padding(16 bits) "
+        << to_bin_string(padding, true) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::carrier_mount_id_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for carrier_mount_id_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    carrier.read(stream);
+    stream.read(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::carrier_mount_id_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    carrier.write(stream);
+    stream.write(padding);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::mount_dismount_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "mount_dismount.entity_id "
+        << entity_marking(entity_id) << std::endl
+        << prefix << "mount_dismount.station_id "
+        << (station_name_e)station_id << std::endl
+        << prefix << "mount_dismount.mass(kg) "
+        << to_string(mass, 1, 3) << std::endl
+        << prefix << "mount_dismount.volume(meters cubed) "
+        << to_string(volume, 1, 3) << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::mount_dismount_t::read(byte_stream_t &stream)
+{
+    const uint32_t length = read_length(stream);
+
+    if (length != (LENGTH_BITS / 8))
+    {
+        LOG_ERROR(
+            "Inconsistent datum length for mount_dismount_t: %d/%d",
+            length,
+            (LENGTH_BITS / 8));
+    }
+
+    entity_id.read(stream);
+    stream.read(station_id);
+    stream.read(mass);
+    stream.read(volume);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::mount_dismount_t::write(byte_stream_t &stream)
+{
+    stream.write(length());
+    entity_id.write(stream);
+    stream.write(station_id);
+    stream.write(mass);
+    stream.write(volume);
+}
+
+// ----------------------------------------------------------------------------
 vdis::sling_load_capability_t::sling_load_capability_t(void) :
     drag_coeffficient(0),
     current_mass(0),
@@ -504,12 +590,12 @@ void vdis::sling_load_capability_t::print(
     std::ostream &out) const
 {
     out << prefix << "sling_load_capability.payload "
-        << payload << std::endl
+        << entity_marking(payload) << std::endl
         << prefix << "sling_load_capability.carrier "
-        << carrier << std::endl
+        << entity_marking(carrier) << std::endl
         << prefix << "sling_load_capability.drag_coeffficient "
         << to_string(drag_coeffficient, 1, 4) << std::endl
-        << prefix << "sling_load_capability.current_mass "
+        << prefix << "sling_load_capability.current_mass(kg) "
         << to_string(current_mass, 1, 4) << std::endl
         << prefix << "sling_load_capability.padding(16 bits) "
         << to_bin_string(padding, true) << std::endl

@@ -93,13 +93,36 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
-                    if (options::associations)
+                    if (not options::scanning)
                     {
-                        associations::process_pdu(data, *pdu_ptr);
+                        print::print_pdu(data, *pdu_ptr, std::cout);
                     }
                     else
                     {
-                        print::print_pdu(data, *pdu_ptr, std::cout);
+                        if (options::scan_associations)
+                        {
+                            associations::process_pdu(data, *pdu_ptr);
+                        }
+
+                        if (options::scan_lasers)
+                        {
+                            // TODO scan_lasers
+                        }
+
+                        if (options::scan_fires)
+                        {
+                            // TODO scan_fires
+                        }
+
+                        if (options::scan_collisions)
+                        {
+                            // TODO scan_collisions
+                        }
+
+                        if (options::scan_objects)
+                        {
+                            // TODO scan_objects
+                        }
                     }
 
                     processed = true;

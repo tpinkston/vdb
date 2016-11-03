@@ -1,3 +1,4 @@
+#include "vdb_associations.h"
 #include "vdb_capture.h"
 #include "vdb_common.h"
 #include "vdb_file_stream.h"
@@ -302,8 +303,7 @@ void vdb::capture::start(void)
                             data.get_pdu_length(),
                             data.get_source().c_str());
 
-                        write_pdu_data(data);
-                        print::print_pdu(data, *pdu_ptr, std::cout);
+                        process_pdu(data, *pdu_ptr);
                     }
 
                     delete pdu_ptr;
@@ -312,6 +312,44 @@ void vdb::capture::start(void)
             }
 
             data.clear();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
+{
+    write_pdu_data(data);
+
+    if (not options::scanning)
+    {
+        print::print_pdu(data, pdu, std::cout);
+    }
+    else
+    {
+        if (options::scan_associations)
+        {
+            associations::process_pdu(data, pdu);
+        }
+
+        if (options::scan_lasers)
+        {
+            // TODO scan_lasers
+        }
+
+        if (options::scan_fires)
+        {
+            // TODO scan_fires
+        }
+
+        if (options::scan_collisions)
+        {
+            // TODO scan_collisions
+        }
+
+        if (options::scan_objects)
+        {
+            // TODO scan_objects
         }
     }
 }

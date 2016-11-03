@@ -123,7 +123,7 @@ void vdb::associations::process_entity_state(
         }
     }
 
-    if (known_targets.empty())
+    if (not known_targets.empty())
     {
         std::set<vdis::id_t>::const_iterator
             target_itor = known_targets.begin();
@@ -352,18 +352,15 @@ void vdb::associations::get_targets(
     const vdis::id_t &carrier_id,
     std::set<vdis::id_t> &target_ids)
 {
-    carriers_t::const_iterator
-        carrier = current_carriers.find(carrier_id);
+    carriers_t::const_iterator carrier = current_carriers.find(carrier_id);
 
     if (carrier != current_carriers.end())
     {
-        targets_t::const_iterator
-            target = carrier->second.begin();
+        targets_t::const_iterator target = carrier->second.begin();
 
         while(target != carrier->second.end())
         {
             target_ids.insert(target->first);
-
             ++target;
         }
     }

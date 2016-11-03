@@ -66,8 +66,13 @@ namespace vdb
             show_pdu_dump,
             show_pdu_extracted,
             show_pdu_summary,
-            associations,
             extra,
+            scanning,
+            scan_associations,
+            scan_lasers,
+            scan_fires,
+            scan_collisions,
+            scan_objects,
             summary_collisions,
             summary_emissions,
             summary_fires,
@@ -105,6 +110,11 @@ namespace vdb
             const char *name_ptr,
             const char *value_ptr,
             std::set<std::string> &set
+        );
+
+        static bool parse_scans(
+            const char *name_ptr,
+            const std::set<std::string> &set
         );
 
         static bool parse_entity_ids(

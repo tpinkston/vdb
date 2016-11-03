@@ -45,11 +45,4 @@
 #include <sys/socket.h>
 #endif
 
-#define PCAP_INCLUDED
-
-#ifdef PCAP_INCLUDED
-#include <pcap.h>
-#include <ethertype.h>
-#endif
-
 #endif

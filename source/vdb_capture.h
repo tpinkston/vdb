@@ -3,8 +3,12 @@
 
 #include "vdb_system.h"
 
-#include "vdis_data_types.h"
 #include "vdis_network.h"
+
+namespace vdis
+{
+    class pdu_t;
+}
 
 namespace vdb
 {
@@ -29,6 +33,8 @@ namespace vdb
         static void register_signal(void);
 
         static void start(void);
+
+        static void process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu);
 
         static void print_stats(std::ostream &stream);
 

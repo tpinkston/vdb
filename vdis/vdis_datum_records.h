@@ -164,6 +164,64 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct carrier_mount_id_t : variable_datum_content_t
+    {
+        id_t                        carrier;                // 6 bytes
+        uint16_t                    padding;                // 2 bytes
+
+        carrier_mount_id_t(void) : padding(0) { }
+        virtual ~carrier_mount_id_t(void) { }
+
+        // Returns datum length in bits
+        //
+        uint32_t length(void) const { return LENGTH_BITS; }
+
+        inline void clear(void)
+        {
+            carrier.clear();
+            padding = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+
+        static const uint32_t
+            LENGTH_BITS = 64; // Bits
+    };
+
+    // ------------------------------------------------------------------------
+    struct mount_dismount_t : variable_datum_content_t
+    {
+        id_t                        entity_id;              // 6 bytes
+        uint16_t                    station_id;             // 2 bytes
+        float32_t                   mass;                   // 4 bytes
+        float32_t                   volume;                 // 4 bytes
+
+        mount_dismount_t(void) : station_id(0), mass(0), volume(0) { }
+        virtual ~mount_dismount_t(void) { }
+
+        // Returns datum length in bits
+        //
+        uint32_t length(void) const { return LENGTH_BITS; }
+
+        inline void clear(void)
+        {
+            entity_id.clear();
+            station_id = 0;
+            mass = 0;
+            volume = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+
+        static const uint32_t
+            LENGTH_BITS = 128; // Bits
+    };
+
+    // ------------------------------------------------------------------------
     struct sling_load_capability_t : variable_datum_content_t
     {
         id_t                        payload;                // 6 bytes

@@ -2,8 +2,8 @@ Captures VDIS traffic (UDP) over a network port/interface with capability
 to save captured traffic to a file to be examined or played back afterwards.
 
 Usage:
-  vdb COMMAND|-[C|P|L|Q|M] [OPTIONS] [FILE]
-  vdb COMMAND|-[C|P|L|Q|M] --examples
+  vdb COMMAND|-[C|P|L|S|W|U|M] [OPTIONS] [FILE]
+  vdb COMMAND|-[C|P|L|S|W|U|M] --examples
   vdb --examples
   vdb --help|-h
   vdb --version|-v
@@ -28,6 +28,7 @@ Global options (for all commands):
   -R --suppress           Suppress any error messages
      --examples           Prints example commands
   -V --version            Prints version information
+  -X --extra              Print extra information (if applicable)
 
 File options (playback, list, summary):
   -p --pcap               Assumes FILE is a 'pcap' file
@@ -57,16 +58,20 @@ Display options (capture, playback):
   -x --extract            Print PDU data extraction (overrides -s)
   -d --dump               Print PDU hex dump (overrides -s and -x)
 
-Association options (capture, list):
-     --associations       Prints only info for associations (sling, mount, etc) 
-  -X --extra              Print extra information
+Scan options (capture, list):
+  -N --scan=E1,...        Scan PDUs for special events:
+                            --scan=associations (entity associations, requests)
+                            --scan=lasers (entity designators)
+                            --scan=fires (fires and detonations)
+                            --scan=collisions 
+                            --scan=objects
+                            --scan=all (all of the above)
 
 Summary command options (summary only):
-     --collisions         Print collision info for all entities
-     --emissions          Print emission (radar/IFF) info for all entities
-     --fires              Print fire/detonation info for all entities
-     --lasers             Print designator info for all entities
-     --radios             Print radio info for all entities
-     --objects            Print object state (point, linear, areal) info
-  -A --all                Print all the above info
-  -X --extra              Print extra information
+     --collisions         Show collisions
+     --emissions          Show emissions (radar/IFF)
+     --fires              Show fires and detonations
+     --lasers             Show designators
+     --radios             Show radios
+     --objects            Show object states (point, linear, areal)
+  -A --all                Show all the above
