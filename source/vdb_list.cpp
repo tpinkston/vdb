@@ -6,6 +6,7 @@
 #include "vdb_lasers.h"
 #include "vdb_list.h"
 #include "vdb_options.h"
+#include "vdb_output_file.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 
@@ -13,6 +14,8 @@
 #include "vdis_pdus.h"
 #include "vdis_logger.h"
 
+vdb::output_file_t
+    *vdb::list::file_ptr = 0;
 uint32_t
     vdb::list::pdus_listed = 0,
     vdb::list::pdus_filtered_out = 0;
@@ -60,14 +63,38 @@ int vdb::list::list_pdus(void)
         {
             result = 1;
         }
-        else if (not reader_ptr->parse(process_pdu_data))
-        {
-            result = 1;
-        }
         else
         {
-            LOG_VERBOSE("PDUs listed: %d...", pdus_listed);
-            LOG_VERBOSE("PDUs filtered out: %d...", pdus_filtered_out);
+            if (not options::output_file.empty())
+            {
+                std::string
+                    comment = ("List output from '" + filename + "'");
+
+                file_ptr = new output_file_t(options::output_file, &comment);
+
+                // Ensure that file was successfully opened.
+                //
+                result = file_ptr->get_file() ? 0 : 1;
+            }
+
+            if (result == 0)
+            {
+                if (not reader_ptr->parse(process_pdu_data))
+                {
+                    result = 1;
+                }
+                else
+                {
+                    LOG_VERBOSE("PDUs listed: %d...", pdus_listed);
+                    LOG_VERBOSE("PDUs filtered out: %d...", pdus_filtered_out);
+                }
+            }
+
+            if (file_ptr)
+            {
+                delete file_ptr;
+                file_ptr = 0;
+            }
         }
 
         delete reader_ptr;
@@ -96,6 +123,11 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
+                    if (file_ptr)
+                    {
+                        file_ptr->write_pdu_data(data);
+                    }
+
                     if (not options::scanning)
                     {
                         print::print_pdu(data, *pdu_ptr, std::cout);

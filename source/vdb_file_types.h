@@ -27,14 +27,14 @@ namespace vdb
         ~file_header_t(void);
 
         std::ostream &print_comment(
-            const string_t &prefix,
+            const std::string &prefix,
             uint32_t index,
             std::ostream &stream
         ) const;
 
         bool invalid_title(void) const;
 
-        void print(const string_t &prefix, std::ostream &) const;
+        void print(const std::string &prefix, std::ostream &) const;
 
         void clear(void);
 
@@ -75,7 +75,7 @@ namespace vdb
         file_header_comment_t(const file_header_comment_t &copy);
         ~file_header_comment_t(void);
 
-        void print(const string_t &prefix, std::ostream &) const;
+        void print(const std::string &prefix, std::ostream &) const;
 
         void clear(void);
 
@@ -86,7 +86,7 @@ namespace vdb
 
         uint64_t
             time;
-        string_t
+        std::string
             value;
 
       protected:
@@ -105,7 +105,7 @@ namespace vdb
         file_header_record_t(const file_header_record_t &copy);
         ~file_header_record_t(void);
 
-        void print(const string_t &prefix, std::ostream &) const;
+        void print(const std::string &prefix, std::ostream &) const;
 
         void clear(void);
 

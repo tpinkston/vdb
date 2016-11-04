@@ -52,6 +52,9 @@ Filter options (capture, playback, list, summary):
   -i --ids=I1,...         Include PDUs containing specified entity ID(s)
   -I --xids=I1,...        Exclude PDUs containing specified entity ID(s)
 
+Output options (list only):
+  -O --output=FILENAME    Write listed (filtered) PDUs to output file.
+
 Display options (capture, playback, list):
   -q --quiet              Print as little as possible
   -x --extract            Print PDU data extraction (overrides -s)

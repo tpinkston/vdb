@@ -12,7 +12,7 @@ const uint32_t
 
 // ----------------------------------------------------------------------------
 void vdb::file_header_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "File version:       "
@@ -28,7 +28,7 @@ void vdb::file_header_t::print(
 
 // ----------------------------------------------------------------------------
 std::ostream &vdb::file_header_t::print_comment(
-    const string_t &prefix,
+    const std::string &prefix,
     uint32_t index,
     std::ostream &out) const
 {
@@ -184,7 +184,7 @@ void vdb::file_header_t::write(vdis::byte_stream_t &stream) const
 
 // ----------------------------------------------------------------------------
 void vdb::file_header_comment_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << color::bold_yellow << vdis::time_to_string(time)
@@ -283,7 +283,7 @@ void vdb::file_header_comment_t::write(vdis::byte_stream_t &stream) const
 
 // ----------------------------------------------------------------------------
 void vdb::file_header_record_t::print(
-    const string_t &prefix,
+    const std::string &prefix,
     std::ostream &out) const
 {
     out << prefix << "type " << type << std::endl

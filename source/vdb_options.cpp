@@ -29,6 +29,7 @@ namespace vdb
     std::set<uint32_t>
         options::pdu_index_range;
     std::string
+        options::output_file,
         options::network_address,
         options::network_interface;
     bool
@@ -156,6 +157,46 @@ bool vdb::options::initialize(int argc, char *argv[])
                 command_arguments.push_back(std::string(current_argument));
             }
         }
+    }
+
+    if (success)
+    {
+        // Do a little sanity check
+        //
+        if ((command != USER_COMMAND_LIST) and not output_file.empty())
+        {
+            std::cerr << "vdb: output file option (-o or --output) "
+                      << "for list command only" << std::endl;
+            success = false;
+        }
+        else if (scanning and
+                (command != USER_COMMAND_CAPTURE) and
+                (command != USER_COMMAND_LIST))
+        {
+            std::cerr << "vdb: scan option (-N or --scan) "
+                      << "for capture and list commands only" << std::endl;
+            success = false;
+        }
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::options::set_command(user_command_e user_command)
+{
+    bool
+        success = false;
+
+    if (command == USER_COMMAND_NONE)
+    {
+        command = user_command;
+        success = true;
+    }
+    else
+    {
+        std::cerr << "vdb: extra command '" << command_names[user_command]
+                  << "' - try --help" << std::endl;
     }
 
     return success;
@@ -422,6 +463,13 @@ bool vdb::options::parse_long_option(const char *current_argument)
                 pdu_index_range);
         }
     }
+    else if (name == "output")
+    {
+        if (verify_long_argument_value(name, value, true, success))
+        {
+            output_file = value;
+        }
+    }
     else if (name == "quiet")
     {
         if (verify_long_argument_value(name, value, false, success))
@@ -567,7 +615,7 @@ bool vdb::options::parse_short_options(
                 summary_radios = true;
                 break;
             case 'C':
-                command = USER_COMMAND_CAPTURE;
+                success = set_command(USER_COMMAND_CAPTURE);
                 break;
             case 'd':
                 dump = true;
@@ -618,20 +666,19 @@ bool vdb::options::parse_short_options(
                 advance = true;
                 break;
             case 'I':
-                success = parse_entity_ids(
-                    "-I",
+                success = parse_entity_ids("-I",
                     next_argument,
                     include_entity_ids);
                 advance = true;
                 break;
             case 'L':
-                command = USER_COMMAND_LIST;
+                success = set_command(USER_COMMAND_LIST);
                 break;
             case 'm':
                 color::set_enabled(false);
                 break;
             case 'M':
-                command = USER_COMMAND_ENUMS;
+                success = set_command(USER_COMMAND_ENUMS);
                 break;
             case 'n':
                 success = parse_string(
@@ -646,11 +693,15 @@ bool vdb::options::parse_short_options(
                     parse_scans("-n", scans);
                 advance = true;
                 break;
+            case 'O':
+                success = parse_string("-O", next_argument, output_file);
+                advance = true;
+                break;
             case 'p':
                 pcap = true;
                 break;
             case 'P':
-                command = USER_COMMAND_PLAYBACK;
+                success = set_command(USER_COMMAND_PLAYBACK);
                 break;
             case 'q':
                 quiet = true;
@@ -668,20 +719,14 @@ bool vdb::options::parse_short_options(
                 logger::set_enabled(logger::ERROR, false);
                 break;
             case 'S':
-                command = USER_COMMAND_SUMMARY;
+                success = set_command(USER_COMMAND_SUMMARY);
                 break;
             case 't':
-                success = parse_integer_set(
-                    "-t",
-                    next_argument,
-                    include_types);
+                success = parse_integer_set("-t", next_argument, include_types);
                 advance = true;
                 break;
             case 'T':
-                success = parse_integer_set(
-                    "-T",
-                    next_argument,
-                    exclude_types);
+                success = parse_integer_set("-T", next_argument, exclude_types);
                 advance = true;
                 break;
             case 'v':
@@ -695,7 +740,7 @@ bool vdb::options::parse_short_options(
                 }
                 break;
             case 'U':
-                command = USER_COMMAND_UNCOMMENT;
+                success = set_command(USER_COMMAND_UNCOMMENT);
                 break;
             case 'V':
                 version = true;
@@ -704,7 +749,7 @@ bool vdb::options::parse_short_options(
                 logger::set_enabled(logger::WARNING, true);
                 break;
             case 'W':
-                command = USER_COMMAND_COMMENT;
+                success = set_command(USER_COMMAND_COMMENT);
                 break;
             case 'x':
                 extracted = true;

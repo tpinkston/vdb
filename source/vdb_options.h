@@ -53,6 +53,7 @@ namespace vdb
         static std::set<uint32_t>
             pdu_index_range;
         static std::string
+            output_file,
             network_address,
             network_interface;
         static bool
@@ -95,6 +96,8 @@ namespace vdb
             bool required,
             bool &success
         );
+
+        static bool set_command(user_command_e user_command);
 
         static bool parse_command(const char *current_argument);
 

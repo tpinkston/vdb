@@ -8,6 +8,7 @@
 #include "vdb_fires.h"
 #include "vdb_lasers.h"
 #include "vdb_options.h"
+#include "vdb_output_file.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 #include "vdb_version.h"
@@ -16,7 +17,7 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-FILE
+vdb::output_file_t
     *vdb::capture::file_ptr = 0;
 vdis::receive_socket_t
     *vdb::capture::socket_ptr = 0;
@@ -85,7 +86,11 @@ int vdb::capture::capture_pdus(void)
 
             if (capturing)
             {
-                capturing = open_output_file(filename);
+                file_ptr = new output_file_t(filename);
+
+                // Ensure that file was successfully opened.
+                //
+                capturing = file_ptr->get_file();
             }
         }
 
@@ -96,7 +101,14 @@ int vdb::capture::capture_pdus(void)
             start();
             print_stats(std::cout);
             close_socket();
-            close_output_file(filename);
+
+            // Close output file.
+            //
+            if (file_ptr)
+            {
+                delete file_ptr;
+                file_ptr = 0;
+            }
         }
     }
 
@@ -127,101 +139,6 @@ void vdb::capture::close_socket(void)
     //
     delete socket_ptr;
     socket_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::capture::open_output_file(const std::string &filename)
-{
-    file_header_t
-        header;
-    file_stream
-        stream;
-    bool
-        success = false;
-
-    // First save header to the output capture file.
-    //
-    header.major_version = VDB_VERSION_MAJOR;
-    header.minor_version = VDB_VERSION_MINOR;
-    header.time_created = vdis::get_system_time();
-
-    stream.reset(header.length());
-    stream.write(header);
-    stream.write_file(filename);
-
-    // Reopen the file for manually writing PDU data, appending to the header
-    // just written ('a' for append, 'b' for binary).
-    //
-    file_ptr = fopen(filename.c_str(), "ab");
-
-    if (file_ptr)
-    {
-        std::cout << "Opened output file: " << filename << std::endl;
-        success = true;
-    }
-    else
-    {
-        perror("fopen");
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::capture::close_output_file(const std::string &filename)
-{
-    bool
-        success = false;
-
-    if (file_ptr)
-    {
-        if (fclose(file_ptr) == 0)
-        {
-            std::cout << "Closed output file: " << filename << std::endl;
-            success = true;
-        }
-        else
-        {
-            perror("fclose");
-        }
-
-        file_ptr = 0;
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-void vdb::capture::write_pdu_data(const pdu_data_t &data)
-{
-    if (file_ptr)
-    {
-        const uint32_t
-            size = data.length();
-        vdis::byte_stream_t
-            stream(size);
-
-        LOG_VERBOSE("Writing %d bytes to file...", size);
-
-        data.write(stream);
-
-        if (not stream.error())
-        {
-            uint32_t bytes_written = fwrite(
-                stream.buffer(),
-                1,
-                stream.length(),
-                file_ptr);
-
-            if (bytes_written != size)
-            {
-                LOG_ERROR(
-                    "File write failed (%d out of %d bytes)",
-                    size,
-                    stream.length());
-            }
-        }
-    }
 }
 
 // ----------------------------------------------------------------------------
@@ -322,7 +239,10 @@ void vdb::capture::start(void)
 // ----------------------------------------------------------------------------
 void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
 {
-    write_pdu_data(data);
+    if (file_ptr)
+    {
+        file_ptr->write_pdu_data(data);
+    }
 
     if (not options::scanning)
     {
