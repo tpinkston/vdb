@@ -150,9 +150,6 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
             {
                 if (pdu.base()->contains_id(*itor))
                 {
-                    LOG_VERBOSE(
-                        "Filtered out PDU that contains ID %s...",
-                        to_string(*itor).c_str());
                     pass = false;
                 }
             }

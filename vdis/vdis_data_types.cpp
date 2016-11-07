@@ -71,9 +71,9 @@ uint64_t vdis::id_t::get(void) const
 // ----------------------------------------------------------------------------
 bool vdis::id_t::matches(const id_t &other) const
 {
-    bool match = true;
+    bool match = not is_all();
 
-    if ((site != ALL) and (other.site != ALL))
+    if (match and (site != ALL) and (other.site != ALL))
     {
         match = (site == other.site);
     }
