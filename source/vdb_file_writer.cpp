@@ -1,6 +1,6 @@
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
-#include "vdb_output_file.h"
+#include "vdb_file_writer.h"
 #include "vdb_pdu_data.h"
 #include "vdb_version.h"
 
@@ -11,7 +11,7 @@
 // Opens output file, writes header, closes then reopens file in append mode
 // for writing PDU data.
 //
-vdb::output_file_t::output_file_t(
+vdb::file_writer_t::file_writer_t(
     const std::string &filename,
     const std::string *comment_ptr
 ) :
@@ -62,7 +62,7 @@ vdb::output_file_t::output_file_t(
 // ----------------------------------------------------------------------------
 // Closes file.
 //
-vdb::output_file_t::~output_file_t(void)
+vdb::file_writer_t::~file_writer_t(void)
 {
     if (file_ptr)
     {
@@ -82,7 +82,7 @@ vdb::output_file_t::~output_file_t(void)
 // ----------------------------------------------------------------------------
 // Writes PDU data record to the file.
 //
-void vdb::output_file_t::write_pdu_data(const pdu_data_t &data)
+void vdb::file_writer_t::write_pdu_data(const pdu_data_t &data)
 {
     if (file_ptr)
     {

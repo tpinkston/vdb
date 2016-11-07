@@ -12,7 +12,7 @@ namespace vdis
 
 namespace vdb
 {
-    class output_file_t;
+    class file_writer_t;
     class pdu_data_t;
 
     class capture
@@ -36,7 +36,7 @@ namespace vdb
 
         static void signal_handler(int value);
 
-        static output_file_t
+        static file_writer_t
             *file_ptr;
         static vdis::receive_socket_t
             *socket_ptr;

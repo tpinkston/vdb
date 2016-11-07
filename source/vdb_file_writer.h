@@ -1,5 +1,5 @@
-#ifndef VDB_OUTPUT_FILE_H
-#define VDB_OUTPUT_FILE_H
+#ifndef VDB_FILE_WRITER_H
+#define VDB_FILE_WRITER_H
 
 #include "vdb_system.h"
 
@@ -7,16 +7,16 @@ namespace vdb
 {
     class pdu_data_t;
 
-    class output_file_t
+    class file_writer_t
     {
       public:
 
-        output_file_t(
+        file_writer_t(
             const std::string &filename,
             const std::string *comment_ptr = 0
         );
 
-        ~output_file_t(void);
+        ~file_writer_t(void);
 
         inline const FILE *get_file(void) { return file_ptr; }
 

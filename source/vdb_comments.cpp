@@ -1,6 +1,6 @@
 #include "vdb_comments.h"
 #include "vdb_common.h"
-#include "vdb_file_readers.h"
+#include "vdb_file_reader.h"
 #include "vdb_options.h"
 
 #include "vdis_logger.h"

@@ -1,5 +1,5 @@
-#ifndef VDB_FILE_READERS_H
-#define VDB_FILE_READERS_H
+#ifndef VDB_FILE_READER_H
+#define VDB_FILE_READER_H
 
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"

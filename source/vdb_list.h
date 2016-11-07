@@ -3,7 +3,7 @@
 
 namespace vdb
 {
-    class output_file_t;
+    class file_writer_t;
     class pdu_data_t;
 
     class list
@@ -16,7 +16,7 @@ namespace vdb
 
         static bool process_pdu_data(const pdu_data_t &data);
 
-        static output_file_t
+        static file_writer_t
             *file_ptr;
         static uint32_t
             pdus_listed,

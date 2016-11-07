@@ -4,11 +4,11 @@
 #include "vdb_entities.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
+#include "vdb_file_writer.h"
 #include "vdb_filter.h"
 #include "vdb_fires.h"
 #include "vdb_lasers.h"
 #include "vdb_options.h"
-#include "vdb_output_file.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 #include "vdb_version.h"
@@ -17,7 +17,7 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-vdb::output_file_t
+vdb::file_writer_t
     *vdb::capture::file_ptr = 0;
 vdis::receive_socket_t
     *vdb::capture::socket_ptr = 0;
@@ -86,7 +86,7 @@ int vdb::capture::capture_pdus(void)
 
             if (capturing)
             {
-                file_ptr = new output_file_t(filename);
+                file_ptr = new file_writer_t(filename);
 
                 // Ensure that file was successfully opened.
                 //

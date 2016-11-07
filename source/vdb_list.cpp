@@ -1,12 +1,13 @@
 #include "vdb_associations.h"
+#include "vdb_common.h"
 #include "vdb_entities.h"
-#include "vdb_file_readers.h"
+#include "vdb_file_reader.h"
+#include "vdb_file_writer.h"
 #include "vdb_filter.h"
 #include "vdb_fires.h"
 #include "vdb_lasers.h"
 #include "vdb_list.h"
 #include "vdb_options.h"
-#include "vdb_output_file.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 
@@ -14,7 +15,7 @@
 #include "vdis_pdus.h"
 #include "vdis_logger.h"
 
-vdb::output_file_t
+vdb::file_writer_t
     *vdb::list::file_ptr = 0;
 uint32_t
     vdb::list::pdus_listed = 0,
@@ -65,19 +66,41 @@ int vdb::list::list_pdus(void)
         }
         else
         {
+            bool listing = true;
+
             if (not options::output_file.empty())
             {
-                std::string
-                    comment = ("List output from '" + filename + "'");
+                struct stat
+                    file_stat;
 
-                file_ptr = new output_file_t(options::output_file, &comment);
+                LOG_VERBOSE(
+                    "Checking file '%s'...",
+                    options::output_file.c_str());
 
-                // Ensure that file was successfully opened.
-                //
-                result = file_ptr->get_file() ? 0 : 1;
+                if (stat(options::output_file.c_str(), &file_stat) == 0)
+                {
+                    std::cout << "Overwrite '"
+                              << options::output_file << "'? ";
+
+                    listing = user_confirmation();
+                }
+
+                if (listing)
+                {
+                    std::string
+                        comment = ("List output from '" + filename + "'");
+
+                    file_ptr = new file_writer_t(
+                        options::output_file,
+                        &comment);
+
+                    // Ensure that file was successfully opened.
+                    //
+                    result = file_ptr->get_file() ? 0 : 1;
+                }
             }
 
-            if (result == 0)
+            if (listing and (result == 0))
             {
                 if (not reader_ptr->parse(process_pdu_data))
                 {
