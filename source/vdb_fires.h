@@ -14,7 +14,7 @@ namespace vdis
 
 namespace vdb
 {
-    struct pdu_data_t;
+    class pdu_data_t;
 
     // ------------------------------------------------------------------------
     class fires

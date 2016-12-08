@@ -2,8 +2,6 @@ TRUE=1
 FALSE=0
 SRC_PATH=source
 BUILD_PATH=build
-PCAP_VERSION="libpcap-1.7.4"
-PCAP_PATH="${BUILD_PATH}/${PCAP_VERSION}"
 ANT_PATH=$(shell which ant 2> /dev/null)
 GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})

@@ -660,12 +660,12 @@ void vdis::air_platform_extended_equipment_bits_t::print(
 
     if (ied != 0)
     {
-        out << prefix << "ied " << (ied_presence_e)ied;
+        out << prefix << "ied " << (ied_presence_e)ied << std::endl;
     }
 
     if (hoist != 0)
     {
-        out << prefix << "hoist " << (hoist_status_e)hoist;
+        out << prefix << "hoist " << (hoist_status_e)hoist << std::endl;
     }
 
     if (right_door_open != 0)
