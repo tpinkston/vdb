@@ -1091,7 +1091,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_control_malfunctions_t
+    union ncm3_control_malfunctions_t
     {
         struct bits_t
         {
@@ -1115,7 +1115,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_utility_malfunctions_t
+    union ncm3_utility_malfunctions_t
     {
         struct bits_t
         {
@@ -1140,7 +1140,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_uh72_controls_t
+    union ncm3_uh72_controls_t
     {
         struct bits_t
         {
@@ -1164,7 +1164,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_hook_safety_t
+    union ncm3_hook_safety_t
     {
         struct bits_t
         {
@@ -1187,7 +1187,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_flare_state_t
+    union ncm3_flare_state_t
     {
         struct bits_t
         {
@@ -1209,7 +1209,7 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_cargo_hook_t
+    union ncm3_cargo_hook_t
     {
         struct bits_t
         {
@@ -1252,9 +1252,8 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
-    struct ncm3_hoist_status_t
+    union ncm3_hoist_status_t
     {
-        // device_type: 0=jungle_penetrator, 1=rescue_strop
         struct bits_t
         {
             uint8_t                 cable_reset:1;              // Bit 0
@@ -1299,7 +1298,6 @@ namespace vdis
             status.clear();
             padding[0] = 0;
             padding[1] = 0;
-            padding[2] = 0;
         }
 
         void print(const std::string &, std::ostream &) const;

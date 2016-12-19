@@ -2463,7 +2463,7 @@ void vdis::ncm3_water_bucket_t::print(
     out << prefix << "fill_level " << to_string(fill_level, 1, 2) << std::endl
         << prefix << "size " << (int)size << std::endl
         << prefix << "padding(8 bits) " << to_bin_string(padding) << std::endl
-        << prefix << "size " << (yes_no_e)releasing << std::endl;
+        << prefix << "releasing " << to_bin_string(releasing) << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -2493,17 +2493,17 @@ void vdis::ncm3_hoist_status_t::print(
 
     if (bits.cable_reset)
     {
-        out << prefix << "cable_reset yes" << std::endl;
+        out << prefix << "cable_reset " << (int)bits.cable_reset << std::endl;
     }
 
     if (bits.cable_cut)
     {
-        out << prefix << "cable_cut yes" << std::endl;
+        out << prefix << "cable_cut " << (int)bits.cable_cut << std::endl;
     }
 
     if (bits.device_open)
     {
-        out << prefix << "device_open yes" << std::endl;
+        out << prefix << "device_open " << (int)bits.device_open << std::endl;
     }
 
     if (bits.device_type)
@@ -2564,7 +2564,8 @@ void vdis::ncm3_hoist_t::read(byte_stream_t &stream)
     hook_location.read(stream);
     hook_orientation.read(stream);
     status.read(stream);
-    stream.read(padding, 3);
+    stream.read(hoist_device_id);
+    stream.read(padding, 2);
 }
 
 // ----------------------------------------------------------------------------
@@ -2576,7 +2577,8 @@ void vdis::ncm3_hoist_t::write(byte_stream_t &stream)
     hook_location.write(stream);
     hook_orientation.write(stream);
     status.write(stream);
-    stream.write(padding, 3);
+    stream.write(hoist_device_id);
+    stream.write(padding, 2);
 }
 
 // ----------------------------------------------------------------------------

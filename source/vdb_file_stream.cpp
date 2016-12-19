@@ -82,8 +82,6 @@ bool vdb::file_stream::read_file(const string_t &filename)
                 }
                 else
                 {
-                    stream.close();
-
                     LOG_VERBOSE("Bytes read from file is %d...", bytes_read);
 
                     reset_index(0);
@@ -92,6 +90,8 @@ bool vdb::file_stream::read_file(const string_t &filename)
             }
         }
     }
+
+    stream.close();
 
     return success;
 }

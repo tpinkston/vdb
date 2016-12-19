@@ -148,6 +148,8 @@ bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
     bool
         success = false;
 
+    data.clear();
+
     if (stream.read_file(filename))
     {
         if (index == 0)

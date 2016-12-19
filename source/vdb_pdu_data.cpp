@@ -111,6 +111,22 @@ std::string vdb::pdu_data_t::get_source(void) const
 }
 
 // ----------------------------------------------------------------------------
+void vdb::pdu_data_t::set_pdu_buffer(const uint8_t *buffer, uint32_t length)
+{
+    std::memset(pdu_buffer, 0, PDU_BUFFER_LENGTH);
+
+    if (buffer and (length > 0))
+    {
+        std::memcpy(pdu_buffer, buffer, length);
+        set_pdu_length(length);
+    }
+    else
+    {
+        set_pdu_length(0);
+    }
+}
+
+// ----------------------------------------------------------------------------
 vdis::pdu_t *vdb::pdu_data_t::generate_pdu(void) const
 {
     // PDU type is always the 3rd bytes in the PDU buffer.

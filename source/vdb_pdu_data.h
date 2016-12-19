@@ -128,17 +128,6 @@ inline vdb::pdu_data_t::~pdu_data_t(void)
 }
 
 // ----------------------------------------------------------------------------
-inline void vdb::pdu_data_t::set_pdu_buffer(
-    const uint8_t *buffer,
-    uint32_t length)
-{
-    std::memset(pdu_buffer, 0, PDU_BUFFER_LENGTH);
-    std::memcpy(pdu_buffer, buffer, length);
-
-    set_pdu_length(length);
-}
-
-// ----------------------------------------------------------------------------
 inline void vdb::pdu_data_t::set_pdu_length(uint32_t length)
 {
     pdu_length = length;
