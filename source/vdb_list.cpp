@@ -18,6 +18,7 @@
 vdb::file_writer_t
     *vdb::list::file_ptr = 0;
 uint32_t
+    vdb::list::output_index = 0,
     vdb::list::pdus_listed = 0,
     vdb::list::pdus_filtered_out = 0;
 
@@ -146,11 +147,6 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
-                    if (file_ptr)
-                    {
-                        file_ptr->write_pdu_data(data);
-                    }
-
                     if (not options::scanning)
                     {
                         print::print_pdu(data, *pdu_ptr, std::cout);
@@ -186,6 +182,16 @@ bool vdb::list::process_pdu_data(const pdu_data_t &data)
                         {
                             // TODO scan_objects
                         }
+                    }
+
+                    if (file_ptr)
+                    {
+                        pdu_data_t
+                            data_copy(data);
+
+                        data_copy.set_index(output_index++);
+
+                        file_ptr->write_pdu_data(data_copy);
                     }
 
                     processed = true;

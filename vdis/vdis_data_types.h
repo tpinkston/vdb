@@ -1260,8 +1260,7 @@ namespace vdis
             uint8_t                 cable_reset:1;              // Bit 0
             uint8_t                 cable_cut:1;                // Bit 1
             uint8_t                 device_open:1;              // Bit 2
-            uint8_t                 device_active:1;            // Bit 3
-            uint8_t                 device_type:1;              // Bits 4-5
+            uint8_t                 device_type:3;              // Bits 3-5
             uint8_t                 padding:2;                  // Bits 6-7
         };
 
@@ -1287,7 +1286,8 @@ namespace vdis
         location24_t                hook_location;              // 24 bytes
         orientation_t               hook_orientation;           // 12 bytes
         ncm3_hoist_status_t         status;                     // 1 byte
-        uint8_t                     padding[3];                 // 3 bytes
+        uint8_t                     hoist_device_id;            // 1 byte
+        uint8_t                     padding[2];                 // 2 bytes
 
         inline void clear(void)
         {

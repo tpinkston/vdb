@@ -32,6 +32,8 @@ namespace vdb
         options::output_file,
         options::network_address,
         options::network_interface;
+    uint64_t
+        options::pdu_interval = 0L;
     bool
         options::initialized = false,
         options::quiet = false,
@@ -72,35 +74,6 @@ void vdb::options::configure(void)
     command_names[USER_COMMAND_ENUMS] = "enums";
     command_names[USER_COMMAND_ENTITIES] = "entities";
     command_names[USER_COMMAND_OBJECTS] = "objects";
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::verify_long_argument_value(
-    const std::string &name,
-    const std::string &value,
-    bool required,
-    bool &success)
-{
-    if (required and value.empty())
-    {
-        std::cerr << "vdb: option requires a value: --"
-                  << name << std::endl;
-
-        success = false;
-    }
-    else if (not required and not value.empty())
-    {
-        std::cerr << "vdb: option does not require a value: --"
-                  << name << std::endl;
-
-        success = false;
-    }
-    else
-    {
-        success = true;
-    }
-
-    return success;
 }
 
 // ----------------------------------------------------------------------------
@@ -179,6 +152,13 @@ bool vdb::options::initialize(int argc, char *argv[])
         }
     }
 
+    if (DEBUG)
+    {
+        std::cout << "DEBUG: initialize returning: "
+                  << (success ? "true" : "false")
+                  << std::endl;
+    }
+
     return success;
 }
 
@@ -247,10 +227,12 @@ bool vdb::options::parse_command(const char *current_argument)
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_long_option(const char *current_argument)
 {
+    const std::string
+        argument = std::string(current_argument).substr(2);
     std::string
-        argument = std::string(current_argument).substr(2),
-        name,
-        value;
+        name;
+    const char
+        *value;
     std::string::size_type
         index = argument.find_first_of('=');
     bool
@@ -268,300 +250,177 @@ bool vdb::options::parse_long_option(const char *current_argument)
     else
     {
         name = argument.substr(0, index);
-        value = argument.substr(index + 1);
+        value = argument.substr(index + 1).c_str();
     }
 
     if (DEBUG)
     {
-        std::cout << "DEBUG: parse_long_option: name: " << name << std::endl;
-        std::cout << "DEBUG: parse_long_option: value: " << value << std::endl;
+        std::cout << "DEBUG: parse_long_option: name: "
+                  << name << std::endl
+                  << "DEBUG: parse_long_option: value: "
+                  << value << std::endl;
     }
 
     if (name == "address")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            network_address = value;
-        }
+        success = parse_string("--address", value, network_address);
     }
     else if (name == "help")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            help = true;
-        }
+        help = true;
     }
     else if (name == "mono")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            color::set_enabled(false);
-        }
+        color::set_enabled(false);
     }
     else if (name == "verbose")
     {
-        if (verify_long_argument_value(name, value, false, success))
+        if (logger::is_enabled(logger::VERBOSE))
         {
-            if (logger::is_enabled(logger::VERBOSE))
-            {
-                logger::set_enabled(logger::EXTRA_VERBOSE, true);
-            }
-            else
-            {
-                logger::set_enabled(logger::VERBOSE, true);
-            }
+            logger::set_enabled(logger::EXTRA_VERBOSE, true);
+        }
+        else
+        {
+            logger::set_enabled(logger::VERBOSE, true);
         }
     }
     else if (name == "warnings")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            logger::set_enabled(logger::WARNING, true);
-        }
+        logger::set_enabled(logger::WARNING, true);
     }
     else if (name == "suppress")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            logger::set_enabled(logger::ERROR, false);
-        }
+        logger::set_enabled(logger::ERROR, false);
     }
     else if (name == "examples")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            examples = true;
-        }
+        examples = true;
     }
     else if (name == "version")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            version = true;
-        }
+        version = true;
     }
     else if (name == "hostname")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_string_set(
-                "--hostname",
-                value.c_str(),
-                include_hostnames);
-        }
+        success = parse_string_set("--hostname", value, include_hostnames);
     }
     else if (name == "exercise")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--exercise",
-                value.c_str(),
-                include_exercises);
-        }
+        success = parse_integers("--exercise", value, include_exercises);
     }
     else if (name == "xexercise")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--xexercise",
-                value.c_str(),
-                exclude_exercises);
-        }
+        success = parse_integers("--xexercise", value, exclude_exercises);
     }
     else if (name == "type")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--type",
-                value.c_str(),
-                include_types);
-        }
+        success = parse_integers("--type", value, include_types);
     }
     else if (name == "xtype")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--xtype",
-                value.c_str(),
-                exclude_types);
-        }
+        success = parse_integers("--xtype", value, exclude_types);
     }
     else if (name == "family")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--family",
-                value.c_str(),
-                include_families);
-        }
+        success = parse_integers("--family", value, include_families);
     }
     else if (name == "xfamily")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set(
-                "--xfamily",
-                value.c_str(),
-                exclude_families);
-        }
+        success = parse_integers("--xfamily", value, exclude_families);
     }
     else if (name == "ids")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_entity_ids(
-                "--ids",
-                value.c_str(),
-                include_entity_ids);
-        }
+        success = parse_entity_ids("--ids", value, include_entity_ids);
     }
     else if (name == "xids")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_entity_ids(
-                "--xids",
-                value.c_str(),
-                exclude_entity_ids);
-        }
+        success = parse_entity_ids("--xids", value, exclude_entity_ids);
     }
     else if (name == "pcap")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            pcap = true;
-        }
+        pcap = true;
     }
     else if (name == "ipv6")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            ipv6 = true;
-        }
+        ipv6 = true;
     }
     else if (name == "iface")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            network_interface = value;
-        }
+        success = parse_string("--iface", value, network_interface);
     }
     else if (name == "range")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            success = parse_integer_set_in_range(
-                "--range",
-                value.c_str(),
-                0x0,
-                0xFFFFFFFF,
-                pdu_index_range);
-        }
+        success = parse_integers_in_range(
+            "--range",
+            value,
+            0x0,
+            0xFFFFFFFF,
+            pdu_index_range);
+    }
+    else if (name == "pdu")
+    {
+        success = parse_uint64("--pdu", value, pdu_interval);
     }
     else if (name == "output")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            output_file = value;
-        }
+        success = parse_string("--output", value, output_file);
     }
     else if (name == "quiet")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            quiet = true;
-        }
+        quiet = true;
     }
     else if (name == "dump")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            dump = true;
-        }
+        dump = true;
     }
     else if (name == "extract")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            extracted = true;
-        }
+        extracted = true;
     }
     else if (name == "extra")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            extra = true;
-        }
+        extra = true;
     }
     else if (name == "scan")
     {
-        if (verify_long_argument_value(name, value, true, success))
-        {
-            std::set<std::string> scans;
+        std::set<std::string> scans;
 
-            success =
-                parse_string_set("--hostname", value.c_str(), scans) and
-                parse_scans("--name", scans);
-        }
+        success =
+            parse_string_set("--hostname", value, scans) and
+            parse_scans("--name", scans);
     }
     else if (name == "collisions")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_collisions = true;
-        }
+        summary_collisions = true;
     }
     else if (name == "emissions")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_collisions = true;
-        }
+        summary_collisions = true;
     }
     else if (name == "fires")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_fires = true;
-        }
+        summary_fires = true;
     }
     else if (name == "lasers")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_lasers = true;
-        }
+        summary_lasers = true;
     }
     else if (name == "objects")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_objects = true;
-        }
+        summary_objects = true;
     }
     else if (name == "radios")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_radios = true;
-        }
+        summary_radios = true;
     }
     else if (name == "all")
     {
-        if (verify_long_argument_value(name, value, false, success))
-        {
-            summary_collisions = true;
-            summary_emissions = true;
-            summary_fires = true;
-            summary_lasers = true;
-            summary_objects = true;
-            summary_radios = true;
-        }
+        summary_collisions = true;
+        summary_emissions = true;
+        summary_fires = true;
+        summary_lasers = true;
+        summary_objects = true;
+        summary_radios = true;
     }
     else
     {
@@ -617,32 +476,39 @@ bool vdb::options::parse_short_options(
             case 'C':
                 success = set_command(USER_COMMAND_CAPTURE);
                 break;
+            case 'D':
+                success = parse_uint64(
+                    "-D",
+                    next_argument,
+                    pdu_interval);
+                advance = true;
+                break;
             case 'd':
                 dump = true;
                 break;
             case 'e':
-                success = parse_integer_set(
+                success = parse_integers(
                     "-e",
                     next_argument,
                     include_exercises);
                 advance = true;
                 break;
             case 'E':
-                success = parse_integer_set(
+                success = parse_integers(
                     "-E",
                     next_argument,
                     exclude_exercises);
                 advance = true;
                 break;
             case 'f':
-                success = parse_integer_set(
+                success = parse_integers(
                     "-f",
                     next_argument,
                     include_families);
                 advance = true;
                 break;
             case 'F':
-                success = parse_integer_set(
+                success = parse_integers(
                     "-F",
                     next_argument,
                     exclude_families);
@@ -681,10 +547,7 @@ bool vdb::options::parse_short_options(
                 success = set_command(USER_COMMAND_ENUMS);
                 break;
             case 'n':
-                success = parse_string(
-                    "-n",
-                    next_argument,
-                    network_interface);
+                success = parse_string("-n", next_argument, network_interface);
                 advance = true;
                 break;
             case 'N':
@@ -707,7 +570,7 @@ bool vdb::options::parse_short_options(
                 quiet = true;
                 break;
             case 'r':
-                success = parse_integer_set_in_range(
+                success = parse_integers_in_range(
                     "-r",
                     next_argument,
                     0x0,
@@ -722,11 +585,11 @@ bool vdb::options::parse_short_options(
                 success = set_command(USER_COMMAND_SUMMARY);
                 break;
             case 't':
-                success = parse_integer_set("-t", next_argument, include_types);
+                success = parse_integers("-t", next_argument, include_types);
                 advance = true;
                 break;
             case 'T':
-                success = parse_integer_set("-T", next_argument, exclude_types);
+                success = parse_integers("-T", next_argument, exclude_types);
                 advance = true;
                 break;
             case 'v':
@@ -1002,7 +865,7 @@ bool vdb::options::parse_entity_id(
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_integer_set(
+bool vdb::options::parse_integers(
     const char *name_ptr,
     const char *value_ptr,
     std::set<uint8_t> &set)
@@ -1010,7 +873,7 @@ bool vdb::options::parse_integer_set(
     std::set<uint32_t>
         temp_set;
     bool
-        success = parse_integer_set_in_range(
+        success = parse_integers_in_range(
             name_ptr,
             value_ptr,
             0,
@@ -1032,7 +895,7 @@ bool vdb::options::parse_integer_set(
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_integer_set_in_range(
+bool vdb::options::parse_integers_in_range(
     const char *name_ptr,
     const char *value_ptr,
     int64_t min,
@@ -1047,7 +910,7 @@ bool vdb::options::parse_integer_set_in_range(
 
     if (DEBUG)
     {
-        std::cout << "DEBUG: parse_integer_set: " << name_ptr << "='"
+        std::cout << "DEBUG: parse_integers: " << name_ptr << "='"
                   << (value_ptr ? value_ptr : "null") << "'" << std::endl;
     }
 
@@ -1065,7 +928,7 @@ bool vdb::options::parse_integer_set_in_range(
     {
         if (DEBUG)
         {
-            std::cout << "DEBUG: parse_integer_set: value '"
+            std::cout << "DEBUG: parse_integers: value '"
                       << values[i] << "'" << std::endl;
         }
 
@@ -1080,7 +943,7 @@ bool vdb::options::parse_integer_set_in_range(
             {
                 if (DEBUG)
                 {
-                    std::cout << "DEBUG: parse_integer_set: value "
+                    std::cout << "DEBUG: parse_integers: value "
                               << value << std::endl;
                 }
 
@@ -1174,6 +1037,36 @@ bool vdb::options::parse_string(
     else
     {
         std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+    }
+
+    return success;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::options::parse_uint64(
+    const char *name_ptr,
+    const char *value_ptr,
+    uint64_t &value)
+{
+    bool
+        success = false;
+
+    if (not value_ptr)
+    {
+        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+    }
+    else
+    {
+        std::string
+            string_value = value_ptr;
+
+        success = vdis::to_uint64(string_value, value);
+
+        if (not success)
+        {
+            std::cerr << "vdb: invalid value for option: "
+                      << name_ptr << std::endl;
+        }
     }
 
     return success;

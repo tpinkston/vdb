@@ -52,6 +52,10 @@ Filter options (capture, playback, list, summary):
   -i --ids=I1,...         Include PDUs containing specified entity ID(s)
   -I --xids=I1,...        Exclude PDUs containing specified entity ID(s)
 
+Playback options (playback only):
+  -D --pdu=M              File contains a single contents for a single PDU
+                          to be played back at interval of M milliseconds
+
 Output options (list only):
   -O --output=FILENAME    Write listed (filtered) PDUs to output file.
 
@@ -62,13 +66,13 @@ Display options (capture, playback, list):
 
 Scan options (capture, list):
   -N --scan=E1,...        Scan PDUs for special events:
-     --scan=associations    Entity associations, requests
-     --scan=lasers          Entity designators
-     --scan=fires           Fires and detonations
-     --scan=collisions      Entity collisions 
-     --scan=entities        Entity states
-     --scan=objects         Object states
-     --scan=all             All of the above
+     --scan=associations  Scan entity associations, requests and responses
+     --scan=lasers        Scan entity designators
+     --scan=fires         Scan fires and detonations
+     --scan=collisions    Scan entity collisions 
+     --scan=entities      Scan entity states
+     --scan=objects       Scan object states
+     --scan=all           Scan all of the above
 
 Summary command options (summary only):
      --collisions         Show collisions

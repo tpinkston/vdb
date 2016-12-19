@@ -1,6 +1,5 @@
 #include "vdb_file_reader.h"
 #include "vdb_options.h"
-#include "vdb_pdu_data.h"
 
 #include "vdis_logger.h"
 #include "vdis_network.h"
@@ -115,6 +114,67 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
     }
 
     return valid_entry;
+}
+
+// ----------------------------------------------------------------------------
+vdb::pdu_reader_t::pdu_reader_t(const string_t &filename, uint32_t interval) :
+    file_reader_t(filename),
+    interval_milliseconds(interval),
+    index(0)
+{
+    if (options::ipv6)
+    {
+        vdis::set_address("::1", 0, address_ipv6);
+    }
+    else
+    {
+        bool broadcast = false;
+
+        vdis::set_address("127.0.0.1", 0, address_ipv4, broadcast);
+    }
+}
+
+// ----------------------------------------------------------------------------
+vdb::pdu_reader_t::~pdu_reader_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
+{
+    file_stream
+        stream;
+    bool
+        success = false;
+
+    if (stream.read_file(filename))
+    {
+        if (index == 0)
+        {
+            data.set_time(vdis::get_system_time());
+        }
+        else
+        {
+            data.set_time(vdis::get_system_time() + interval_milliseconds);
+        }
+
+        data.set_index(index++);
+        data.set_pdu_buffer(stream.buffer(), stream.length());
+
+        if (options::ipv6)
+        {
+            data.set_source(address_ipv6, 0);
+        }
+        else
+        {
+            data.set_source(address_ipv4, 0);
+        }
+
+        success = true;
+    }
+
+    return success;
 }
 
 // ----------------------------------------------------------------------------

@@ -3,12 +3,11 @@
 
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
+#include "vdb_pdu_data.h"
 #include "vdb_system.h"
 
 namespace vdb
 {
-    class pdu_data_t;
-
     // ------------------------------------------------------------------------
     // Abstract reader for capture files
     //
@@ -63,6 +62,32 @@ namespace vdb
       protected:
 
         virtual bool next_entry(pdu_data_t &data);
+    };
+
+    // ------------------------------------------------------------------------
+    // Reader for file containing single PDU contents to be played back at
+    // regular intervals
+    //
+    class pdu_reader_t : public file_reader_t
+    {
+      public:
+
+        pdu_reader_t(const string_t &filename, uint32_t interval);
+        virtual ~pdu_reader_t(void);
+
+        const uint32_t
+            interval_milliseconds;
+
+      protected:
+
+        virtual bool next_entry(pdu_data_t &data);
+
+        vdis::socket_address_ipv4_t
+            address_ipv4;
+        vdis::socket_address_ipv6_t
+            address_ipv6;
+        uint32_t
+            index;
     };
 
     // ------------------------------------------------------------------------

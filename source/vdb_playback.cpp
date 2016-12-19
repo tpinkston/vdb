@@ -67,7 +67,14 @@ int vdb::playback::playback_pdus(void)
 
         LOG_EXTRA_VERBOSE("Starting playback...");
 
-        reader_ptr = new standard_reader_t(filename);
+        if (options::pdu_interval > 0)
+        {
+            reader_ptr = new pdu_reader_t(filename, options::pdu_interval);
+        }
+        else
+        {
+            reader_ptr = new standard_reader_t(filename);
+        }
 
         if (not reader_ptr->good())
         {

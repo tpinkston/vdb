@@ -19,6 +19,7 @@ namespace vdb
         static file_writer_t
             *file_ptr;
         static uint32_t
+            output_index,
             pdus_listed,
             pdus_filtered_out;
     };

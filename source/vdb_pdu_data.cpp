@@ -6,6 +6,22 @@
 #include "vdis_services.h"
 
 // ----------------------------------------------------------------------------
+vdb::pdu_data_t::pdu_data_t(const pdu_data_t &copy) :
+    header(copy.header),
+    index(copy.index),
+    time(copy.time),
+    padding(copy.padding),
+    status(copy.status),
+    hostname(copy.hostname),
+    port(copy.port),
+    ip_version(copy.ip_version),
+    pdu_length(copy.pdu_length)
+{
+    std::memcpy(address, copy.address, ADDRESS_LENGTH);
+    std::memcpy(pdu_buffer, copy.pdu_buffer, PDU_BUFFER_LENGTH);
+}
+
+// ----------------------------------------------------------------------------
 // Returns buffer containing IPv4 or IPv6 address structure.
 //
 const uint8_t *vdb::pdu_data_t::get_address_buffer(void) const

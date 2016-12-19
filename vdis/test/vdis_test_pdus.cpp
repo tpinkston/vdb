@@ -40,6 +40,8 @@ void vdis::test::test_pdus(void)
     filenames.push_back("002_fire.M799");
     filenames.push_back("003_detonation.40MM");
     filenames.push_back("003_detonation.M799");
+    filenames.push_back("019_set_data.NCM3_TO_AVCATT_01");
+    filenames.push_back("019_set_data.NCM3_TO_AVCATT_02");
     filenames.push_back("200_application_control.STATUS1");
     filenames.push_back("200_application_control.STEALTH1");
 

@@ -22,7 +22,7 @@ bool vdb::filter::filter_by_metadata(const pdu_data_t &data)
 
         while((itor != options::include_hostnames.end()) and not pass)
         {
-            pass = (vdis::to_lowercase(hostname) == vdis::to_lowercase(*itor));
+            pass = vdis::contains(hostname, *itor, true);
             ++itor;
         }
 

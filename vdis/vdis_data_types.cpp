@@ -2506,10 +2506,9 @@ void vdis::ncm3_hoist_status_t::print(
         out << prefix << "device_open yes" << std::endl;
     }
 
-    if (bits.device_active)
+    if (bits.device_type)
     {
-        out << prefix << "device_active yes" << std::endl
-            << prefix << "device_type "
+        out << prefix << "device_type "
             << (ncm3_hoist_device_e)bits.device_type << std::endl;
     }
 
@@ -2550,10 +2549,10 @@ void vdis::ncm3_hoist_t::print(
 
     status.print((prefix + "status."), out);
 
-    out << prefix << "padding(3 bytes) "
+    out << prefix << "hoist_device_id " << (int)hoist_device_id << std::endl
+        << prefix << "padding(2 bytes) "
         << to_hex_string(padding[0]) << "-"
-        << to_hex_string(padding[1]) << "-"
-        << to_hex_string(padding[2]) << std::endl;
+        << to_hex_string(padding[1]) << std::endl;
 }
 
 // ----------------------------------------------------------------------------

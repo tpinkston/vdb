@@ -56,6 +56,8 @@ namespace vdb
             output_file,
             network_address,
             network_interface;
+        static uint64_t
+            pdu_interval;
         static bool
             initialized,
             quiet,
@@ -89,13 +91,6 @@ namespace vdb
         ~options(void) { }
 
         static void configure(void);
-
-        static bool verify_long_argument_value(
-            const std::string &name,
-            const std::string &value,
-            bool required,
-            bool &success
-        );
 
         static bool set_command(user_command_e user_command);
 
@@ -132,13 +127,13 @@ namespace vdb
             std::set<vdis::id_t> &ids
         );
 
-        static bool parse_integer_set(
+        static bool parse_integers(
             const char *name_ptr,
             const char *value_ptr,
             std::set<uint8_t> &set
         );
 
-        static bool parse_integer_set_in_range(
+        static bool parse_integers_in_range(
             const char *name_ptr,
             const char *value_ptr,
             int64_t min,
@@ -150,6 +145,12 @@ namespace vdb
             const char *name_ptr,
             const char *value_ptr,
             std::string &value
+        );
+
+        static bool parse_uint64(
+            const char *name_ptr,
+            const char *value_ptr,
+            uint64_t &value
         );
     };
 }

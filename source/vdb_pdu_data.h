@@ -28,6 +28,7 @@ namespace vdb
       public:
 
         pdu_data_t(void);
+        pdu_data_t(const pdu_data_t &copy);
         ~pdu_data_t(void);
 
         bool has_pdu(void) const { return (pdu_length > 0); }

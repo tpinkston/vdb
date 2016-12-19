@@ -246,9 +246,7 @@ vdis::variable_datum_record_t::variable_datum_record_t(void) :
     id(0),
     content_ptr(0)
 {
-    LOG_EXTRA_VERBOSE(
-        "Created variable datum record with content: %p",
-        content_ptr);
+
 }
 
 // ----------------------------------------------------------------------------
@@ -260,17 +258,17 @@ vdis::variable_datum_record_t::~variable_datum_record_t(void)
 // ----------------------------------------------------------------------------
 void vdis::variable_datum_record_t::clear(void)
 {
-    LOG_EXTRA_VERBOSE(
-        "Clearing variable datum record with content: %p",
-        content_ptr);
+    id = 0;
 
     if (content_ptr)
     {
-        delete content_ptr;
-    }
+        LOG_EXTRA_VERBOSE(
+            "Clearing variable datum record with content: %p",
+            content_ptr);
 
-    id = 0;
-    content_ptr = 0;
+        delete content_ptr;
+        content_ptr = 0;
+    }
 }
 
 // ----------------------------------------------------------------------------
