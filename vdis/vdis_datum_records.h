@@ -3,6 +3,7 @@
 
 #include "vdis_byte_buffer.h"
 #include "vdis_data_types.h"
+#include "vdis_string.h"
 
 namespace vdis
 {
@@ -517,9 +518,13 @@ namespace vdis
     // ------------------------------------------------------------------------
     struct avcatt_to_ncm3_03_t : variable_datum_content_t
     {
+        uint8_t                     audio_message_queue[16];// 16 bytes
         uint16_t                    flare_count;            // 2 bytes
-        uint8_t                     padding[5];             // 5 bytes
-        uint8_t                     missile_audio_warning;  // 1 byte
+        uint8_t                     normal_hook_power;      // 1 byte
+        uint8_t                     emergency_hook_power;   // 1 byte
+        uint8_t                     audio_message_system;   // 1 byte
+        uint8_t                     padding[2];             // 2 bytes
+        uint8_t                     audio_message_active;   // 1 byte
 
         virtual ~avcatt_to_ncm3_03_t(void) { }
 
@@ -529,13 +534,14 @@ namespace vdis
 
         inline void clear(void)
         {
+            clear_memory(audio_message_queue, 16);
             flare_count = 0;
+            normal_hook_power = 0;
+            emergency_hook_power = 0;
+            audio_message_system = 0;
             padding[0] = 0;
             padding[1] = 0;
-            padding[2] = 0;
-            padding[3] = 0;
-            padding[4] = 0;
-            missile_audio_warning = 0;
+            audio_message_active = 0;
         }
 
         void print(const std::string &, std::ostream &) const;
@@ -543,7 +549,7 @@ namespace vdis
         void write(byte_stream_t &);
 
         static const uint32_t
-            LENGTH_BITS = 64; // Bits (8 bytes)
+            LENGTH_BITS = 192; // Bits (24 bytes)
     };
 
     // ------------------------------------------------------------------------

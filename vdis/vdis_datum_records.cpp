@@ -1142,15 +1142,27 @@ void vdis::avcatt_to_ncm3_03_t::print(
 {
     const std::string ncm3_prefix = (prefix + "avcatt_to_ncm3_03.");
 
+    for(uint32_t i = 0; i < 16; ++i) {
+
+        if (audio_message_queue[i] > 0) {
+
+            out << ncm3_prefix << "audio_message_queue[" << i << "] "
+                << (int)audio_message_queue[i] << std::endl;
+        }
+    }
+
     out << ncm3_prefix << "flare_count " << (int)flare_count << std::endl
-        << ncm3_prefix << "padding(5 bytes) "
+        << ncm3_prefix << "padding(2 bytes) "
+        << ncm3_prefix << "normal_hook_power "
+        << (int)normal_hook_power << std::endl
+        << ncm3_prefix << "emergency_hook_power "
+        << (int)emergency_hook_power << std::endl
+        << ncm3_prefix << "audio_message_system "
+        << (int)audio_message_system << std::endl
+        << ncm3_prefix << "audio_message_active "
+        << (yes_no_e)audio_message_active << std::endl
         << to_hex_string(padding[0]) << "-"
-        << to_hex_string(padding[1]) << "-"
-        << to_hex_string(padding[2]) << "-"
-        << to_hex_string(padding[3]) << "-"
-        << to_hex_string(padding[4]) << std::endl
-        << ncm3_prefix << "missile_audio_warning "
-        << (yes_no_e)missile_audio_warning << std::endl;
+        << to_hex_string(padding[1]) << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -1168,18 +1180,26 @@ void vdis::avcatt_to_ncm3_03_t::read(byte_stream_t &stream)
             (LENGTH_BITS / 8));
     }
 
+    stream.read(audio_message_queue, 16);
     stream.read(flare_count);
-    stream.read(padding, 5);
-    stream.read(missile_audio_warning);
+    stream.read(normal_hook_power);
+    stream.read(emergency_hook_power);
+    stream.read(audio_message_system);
+    stream.read(padding, 2);
+    stream.read(audio_message_active);
 }
 
 // ----------------------------------------------------------------------------
 void vdis::avcatt_to_ncm3_03_t::write(byte_stream_t &stream)
 {
     stream.write(length());
+    stream.write(audio_message_queue, 16);
     stream.write(flare_count);
-    stream.write(padding, 5);
-    stream.write(missile_audio_warning);
+    stream.write(normal_hook_power);
+    stream.write(emergency_hook_power);
+    stream.write(audio_message_system);
+    stream.write(padding, 2);
+    stream.write(audio_message_active);
 }
 
 // ----------------------------------------------------------------------------
