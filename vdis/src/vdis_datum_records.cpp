@@ -1142,17 +1142,23 @@ void vdis::avcatt_to_ncm3_03_t::print(
 {
     const std::string ncm3_prefix = (prefix + "avcatt_to_ncm3_03.");
 
+    out << ncm3_prefix << "audio_message_queue(16 bytes) ";
+
     for(uint32_t i = 0; i < 16; ++i) {
 
-        if (audio_message_queue[i] > 0) {
+        out << to_hex_string(audio_message_queue[i]);
 
-            out << ncm3_prefix << "audio_message_queue[" << i << "] "
-                << (int)audio_message_queue[i] << std::endl;
+        if (i < 15) {
+
+            out << "-";
         }
     }
 
-    out << ncm3_prefix << "flare_count " << (int)flare_count << std::endl
+    out << std::endl
+        << ncm3_prefix << "flare_count " << (int)flare_count << std::endl
         << ncm3_prefix << "padding(2 bytes) "
+        << to_bin_string(padding[0]) << "-"
+        << to_bin_string(padding[1]) << std::endl
         << ncm3_prefix << "normal_hook_power "
         << (int)normal_hook_power << std::endl
         << ncm3_prefix << "emergency_hook_power "

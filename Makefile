@@ -14,7 +14,6 @@ $(OBJ_PATH)/vdb_associations.o \
 $(OBJ_PATH)/vdb_capture.o \
 $(OBJ_PATH)/vdb_comments.o \
 $(OBJ_PATH)/vdb_common.o \
-$(OBJ_PATH)/vdb.o \
 $(OBJ_PATH)/vdb_entities.o \
 $(OBJ_PATH)/vdb_file_reader.o \
 $(OBJ_PATH)/vdb_file_stream.o \
@@ -28,7 +27,8 @@ $(OBJ_PATH)/vdb_options.o \
 $(OBJ_PATH)/vdb_pdu_data.o \
 $(OBJ_PATH)/vdb_playback.o \
 $(OBJ_PATH)/vdb_print.o \
-$(OBJ_PATH)/vdb_summary.o
+$(OBJ_PATH)/vdb_summary.o \
+$(OBJ_PATH)/vdb.o
 
 all:
 	@cd vdis; $(MAKE) --no-print-directory
@@ -92,10 +92,6 @@ $(OBJ_PATH)/vdb_common.o : $(SRC_PATH)/vdb_common.cpp $(SRC_PATH)/vdb_common.h
 	@echo Compiling $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 
-$(OBJ_PATH)/vdb.o : $(SRC_PATH)/vdb.cpp
-	@echo Compiling $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-
 $(OBJ_PATH)/vdb_entities.o : $(SRC_PATH)/vdb_entities.cpp $(SRC_PATH)/vdb_entities.h
 	@echo Compiling $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
@@ -149,6 +145,10 @@ $(OBJ_PATH)/vdb_print.o : $(SRC_PATH)/vdb_print.cpp $(SRC_PATH)/vdb_print.h
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 
 $(OBJ_PATH)/vdb_summary.o : $(SRC_PATH)/vdb_summary.cpp $(SRC_PATH)/vdb_summary.h
+	@echo Compiling $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
+
+$(OBJ_PATH)/vdb.o : $(SRC_PATH)/vdb.cpp ${SRC_PATH}/vdb_version.h ${SRC_PATH}/vdb_git.h
 	@echo Compiling $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 	
