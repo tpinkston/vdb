@@ -53,8 +53,8 @@ Filter options (capture, playback, list, summary):
   -I --xids=I1,...        Exclude PDUs containing specified entity ID(s)
 
 Playback options (playback only):
-  -D --pdu=M              File contains a single contents for a single PDU
-                          to be played back at interval of M milliseconds
+  -D --pdu=M              File contains contents for a single PDU to be played 
+                          back at interval of M milliseconds
 
 Output options (list only):
   -O --output=FILENAME    Write listed (filtered) PDUs to output file.

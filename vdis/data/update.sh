@@ -14,11 +14,11 @@ cd `dirname $0`
 
 # Input/output files for entity types.
 ENTITY_TYPES_IN=entity_types/entity_types.csv
-ENTITY_TYPES_OUT=../vdis_entity_types_all.cpp
+ENTITY_TYPES_OUT=../src/vdis_entity_types_all.cpp
 
 # Input/output files for object types.
 OBJECT_TYPES_IN=object_types/object_types.csv
-OBJECT_TYPES_OUT=../vdis_object_types_all.cpp
+OBJECT_TYPES_OUT=../src/vdis_object_types_all.cpp
 
 # Output files for master header/source.
 ENUMS_H_OUT=../vdis_enums.h
