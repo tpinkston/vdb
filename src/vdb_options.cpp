@@ -38,10 +38,8 @@ namespace vdb
         options::initialized = false,
         options::quiet = false,
         options::ipv6 = false,
-        options::pcap = false,
         options::version = false,
         options::help = false,
-        options::examples = false,
         options::dump = false,
         options::extracted = false,
         options::extra = false,
@@ -288,11 +286,6 @@ bool vdb::options::parse_long_option(const char *current_argument)
     {
         logger::set_enabled(logger::ERROR, false);
     }
-    else if (name == "examples")
-    {
-        examples = true;
-        success = true;
-    }
     else if (name == "version")
     {
         version = true;
@@ -333,11 +326,6 @@ bool vdb::options::parse_long_option(const char *current_argument)
     else if (name == "xids")
     {
         success = parse_entity_ids("--xids", value, exclude_entity_ids);
-    }
-    else if (name == "pcap")
-    {
-        pcap = true;
-        success = true;
     }
     else if (name == "ipv6")
     {
@@ -569,9 +557,6 @@ bool vdb::options::parse_short_options(
             case 'O':
                 success = parse_string("-O", next_argument, output_file);
                 advance = true;
-                break;
-            case 'p':
-                pcap = true;
                 break;
             case 'P':
                 success = set_command(USER_COMMAND_PLAYBACK);

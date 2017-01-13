@@ -6,10 +6,15 @@ namespace vdb
     class file_writer_t;
     class pdu_data_t;
 
+    // Lists PDUs in a capture file and optionally outputs PDUs to a separate
+    // capture file which is useful when filtering.
+    //
     class list
     {
       public:
 
+        // Returns 0 on success, 1 on error
+        //
         static int list_pdus(void);
 
       protected:

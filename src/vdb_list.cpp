@@ -25,6 +25,10 @@ uint32_t
 // ----------------------------------------------------------------------------
 int vdb::list::list_pdus(void)
 {
+    std::string
+        filename;
+    file_reader_t
+        *reader_ptr = 0;
     int
         result = 0;
 
@@ -33,33 +37,19 @@ int vdb::list::list_pdus(void)
     if (options::command_arguments.empty())
     {
         std::cerr << "vdb list: missing file argument" << std::endl;
-
         result = 1;
     }
     else if (options::command_arguments.size() > 1)
     {
         std::cerr << "vdb list: too many arguments" << std::endl;
-
         result = 1;
     }
     else
     {
-        const string_t
-            filename = options::command_arguments[0];
-
         LOG_EXTRA_VERBOSE("Starting list...");
 
-        file_reader_t
-            *reader_ptr = 0;
-
-        if (options::pcap)
-        {
-            reader_ptr = new pcap_reader_t(filename);
-        }
-        else
-        {
-            reader_ptr = new standard_reader_t(filename);
-        }
+        filename = options::command_arguments[0];
+        reader_ptr = new standard_reader_t(filename);
 
         if (not reader_ptr->good())
         {

@@ -3,8 +3,7 @@ to save captured traffic to a file to be examined or played back afterwards.
 
 Usage:
   vdb COMMAND|-[C|P|L|S|W|U|M] [OPTIONS] [FILE]
-  vdb COMMAND|-[C|P|L|S|W|U|M] --examples
-  vdb --examples
+  vdb COMMAND|-[C|P|L|S|W|U|M]
   vdb --help|-h
   vdb --version|-v
 
@@ -26,12 +25,8 @@ Global options (for all commands):
   -v --verbose            Print more than usual (debugging, -vv extra verbose)
   -w --warnings           Show warnings (suppressed by default)
   -R --suppress           Suppress any error messages
-     --examples           Prints example commands
   -V --version            Prints version information
   -X --extra              Print extra information (if applicable)
-
-File options (playback, list, summary):
-  -p --pcap               Assumes FILE is a 'pcap' file
 
 Network options (capture, playback):
   -6 --ipv6               Use IPv6

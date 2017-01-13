@@ -8,8 +8,6 @@
 
 namespace vdb
 {
-    class file_reader_t;
-
     // ------------------------------------------------------------------------
     class collision_node_t
     {
@@ -181,14 +179,14 @@ namespace vdb
         static void process(const vdis::linear_object_state_pdu_t &);
         static void process(const vdis::areal_object_state_pdu_t &);
 
-        static void print_results(std::ostream &);
+        static void print_results(std::ostream &, bool quiet = false);
 
         static void print_results(
             const source_data_node_t &,
             std::ostream &
         );
 
-        static file_reader_t
+        static standard_reader_t
             *reader_ptr;
         static std::string
             filename,

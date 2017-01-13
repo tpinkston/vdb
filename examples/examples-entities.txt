@@ -1,8 +1,0 @@
-  Shows just the M1A1 entity type values: 
-  
-    $ vdb enums | grep M1A1
-
-  Shows just the munition (kind = 2) entity type values: 
-  
-    $ vdb enums | grep '^2\.'
-    

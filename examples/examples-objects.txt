@@ -1,5 +1,0 @@
-  Shows just the object type values with 'POINT' geometry: 
-  
-    $ vdb enums | grep ',POINT,'
-
-    

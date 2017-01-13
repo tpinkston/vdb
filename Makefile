@@ -39,18 +39,6 @@ help:
 	@./parse_text.sh help.txt ${SRC_PATH}/vdb_help.txt
 .PHONY : help
 
-examples:
-	@./parse_text.sh examples/examples-capture.txt ${SRC_PATH}/examples/vdb_examples_capture.txt
-	@./parse_text.sh examples/examples-playback.txt ${SRC_PATH}/examples/vdb_examples_playback.txt
-	@./parse_text.sh examples/examples-list.txt ${SRC_PATH}/examples/vdb_examples_list.txt
-	@./parse_text.sh examples/examples-summary.txt ${SRC_PATH}/examples/vdb_examples_summary.txt
-	@./parse_text.sh examples/examples-comment.txt ${SRC_PATH}/examples/vdb_examples_comment.txt
-	@./parse_text.sh examples/examples-uncomment.txt ${SRC_PATH}/examples/vdb_examples_uncomment.txt
-	@./parse_text.sh examples/examples-enums.txt ${SRC_PATH}/examples/vdb_examples_enums.txt
-	@./parse_text.sh examples/examples-entities.txt ${SRC_PATH}/examples/vdb_examples_entities.txt
-	@./parse_text.sh examples/examples-objects.txt ${SRC_PATH}/examples/vdb_examples_objects.txt
-.PHONY : examples
-
 version:
 	@echo "Setting version to '${GIT_BRANCH}-${GIT_COMMIT}'"
 	@cp ${SRC_PATH}/vdb_git.h.in ${SRC_PATH}/vdb_git.h
@@ -62,7 +50,6 @@ clean:
 	@cd vdis; $(MAKE) --no-print-directory clean
 	@rm -rfv ${SRC_PATH}/vdb_git.h
 	@rm -rfv ${SRC_PATH}/vdb_help.txt
-	@rm -rfv ${SRC_PATH}/examples/vdb_examples_*.txt
 	@rm -rfv $(OBJ_PATH)
 	@rm -fv $(TARGET)
 .PHONY : clean
@@ -72,7 +59,7 @@ directories: $(OBJ_PATH)
 $(OBJ_PATH):
 	@mkdir -p $(OBJ_PATH)
 
-$(TARGET): directories help examples version $(OBJECTS)
+$(TARGET): directories help version $(OBJECTS)
 	@echo Linking $(TARGET)
 	@$(CPP) -o $(TARGET) $(OBJECTS) $(VDIS)
 

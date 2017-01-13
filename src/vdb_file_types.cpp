@@ -15,9 +15,9 @@ void vdb::file_header_t::print(
     const std::string &prefix,
     std::ostream &out) const
 {
-    out << prefix << "File version:       "
+    out << prefix << "Capture version:    "
         << (int)major_version << "." << (int)minor_version << std::endl
-        << prefix << "File created:       "
+        << prefix << "Capture created:    "
         << vdis::time_to_string(time_created) << std::endl;
 
     for(uint32_t i = 0; i < comments.size(); ++i)

@@ -17,8 +17,7 @@ namespace vdb
     //
     // Bits  Description
     // ----  -----------
-    // 15-1  Unused
-    //    0  PDU data is from PCAP file
+    // 15-0  Unused (reserved for future use)
     //
     typedef uint16_t
         pdu_data_status_t;

@@ -24,7 +24,7 @@ namespace
     }
 }
 
-vdb::file_reader_t
+vdb::standard_reader_t
     *vdb::summary::reader_ptr = 0;
 std::string
     vdb::summary::filename,
@@ -315,27 +315,29 @@ int vdb::summary::summarize_pdus(void)
         LOG_EXTRA_VERBOSE("Starting summary...");
 
         filename = options::command_arguments[0];
-
-        if (options::pcap)
-        {
-            reader_ptr = new pcap_reader_t(filename);
-        }
-        else
-        {
-            reader_ptr = new standard_reader_t(filename);
-        }
+        reader_ptr = new standard_reader_t(filename);
 
         if (not reader_ptr->good())
         {
             result = 1;
         }
-        else if (not reader_ptr->parse(process_pdu_data))
-        {
-            result = 1;
-        }
         else
         {
-            print_results(std::cout);
+            if (options::quiet)
+            {
+                // Print results without parsing PDU content, this will
+                // print just the header information.
+                //
+                print_results(std::cout);
+            }
+            else if (reader_ptr->parse(process_pdu_data))
+            {
+                print_results(std::cout);
+            }
+            else
+            {
+                result = 1;
+            }
         }
 
         delete reader_ptr;
@@ -623,7 +625,7 @@ void vdb::summary::process(const vdis::areal_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::print_results(std::ostream &out)
+void vdb::summary::print_results(std::ostream &out, bool quiet)
 {
     struct stat
         file_stat;
@@ -634,8 +636,8 @@ void vdb::summary::print_results(std::ostream &out)
     std::map<vdis::id_t, object_data_node_t>::const_iterator
         object_itor = object_data.begin();
 
-    out << "File name:          " << filename << std::endl
-        << "File size:          " << std::fixed;
+    out << "Capture file name:  " << filename << std::endl
+        << "Capture file size:  " << std::fixed;
 
     if (stat(filename.c_str(), &file_stat) == 0)
     {
@@ -646,12 +648,7 @@ void vdb::summary::print_results(std::ostream &out)
         out << "[" << strerror(errno) << "]" << std::endl;
     }
 
-    if (not options::pcap)
-    {
-        static_cast<standard_reader_t*>(reader_ptr)->header.print(
-            std::string(),
-            out);
-    }
+    reader_ptr->header.print(std::string(), out);
 
     if (first_pdu_time > 0)
     {

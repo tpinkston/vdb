@@ -1,4 +1,0 @@
-  Shows just the PDU_FAMILY enumeration values: 
-  
-    $ vdb enums | grep PDU_FAMILY
-  

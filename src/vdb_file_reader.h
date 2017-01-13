@@ -89,34 +89,6 @@ namespace vdb
         uint32_t
             index;
     };
-
-    // ------------------------------------------------------------------------
-    // Reader for PCAP format capture files
-    //
-    class pcap_reader_t : public file_reader_t
-    {
-      public:
-
-        pcap_reader_t(const string_t &filename);
-        virtual ~pcap_reader_t(void);
-
-      protected:
-
-        virtual bool next_entry(pdu_data_t &data);
-
-      private:
-
-//        bool read_pcap_entry(
-//            const pcap_packet_header_t &header,
-//            vdis::byte_stream_t &stream,
-//            pdu_data_t &data
-//        );
-//
-//        pcap_t
-//            *pcap_ptr;
-//        uint32_t
-//            index_counter;
-    };
 }
 
 #endif
