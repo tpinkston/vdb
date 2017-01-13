@@ -1,0 +1,7 @@
+Prints all VDIS standard object type definitions to STDOUT in CSV format.
+
+Usage: vdb-objects
+
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)

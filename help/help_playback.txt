@@ -1,0 +1,30 @@
+Plays back saved VDIS traffic in capture file. 
+
+Usage: vdb-playback [OPTIONS] PORT FILE
+
+Options:
+  -P --pdu=M            Capture file contains contents for a single PDU to be
+                        played back at interval of M milliseconds
+                        
+     --hostname=H1,...  Include PDUs from specified host(s)
+     --xhostname=H1,... Exclude PDUs from specified host(s)
+     --exercise=E1,...  Include PDUs with exercise number(s) (numeric)
+     --xexercise=E1,... Exclude PDUs with exercise number(s) (numeric)
+  -t --type=T1,...      Include PDUs with PDU type(s) (numeric)
+  -T --xtype=T1,...     Exclude PDUs with PDU type(s) (numeric)
+  -f --family=F1,...    Include PDUs with PDU family(s) (numeric)
+  -F --xfamily=F1,...   Exclude PDUs with PDU family(s) (numeric)
+  -i --id=I1,...        Include PDUs containing specified entity ID(s)
+  -I --xid=I1,...       Exclude PDUs containing specified entity ID(s)
+  -r --range=RANGE      Include only PDUs in specified range (indexes)
+
+  -e --extra            Print extra information (if applicable)
+  -x --extract          Print full PDU data extraction (overrides -e)
+  -d --dump             Print PDU hex dump (overrides -e and -x)
+  -6 --ipv6             Use IPv6
+  -a --address=A        Use IP address, e.g. 192.168.1.123
+  -N --interface=I      Use network interface, e.g. 'eth0'
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)

@@ -1,0 +1,34 @@
+Lists saved VDIS traffic in capture file. 
+
+Usage: vdb-list [OPTIONS] FILE
+  
+  -o --output=FILE      Write listed (filtered) PDUs to output file.
+  
+     --hostname=H1,...  Include PDUs from specified host(s)
+     --xhostname=H1,... Exclude PDUs from specified host(s)
+     --exercise=E1,...  Include PDUs with exercise number(s) (numeric)
+     --xexercise=E1,... Exclude PDUs with exercise number(s) (numeric)
+  -t --type=T1,...      Include PDUs with PDU type(s) (numeric)
+  -T --xtype=T1,...     Exclude PDUs with PDU type(s) (numeric)
+  -f --family=F1,...    Include PDUs with PDU family(s) (numeric)
+  -F --xfamily=F1,...   Exclude PDUs with PDU family(s) (numeric)
+  -i --id=I1,...        Include PDUs containing specified entity ID(s)
+  -I --xid=I1,...       Exclude PDUs containing specified entity ID(s)
+  -r --range=RANGE      Include only PDUs in specified range (indexes)
+  
+  -S --scan=associations
+     --scan=lasers
+     --scan=fires
+     --scan=collisions 
+     --scan=entities
+     --scan=objects
+  -A --scan=all
+
+  -e --extra            Print extra information (if applicable)
+  -x --extract          Print full PDU data extraction (overrides -e)
+  -d --dump             Print PDU hex dump (overrides -e and -x)
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)
+  

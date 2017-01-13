@@ -1,0 +1,14 @@
+Adds, removes or lists comments in PDU capture file.
+
+Usage: vdb-comment [OPTIONS] FILE
+
+  -A --add=COMMENT      Add comment (if no comment is provided it will be
+                        taken from STDIN).
+  
+  -D --delete=N         Delete comment #N
+
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)
+                        

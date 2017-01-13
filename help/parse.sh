@@ -13,11 +13,16 @@ elif [ ! -f "$SOURCE_FILE" ]; then
 fi
 
 if [ $SOURCE_FILE -nt $TARGET_FILE ]; then
-    echo "Updating $TARGET_FILE"
+    echo "Generating $TARGET_FILE"
     cat /dev/null > $TARGET_FILE
+    echo "// This file is auto-generated..." >> $TARGET_FILE
+    echo "//" >> $TARGET_FILE
+    echo "void print_help(void)" >> $TARGET_FILE
+    echo "{" >> $TARGET_FILE
     while IFS='' read line;
     do
-        echo "PRINT(\"$line\")" >> $TARGET_FILE
+        echo "    std::cout << \"$line\" << std::endl;" >> $TARGET_FILE
     done < $SOURCE_FILE
+    echo "}" >> $TARGET_FILE
 fi
 

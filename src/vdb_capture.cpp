@@ -32,6 +32,13 @@ bool
     vdb::capture::capturing = false;
 
 // ----------------------------------------------------------------------------
+int main(int argc, char *argv[])
+{
+    std::cout << "HELLO" << std::endl;
+    return 0;
+}
+
+// ----------------------------------------------------------------------------
 int vdb::capture::capture_pdus(void)
 {
     int

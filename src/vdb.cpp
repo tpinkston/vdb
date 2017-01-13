@@ -1,4 +1,3 @@
-#include "vdb_capture.h"
 #include "vdb_comments.h"
 #include "vdb_git.h"
 #include "vdb_list.h"
@@ -47,9 +46,6 @@ int main(int argc, char *argv[])
 
             switch(vdb::options::command)
             {
-                case vdb::USER_COMMAND_CAPTURE:
-                    result = vdb::capture::capture_pdus();
-                    break;
                 case vdb::USER_COMMAND_PLAYBACK:
                     result = vdb::playback::playback_pdus();
                     break;
@@ -104,7 +100,5 @@ void print_version(void)
 // ----------------------------------------------------------------------------
 void print_help(void)
 {
-    #define PRINT(x) std::cout << (x) << std::endl;
-    #include "vdb_help.txt"
-    #undef PRINT
+
 }

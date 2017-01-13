@@ -1,0 +1,18 @@
+Scans VDIS capture file and prints comments, summary and statistics about
+captured PDUs in the file. 
+
+Usage: vdb-summarize [OPTIONS] FILE
+  
+  -C --collisions       Show collisions
+  -E --emissions        Show emissions (radar/IFF)
+  -F --fires            Show fires and detonations
+  -L --lasers           Show designators
+  -R --radios           Show radios
+  -O --objects          Show object states (point, linear, areal)
+  -A --all              Show all the above
+
+  -e --extra            Print extra information (if applicable)
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)
