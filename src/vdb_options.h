@@ -8,34 +8,68 @@
 namespace vdb
 {
     // ------------------------------------------------------------------------
-    typedef enum
-    {
-        USER_COMMAND_NONE,
-        USER_COMMAND_CAPTURE,
-        USER_COMMAND_PLAYBACK,
-        USER_COMMAND_LIST,
-        USER_COMMAND_SUMMARY,
-        USER_COMMAND_COMMENT,
-        USER_COMMAND_UNCOMMENT,
-        USER_COMMAND_ENUMS,
-        USER_COMMAND_ENTITIES,
-        USER_COMMAND_OBJECTS
+    struct option_t
+	{
+        option_t(
+            const std::string &long_option,
+            const char short_option,
+            bool value_required
+        ) :
+            long_option(long_option),
+            short_option(short_option),
+            value_required(value_required)
+        {
 
-    } user_command_e;
+        }
+
+    	std::string   long_option;
+        char          short_option;
+    	bool          value_required;
+	};
+
+    // ------------------------------------------------------------------------
+    class options_t
+    {
+      public:
+
+        options_t(const char *command, int argc, char *argv[]);
+
+        void add(option_t option)
+        {
+            options.push_back(option);
+        }
+
+        void set_callback(bool (*function)(const option_t &, const char *))
+        {
+            callback = function;
+        }
+
+        bool parse(void);
+
+      private:
+
+        bool parse_long_option(int current);
+        bool parse_short_options(int current, int next, bool advance);
+
+        const std::string
+            command;
+        const int
+            count;
+        std::vector<std::string>
+            values;
+        std::vector<option_t>
+            options;
+        std::vector<std::string>
+            arguments;
+        bool
+            (*callback)(const option_t &, const char *);
+    };
 
     // ------------------------------------------------------------------------
     class options
     {
       public:
 
-        // Initializes with command line arguments
-        //
-        static bool initialize(int argc, char *argv[]);
-
-        static user_command_e
-            command;
-        static std::map<user_command_e, std::string>
-            command_names;
         static std::vector<std::string>
             command_arguments;
         static std::set<std::string>
@@ -87,20 +121,6 @@ namespace vdb
 
         options(void) { }
         ~options(void) { }
-
-        static void configure(void);
-
-        static bool set_command(user_command_e user_command);
-
-        static bool parse_command(const char *current_argument);
-
-        static bool parse_long_option(const char *current_argument);
-
-        static bool parse_short_options(
-            const char *current_argument,
-            const char *next_argument,
-            bool &advance
-        );
 
         static bool parse_string_set(
             const char *name_ptr,

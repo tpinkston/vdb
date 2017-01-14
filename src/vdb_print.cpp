@@ -107,7 +107,7 @@ void vdb::print::print_pdu_normal(
 
     // On playback print the current system time instead of source.
     //
-    if (options::command == USER_COMMAND_PLAYBACK)
+    if (true) // TODO options::command == USER_COMMAND_PLAYBACK)
     {
         time = vdis::get_system_time();
     }

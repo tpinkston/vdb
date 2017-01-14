@@ -13,7 +13,7 @@ elif [ ! -f "$SOURCE_FILE" ]; then
 fi
 
 if [ $SOURCE_FILE -nt $TARGET_FILE ]; then
-    echo "Generating $TARGET_FILE"
+    echo "generating: $TARGET_FILE"
     cat /dev/null > $TARGET_FILE
     echo "// This file is auto-generated..." >> $TARGET_FILE
     echo "//" >> $TARGET_FILE

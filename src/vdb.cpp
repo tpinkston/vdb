@@ -21,66 +21,66 @@ int main(int argc, char *argv[])
     int
         result = 0;
 
-    if (not vdb::options::initialize(argc, argv))
-    {
-        result = 1;
-    }
-    else
-    {
-        if (vdb::options::version)
-        {
-            print_version();
-        }
-
-        if (vdb::options::help)
-        {
-            print_help();
-        }
-        else
-        {
-            vdis::set_byteswapping();
-
-            vdis::enumerations::load();
-            vdis::entity_types::load();
-            vdis::object_types::load();
-
-            switch(vdb::options::command)
-            {
-                case vdb::USER_COMMAND_PLAYBACK:
-                    result = vdb::playback::playback_pdus();
-                    break;
-                case vdb::USER_COMMAND_LIST:
-                    result = vdb::list::list_pdus();
-                    break;
-                case vdb::USER_COMMAND_SUMMARY:
-                    result = vdb::summary::summarize_pdus();
-                    break;
-                case vdb::USER_COMMAND_COMMENT:
-                    result = vdb::comments::add();
-                    break;
-                case vdb::USER_COMMAND_UNCOMMENT:
-                    result = vdb::comments::remove();
-                    break;
-                case vdb::USER_COMMAND_ENUMS:
-                    vdis::enumerations::print(std::cout);
-                    break;
-                case vdb::USER_COMMAND_ENTITIES:
-                    vdis::entity_types::print(std::cout);
-                    break;
-                case vdb::USER_COMMAND_OBJECTS:
-                    vdis::object_types::print(std::cout);
-                    break;
-                default:
-                    if (not vdb::options::version)
-                    {
-                        std::cerr << "vdb: missing command (try --help)"
-                                  << std::endl;
-                        result = 1;
-                    }
-                    break;
-            }
-        }
-    }
+//    if (not vdb::options::initialize(argc, argv))
+//    {
+//        result = 1;
+//    }
+//    else
+//    {
+//        if (vdb::options::version)
+//        {
+//            print_version();
+//        }
+//
+//        if (vdb::options::help)
+//        {
+//            print_help();
+//        }
+//        else
+//        {
+//            vdis::set_byteswapping();
+//
+//            vdis::enumerations::load();
+//            vdis::entity_types::load();
+//            vdis::object_types::load();
+//
+//            switch(vdb::options::command)
+//            {
+//                case vdb::USER_COMMAND_PLAYBACK:
+//                    result = vdb::playback::playback_pdus();
+//                    break;
+//                case vdb::USER_COMMAND_LIST:
+//                    result = vdb::list::list_pdus();
+//                    break;
+//                case vdb::USER_COMMAND_SUMMARY:
+//                    result = vdb::summary::summarize_pdus();
+//                    break;
+//                case vdb::USER_COMMAND_COMMENT:
+//                    result = vdb::comments::add();
+//                    break;
+//                case vdb::USER_COMMAND_UNCOMMENT:
+//                    result = vdb::comments::remove();
+//                    break;
+//                case vdb::USER_COMMAND_ENUMS:
+//                    vdis::enumerations::print(std::cout);
+//                    break;
+//                case vdb::USER_COMMAND_ENTITIES:
+//                    vdis::entity_types::print(std::cout);
+//                    break;
+//                case vdb::USER_COMMAND_OBJECTS:
+//                    vdis::object_types::print(std::cout);
+//                    break;
+//                default:
+//                    if (not vdb::options::version)
+//                    {
+//                        std::cerr << "vdb: missing command (try --help)"
+//                                  << std::endl;
+//                        result = 1;
+//                    }
+//                    break;
+//            }
+//        }
+//    }
 
     return result;
 }

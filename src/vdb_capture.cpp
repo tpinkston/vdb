@@ -31,11 +31,51 @@ uint32_t
 bool
     vdb::capture::capturing = false;
 
+bool option_callback(const vdb::option_t &option, const char *value);
+
 // ----------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    std::cout << "HELLO" << std::endl;
+    vdb::options_t options("vdb-capture", argc, argv);
+
+    options.add(vdb::option_t("version",     'V', false));
+    options.add(vdb::option_t("help",        'h', false));
+    options.add(vdb::option_t("ipv6",        '6', false));
+    options.add(vdb::option_t("address",     'a', true));
+    options.add(vdb::option_t("interface",   'N', true));
+    options.add(vdb::option_t("extra",       'e', false));
+    options.add(vdb::option_t("extract",     'x', false));
+    options.add(vdb::option_t("dump",        'd', false));
+    options.add(vdb::option_t("color",       'c', false));
+    options.add(vdb::option_t("errors",      'E', false));
+    options.add(vdb::option_t("warnings",    'W', false));
+    options.add(vdb::option_t("verbose",     'v', false));
+    options.add(vdb::option_t("hostname",    'o', true));
+    options.add(vdb::option_t("xhostname",   'O', true));
+    options.add(vdb::option_t("exercise",    'y', true));
+    options.add(vdb::option_t("xexercise",   'Y', true));
+    options.add(vdb::option_t("type",        't', true));
+    options.add(vdb::option_t("xtype",       'T', true));
+    options.add(vdb::option_t("family",      'f', true));
+    options.add(vdb::option_t("xfamily",     'F', true));
+    options.add(vdb::option_t("id",          'i', true));
+    options.add(vdb::option_t("xid",         'I', true));
+
+    options.set_callback(*option_callback);
+
+    if (options.parse())
+    {
+        std::cout << "done" << std::endl;
+    }
+
     return 0;
+}
+
+// ----------------------------------------------------------------------------
+bool option_callback(const vdb::option_t &option, const char *value)
+{
+    std::cout << option.long_option << "=" << (value ? value : "null") << std::endl;
+    return true;
 }
 
 // ----------------------------------------------------------------------------

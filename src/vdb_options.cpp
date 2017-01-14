@@ -8,10 +8,6 @@
 
 namespace vdb
 {
-    user_command_e
-        options::command = USER_COMMAND_NONE;
-    std::map<user_command_e, std::string>
-        options::command_names;
     std::vector<std::string>
         options::command_arguments;
     std::set<std::string>
@@ -61,98 +57,56 @@ namespace vdb
 }
 
 // ----------------------------------------------------------------------------
-void vdb::options::configure(void)
+vdb::options_t::options_t(const char *command, int argc, char *argv[]) :
+    command(command),
+    count(argc),
+    callback(0)
 {
-    command_names[USER_COMMAND_CAPTURE] = "capture";
-    command_names[USER_COMMAND_PLAYBACK] = "playback";
-    command_names[USER_COMMAND_LIST] = "list";
-    command_names[USER_COMMAND_SUMMARY] = "query";
-    command_names[USER_COMMAND_COMMENT] = "comment";
-    command_names[USER_COMMAND_UNCOMMENT] = "uncomment";
-    command_names[USER_COMMAND_ENUMS] = "enums";
-    command_names[USER_COMMAND_ENTITIES] = "entities";
-    command_names[USER_COMMAND_OBJECTS] = "objects";
+    for(int i = 0; i < argc; ++i)
+    {
+        values.push_back(std::string(argv[i]));
+    }
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::initialize(int argc, char *argv[])
+bool vdb::options_t::parse(void)
 {
-    const char
-        *current_argument = 0,
-        *next_argument = 0;
-    bool
-        advance = false,
-        success = true;
+    bool success = true;
 
-    if (initialized)
+    if (not callback)
     {
-        LOG_ERROR("Already initialized!");
+        std::cerr << command << ": No option callback!" << std::endl;
         success = false;
     }
-    else
+    else for(int i = 0; success and (i < count); ++i)
     {
-        configure();
-        initialized = true;
-    }
+        LOG_VERBOSE("Current argument '%s'...", values[i].c_str());
 
-    for(int i = 0; success and (i < argc); ++i)
-    {
-        current_argument = argv[i];
-        next_argument = ((i + 1) < argc) ? argv[i + 1] : 0;
-
-        LOG_VERBOSE("Current argument '%s'...", current_argument);
-
-        if (vdis::starts_with(current_argument, "--"))
+        if (vdis::starts_with(values[i], "--"))
         {
-            success = parse_long_option(current_argument);
+            success = parse_long_option(i);
         }
-        else if (vdis::starts_with(current_argument, "-"))
+        else if (vdis::starts_with(values[i], "-"))
         {
-            advance = false;
+            int next = ((i + 1) < count) ? (i + 1) : -1;
+            bool advance = false;
 
-            success = parse_short_options(
-                current_argument,
-                next_argument,
-                advance);
+            success = parse_short_options(i, next, advance);
 
-            i += (advance ? 1 : 0);
-        }
-        else if (i > 0)
-        {
-            if (command == USER_COMMAND_NONE)
+            if (advance)
             {
-                success = parse_command(current_argument);
-            }
-            else
-            {
-                command_arguments.push_back(std::string(current_argument));
+                ++i;
             }
         }
-    }
-
-    if (success)
-    {
-        // Do a little sanity check
-        //
-        if ((command != USER_COMMAND_LIST) and not output_file.empty())
+        else
         {
-            std::cerr << "vdb: output file option (-o or --output) "
-                      << "for list command only" << std::endl;
-            success = false;
-        }
-        else if (scanning and
-                (command != USER_COMMAND_CAPTURE) and
-                (command != USER_COMMAND_LIST))
-        {
-            std::cerr << "vdb: scan option (-N or --scan) "
-                      << "for capture and list commands only" << std::endl;
-            success = false;
+            arguments.push_back(values[i]);
         }
     }
 
-    if (DEBUG)
+    if (true) // TODO: DEBUG
     {
-        std::cout << "DEBUG: initialize returning: "
+        std::cout << "DEBUG: parse returning: "
                   << (success ? "true" : "false")
                   << std::endl;
     }
@@ -161,72 +115,10 @@ bool vdb::options::initialize(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::set_command(user_command_e user_command)
-{
-    bool
-        success = false;
-
-    if (command == USER_COMMAND_NONE)
-    {
-        command = user_command;
-        success = true;
-    }
-    else
-    {
-        std::cerr << "vdb: extra command '" << command_names[user_command]
-                  << "' - try --help" << std::endl;
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::parse_command(const char *current_argument)
-{
-    std::map<user_command_e, std::string>::const_iterator
-        itor = command_names.begin();
-    bool
-        success = false;
-
-    while(itor != command_names.end())
-    {
-        if (current_argument == itor->second)
-        {
-            if (DEBUG)
-            {
-                std::cout << "DEBUG: parse_command: " << current_argument
-                          << std::endl;
-            }
-
-            command = itor->first;
-            success = true;
-        }
-
-        ++itor;
-    }
-
-    if (not success)
-    {
-        std::cerr << "vdb: unrecognized command '" << current_argument
-                  << "', valid commands are: " << std::endl;
-
-        itor = command_names.begin();
-
-        while(itor != command_names.end())
-        {
-            std::cerr << "  " << itor->second << std::endl;
-            ++itor;
-        }
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::parse_long_option(const char *current_argument)
+bool vdb::options_t::parse_long_option(int current)
 {
     const std::string
-        argument = std::string(current_argument).substr(2);
+        argument = std::string(values[current]).substr(2);
     std::string
         name;
     const char
@@ -234,6 +126,7 @@ bool vdb::options::parse_long_option(const char *current_argument)
     std::string::size_type
         index = argument.find_first_of('=');
     bool
+        option_found = false,
         success = false;
 
     if ((index == std::string::npos) or (index < 2))
@@ -246,385 +139,433 @@ bool vdb::options::parse_long_option(const char *current_argument)
         value = argument.substr(index + 1).c_str();
     }
 
-    if (DEBUG)
+    if (true) // TODO: DEBUG
     {
-        std::cout << "DEBUG: parse_long_option: name: "
-                  << name << std::endl
-                  << "DEBUG: parse_long_option: value: "
-                  << (value ? value : "null") << std::endl;
+        std::cout << "DEBUG: parse_long_option: --" << name << "=\""
+                  << (value ? value : "null") << "\"" << std::endl;
     }
 
-    if (name == "address")
+    // Option search
+    //
+    for(uint32_t i = 0; (i < options.size()) and not option_found; ++i)
     {
-        success = parse_string("--address", value, network_address);
-    }
-    else if (name == "help")
-    {
-        help = true;
-        success = true;
-    }
-    else if (name == "mono")
-    {
-        color::set_enabled(false);
-    }
-    else if (name == "verbose")
-    {
-        if (logger::is_enabled(logger::VERBOSE))
-        {
-            logger::set_enabled(logger::EXTRA_VERBOSE, true);
-        }
-        else
-        {
-            logger::set_enabled(logger::VERBOSE, true);
-        }
-    }
-    else if (name == "warnings")
-    {
-        logger::set_enabled(logger::WARNING, true);
-    }
-    else if (name == "suppress")
-    {
-        logger::set_enabled(logger::ERROR, false);
-    }
-    else if (name == "version")
-    {
-        version = true;
-        success = true;
-    }
-    else if (name == "hostname")
-    {
-        success = parse_string_set("--hostname", value, include_hostnames);
-    }
-    else if (name == "exercise")
-    {
-        success = parse_integers("--exercise", value, include_exercises);
-    }
-    else if (name == "xexercise")
-    {
-        success = parse_integers("--xexercise", value, exclude_exercises);
-    }
-    else if (name == "type")
-    {
-        success = parse_integers("--type", value, include_types);
-    }
-    else if (name == "xtype")
-    {
-        success = parse_integers("--xtype", value, exclude_types);
-    }
-    else if (name == "family")
-    {
-        success = parse_integers("--family", value, include_families);
-    }
-    else if (name == "xfamily")
-    {
-        success = parse_integers("--xfamily", value, exclude_families);
-    }
-    else if (name == "ids")
-    {
-        success = parse_entity_ids("--ids", value, include_entity_ids);
-    }
-    else if (name == "xids")
-    {
-        success = parse_entity_ids("--xids", value, exclude_entity_ids);
-    }
-    else if (name == "ipv6")
-    {
-        ipv6 = true;
-        success = true;
-    }
-    else if (name == "iface")
-    {
-        success = parse_string("--iface", value, network_interface);
-    }
-    else if (name == "range")
-    {
-        success = parse_integers_in_range(
-            "--range",
-            value,
-            0x0,
-            0xFFFFFFFF,
-            pdu_index_range);
-    }
-    else if (name == "pdu")
-    {
-        success = parse_uint64("--pdu", value, pdu_interval);
-    }
-    else if (name == "output")
-    {
-        success = parse_string("--output", value, output_file);
-    }
-    else if (name == "quiet")
-    {
-        quiet = true;
-        success = true;
-    }
-    else if (name == "dump")
-    {
-        dump = true;
-        success = true;
-    }
-    else if (name == "extract")
-    {
-        extracted = true;
-        success = true;
-    }
-    else if (name == "extra")
-    {
-        extra = true;
-        success = true;
-    }
-    else if (name == "scan")
-    {
-        std::set<std::string> scans;
+        const option_t *option_ptr = &(options[i]);
 
-        success =
-            parse_string_set("--hostname", value, scans) and
-            parse_scans("--name", scans);
+        if (option_ptr->long_option == name)
+        {
+            option_found = true;
+
+            if (option_ptr->value_required and not value)
+            {
+                std::cerr << command << ": option requires a value: --"
+                          << name << std::endl;
+
+            }
+            else
+            {
+                success = (*callback)(*option_ptr, value);
+            }
+        }
     }
-    else if (name == "collisions")
+
+    if (not option_found)
     {
-        summary_collisions = true;
-        success = true;
-    }
-    else if (name == "emissions")
-    {
-        summary_collisions = true;
-        success = true;
-    }
-    else if (name == "fires")
-    {
-        summary_fires = true;
-        success = true;
-    }
-    else if (name == "lasers")
-    {
-        summary_lasers = true;
-        success = true;
-    }
-    else if (name == "objects")
-    {
-        summary_objects = true;
-        success = true;
-    }
-    else if (name == "radios")
-    {
-        summary_radios = true;
-        success = true;
-    }
-    else if (name == "all")
-    {
-        summary_collisions = true;
-        summary_emissions = true;
-        summary_fires = true;
-        summary_lasers = true;
-        summary_objects = true;
-        summary_radios = true;
-    }
-    else
-    {
-        std::cerr << "vdb: invalid option: --" << name << std::endl;
-        success = false;
+        std::cerr << command << ": invalid option: --" << name << std::endl;
     }
 
     return success;
 }
 
+// TODO: REMOVE
+//    if (name == "address")
+//    {
+//        success = parse_string("--address", value, network_address);
+//    }
+//    else if (name == "help")
+//    {
+//        help = true;
+//        success = true;
+//    }
+//    else if (name == "mono")
+//    {
+//        color::set_enabled(false);
+//    }
+//    else if (name == "verbose")
+//    {
+//        if (logger::is_enabled(logger::VERBOSE))
+//        {
+//            logger::set_enabled(logger::EXTRA_VERBOSE, true);
+//        }
+//        else
+//        {
+//            logger::set_enabled(logger::VERBOSE, true);
+//        }
+//    }
+//    else if (name == "warnings")
+//    {
+//        logger::set_enabled(logger::WARNING, true);
+//    }
+//    else if (name == "suppress")
+//    {
+//        logger::set_enabled(logger::ERROR, false);
+//    }
+//    else if (name == "version")
+//    {
+//        version = true;
+//        success = true;
+//    }
+//    else if (name == "hostname")
+//    {
+//        success = parse_string_set("--hostname", value, include_hostnames);
+//    }
+//    else if (name == "exercise")
+//    {
+//        success = parse_integers("--exercise", value, include_exercises);
+//    }
+//    else if (name == "xexercise")
+//    {
+//        success = parse_integers("--xexercise", value, exclude_exercises);
+//    }
+//    else if (name == "type")
+//    {
+//        success = parse_integers("--type", value, include_types);
+//    }
+//    else if (name == "xtype")
+//    {
+//        success = parse_integers("--xtype", value, exclude_types);
+//    }
+//    else if (name == "family")
+//    {
+//        success = parse_integers("--family", value, include_families);
+//    }
+//    else if (name == "xfamily")
+//    {
+//        success = parse_integers("--xfamily", value, exclude_families);
+//    }
+//    else if (name == "ids")
+//    {
+//        success = parse_entity_ids("--ids", value, include_entity_ids);
+//    }
+//    else if (name == "xids")
+//    {
+//        success = parse_entity_ids("--xids", value, exclude_entity_ids);
+//    }
+//    else if (name == "ipv6")
+//    {
+//        ipv6 = true;
+//        success = true;
+//    }
+//    else if (name == "iface")
+//    {
+//        success = parse_string("--iface", value, network_interface);
+//    }
+//    else if (name == "range")
+//    {
+//        success = parse_integers_in_range(
+//            "--range",
+//            value,
+//            0x0,
+//            0xFFFFFFFF,
+//            pdu_index_range);
+//    }
+//    else if (name == "pdu")
+//    {
+//        success = parse_uint64("--pdu", value, pdu_interval);
+//    }
+//    else if (name == "output")
+//    {
+//        success = parse_string("--output", value, output_file);
+//    }
+//    else if (name == "quiet")
+//    {
+//        quiet = true;
+//        success = true;
+//    }
+//    else if (name == "dump")
+//    {
+//        dump = true;
+//        success = true;
+//    }
+//    else if (name == "extract")
+//    {
+//        extracted = true;
+//        success = true;
+//    }
+//    else if (name == "extra")
+//    {
+//        extra = true;
+//        success = true;
+//    }
+//    else if (name == "scan")
+//    {
+//        std::set<std::string> scans;
+//
+//        success =
+//            parse_string_set("--hostname", value, scans) and
+//            parse_scans("--name", scans);
+//    }
+//    else if (name == "collisions")
+//    {
+//        summary_collisions = true;
+//        success = true;
+//    }
+//    else if (name == "emissions")
+//    {
+//        summary_collisions = true;
+//        success = true;
+//    }
+//    else if (name == "fires")
+//    {
+//        summary_fires = true;
+//        success = true;
+//    }
+//    else if (name == "lasers")
+//    {
+//        summary_lasers = true;
+//        success = true;
+//    }
+//    else if (name == "objects")
+//    {
+//        summary_objects = true;
+//        success = true;
+//    }
+//    else if (name == "radios")
+//    {
+//        summary_radios = true;
+//        success = true;
+//    }
+//    else if (name == "all")
+//    {
+//        summary_collisions = true;
+//        summary_emissions = true;
+//        summary_fires = true;
+//        summary_lasers = true;
+//        summary_objects = true;
+//        summary_radios = true;
+//    }
+
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_short_options(
-    const char *current_argument,
-    const char *next_argument,
-    bool &advance)
+bool vdb::options_t::parse_short_options(int current, int next, bool advance)
 {
     std::string
-        argument = std::string(current_argument).substr(1);
-    std::set<std::string>
-        scans;
+        argument = values[current].substr(1);
     bool
+        option_found = false,
         success = true;
 
-    if (DEBUG)
+    if (true) // TODO: DEBUG
     {
-        std::cout << "DEBUG: parse_short_options: '" << current_argument
-                  << "', '" << (next_argument ? next_argument : "null")
+        std::cout << "DEBUG: parse_short_options: '" << values[current]
+                  << "', '" << ((next > -1) ? values[next] : "null")
                   << "'" << std::endl;
     }
 
     for(std::string::size_type i = 0; success and (i < argument.length()); ++i)
     {
-        switch(argument[i])
+        // Option search
+        //
+        for(uint32_t j = 0; (j < options.size()) and not option_found; ++j)
         {
-            case '6':
-                ipv6 = true;
-                break;
-            case 'a':
-                success = parse_string(
-                    "-a",
-                    next_argument,
-                    network_address);
-                advance = true;
-                break;
-            case 'A':
-                summary_collisions = true;
-                summary_emissions = true;
-                summary_fires = true;
-                summary_lasers = true;
-                summary_objects = true;
-                summary_radios = true;
-                break;
-            case 'C':
-                success = set_command(USER_COMMAND_CAPTURE);
-                break;
-            case 'D':
-                success = parse_uint64(
-                    "-D",
-                    next_argument,
-                    pdu_interval);
-                advance = true;
-                break;
-            case 'd':
-                dump = true;
-                break;
-            case 'e':
-                success = parse_integers(
-                    "-e",
-                    next_argument,
-                    include_exercises);
-                advance = true;
-                break;
-            case 'E':
-                success = parse_integers(
-                    "-E",
-                    next_argument,
-                    exclude_exercises);
-                advance = true;
-                break;
-            case 'f':
-                success = parse_integers(
-                    "-f",
-                    next_argument,
-                    include_families);
-                advance = true;
-                break;
-            case 'F':
-                success = parse_integers(
-                    "-F",
-                    next_argument,
-                    exclude_families);
-                advance = true;
-                break;
-            case 'h':
-                help = true;
-                break;
-            case 'H':
-                success = parse_string_set(
-                    "-H",
-                    next_argument,
-                    include_hostnames);
-                advance = true;
-                break;
-            case 'i':
-                success = parse_entity_ids(
-                    "-i",
-                    next_argument,
-                    include_entity_ids);
-                advance = true;
-                break;
-            case 'I':
-                success = parse_entity_ids("-I",
-                    next_argument,
-                    include_entity_ids);
-                advance = true;
-                break;
-            case 'L':
-                success = set_command(USER_COMMAND_LIST);
-                break;
-            case 'm':
-                color::set_enabled(false);
-                break;
-            case 'M':
-                success = set_command(USER_COMMAND_ENUMS);
-                break;
-            case 'n':
-                success = parse_string("-n", next_argument, network_interface);
-                advance = true;
-                break;
-            case 'N':
-                success =
-                    parse_string_set("-n", next_argument, scans) and
-                    parse_scans("-n", scans);
-                advance = true;
-                break;
-            case 'O':
-                success = parse_string("-O", next_argument, output_file);
-                advance = true;
-                break;
-            case 'P':
-                success = set_command(USER_COMMAND_PLAYBACK);
-                break;
-            case 'q':
-                quiet = true;
-                break;
-            case 'r':
-                success = parse_integers_in_range(
-                    "-r",
-                    next_argument,
-                    0x0,
-                    0xFFFFFFFF,
-                    pdu_index_range);
-                advance = true;
-                break;
-            case 'R':
-                logger::set_enabled(logger::ERROR, false);
-                break;
-            case 'S':
-                success = set_command(USER_COMMAND_SUMMARY);
-                break;
-            case 't':
-                success = parse_integers("-t", next_argument, include_types);
-                advance = true;
-                break;
-            case 'T':
-                success = parse_integers("-T", next_argument, exclude_types);
-                advance = true;
-                break;
-            case 'v':
-                if (logger::is_enabled(logger::VERBOSE))
+            const option_t *option_ptr = &(options[j]);
+
+            if (option_ptr->short_option == argument[i])
+            {
+                option_found = true;
+
+                if (option_ptr->value_required and (next < 0))
                 {
-                    logger::set_enabled(logger::EXTRA_VERBOSE, true);
+                    std::cerr << command << ": option requires a value: -"
+                              << argument[i] << std::endl;
+                }
+                else if (next > -1)
+                {
+                    success = (*callback)(*option_ptr, values[next].c_str());
                 }
                 else
                 {
-                    logger::set_enabled(logger::VERBOSE, true);
+                    success = (*callback)(*option_ptr, 0);
                 }
-                break;
-            case 'U':
-                success = set_command(USER_COMMAND_UNCOMMENT);
-                break;
-            case 'V':
-                version = true;
-                break;
-            case 'w':
-                logger::set_enabled(logger::WARNING, true);
-                break;
-            case 'W':
-                success = set_command(USER_COMMAND_COMMENT);
-                break;
-            case 'x':
-                extracted = true;
-                break;
-            case 'X':
-                extra = true;
-                break;
-            default:
-                std::cerr << "vdb: invalid option: -" << argument[i]
-                          << std::endl;
-                success = false;
-                break;
+            }
+        }
+
+        if (not option_found)
+        {
+            std::cerr << command << ": invalid option: -"
+                      << argument[i] << std::endl;
         }
     }
 
     return success;
 }
+
+// TODO: REMOVE
+//            case '6':
+//                ipv6 = true;
+//                break;
+//            case 'a':
+//                success = parse_string(
+//                    "-a",
+//                    next_argument,
+//                    network_address);
+//                advance = true;
+//                break;
+//            case 'A':
+//                summary_collisions = true;
+//                summary_emissions = true;
+//                summary_fires = true;
+//                summary_lasers = true;
+//                summary_objects = true;
+//                summary_radios = true;
+//                break;
+//            case 'C':
+//                success = set_command(USER_COMMAND_CAPTURE);
+//                break;
+//            case 'D':
+//                success = parse_uint64(
+//                    "-D",
+//                    next_argument,
+//                    pdu_interval);
+//                advance = true;
+//                break;
+//            case 'd':
+//                dump = true;
+//                break;
+//            case 'e':
+//                success = parse_integers(
+//                    "-e",
+//                    next_argument,
+//                    include_exercises);
+//                advance = true;
+//                break;
+//            case 'E':
+//                success = parse_integers(
+//                    "-E",
+//                    next_argument,
+//                    exclude_exercises);
+//                advance = true;
+//                break;
+//            case 'f':
+//                success = parse_integers(
+//                    "-f",
+//                    next_argument,
+//                    include_families);
+//                advance = true;
+//                break;
+//            case 'F':
+//                success = parse_integers(
+//                    "-F",
+//                    next_argument,
+//                    exclude_families);
+//                advance = true;
+//                break;
+//            case 'h':
+//                help = true;
+//                break;
+//            case 'H':
+//                success = parse_string_set(
+//                    "-H",
+//                    next_argument,
+//                    include_hostnames);
+//                advance = true;
+//                break;
+//            case 'i':
+//                success = parse_entity_ids(
+//                    "-i",
+//                    next_argument,
+//                    include_entity_ids);
+//                advance = true;
+//                break;
+//            case 'I':
+//                success = parse_entity_ids("-I",
+//                    next_argument,
+//                    include_entity_ids);
+//                advance = true;
+//                break;
+//            case 'L':
+//                success = set_command(USER_COMMAND_LIST);
+//                break;
+//            case 'm':
+//                color::set_enabled(false);
+//                break;
+//            case 'M':
+//                success = set_command(USER_COMMAND_ENUMS);
+//                break;
+//            case 'n':
+//                success = parse_string("-n", next_argument, network_interface);
+//                advance = true;
+//                break;
+//            case 'N':
+//                success =
+//                    parse_string_set("-n", next_argument, scans) and
+//                    parse_scans("-n", scans);
+//                advance = true;
+//                break;
+//            case 'O':
+//                success = parse_string("-O", next_argument, output_file);
+//                advance = true;
+//                break;
+//            case 'P':
+//                success = set_command(USER_COMMAND_PLAYBACK);
+//                break;
+//            case 'q':
+//                quiet = true;
+//                break;
+//            case 'r':
+//                success = parse_integers_in_range(
+//                    "-r",
+//                    next_argument,
+//                    0x0,
+//                    0xFFFFFFFF,
+//                    pdu_index_range);
+//                advance = true;
+//                break;
+//            case 'R':
+//                logger::set_enabled(logger::ERROR, false);
+//                break;
+//            case 'S':
+//                success = set_command(USER_COMMAND_SUMMARY);
+//                break;
+//            case 't':
+//                success = parse_integers("-t", next_argument, include_types);
+//                advance = true;
+//                break;
+//            case 'T':
+//                success = parse_integers("-T", next_argument, exclude_types);
+//                advance = true;
+//                break;
+//            case 'v':
+//                if (logger::is_enabled(logger::VERBOSE))
+//                {
+//                    logger::set_enabled(logger::EXTRA_VERBOSE, true);
+//                }
+//                else
+//                {
+//                    logger::set_enabled(logger::VERBOSE, true);
+//                }
+//                break;
+//            case 'U':
+//                success = set_command(USER_COMMAND_UNCOMMENT);
+//                break;
+//            case 'V':
+//                version = true;
+//                break;
+//            case 'w':
+//                logger::set_enabled(logger::WARNING, true);
+//                break;
+//            case 'W':
+//                success = set_command(USER_COMMAND_COMMENT);
+//                break;
+//            case 'x':
+//                extracted = true;
+//                break;
+//            case 'X':
+//                extra = true;
+//                break;
+//            default:
+//                std::cerr << "vdb: invalid option: -" << argument[i]
+//                          << std::endl;
+//                success = false;
+//                break;
 
 // ----------------------------------------------------------------------------
 bool vdb::options::parse_string_set(
