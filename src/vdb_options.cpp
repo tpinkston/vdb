@@ -6,12 +6,18 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
+namespace
+{
+    const bool OPTIONS_DEBUG = (getenv("VDB_OPTIONS_DEBUG") != 0);
+}
+
 namespace vdb
 {
     std::vector<std::string>
         options::command_arguments;
     std::set<std::string>
-        options::include_hostnames;
+        options::include_hostnames,
+        options::exclude_hostnames;
     std::set<vdis::id_t>
         options::include_entity_ids,
         options::exclude_entity_ids;
@@ -52,8 +58,6 @@ namespace vdb
         options::summary_lasers = false,
         options::summary_objects = false,
         options::summary_radios = false;
-    const bool
-        options::DEBUG = (getenv("VDB_OPTIONS_DEBUG") != 0);
 }
 
 // ----------------------------------------------------------------------------
@@ -80,7 +84,11 @@ bool vdb::options_t::parse(void)
     }
     else for(int i = 0; success and (i < count); ++i)
     {
-        LOG_VERBOSE("Current argument '%s'...", values[i].c_str());
+        if (OPTIONS_DEBUG)
+        {
+            std::cout << "DEBUG: values[" << i << "]='"
+                      << values[i] << "'" << std::endl;
+        }
 
         if (vdis::starts_with(values[i], "--"))
         {
@@ -98,15 +106,15 @@ bool vdb::options_t::parse(void)
                 ++i;
             }
         }
-        else
+        else if (i > 0)
         {
-            arguments.push_back(values[i]);
+            options::command_arguments.push_back(values[i]);
         }
     }
 
-    if (true) // TODO: DEBUG
+    if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse returning: "
+        std::cout << "DEBUG: parse: returning: "
                   << (success ? "true" : "false")
                   << std::endl;
     }
@@ -120,9 +128,8 @@ bool vdb::options_t::parse_long_option(int current)
     const std::string
         argument = std::string(values[current]).substr(2);
     std::string
-        name;
-    const char
-        *value = 0;
+        name,
+        value;
     std::string::size_type
         index = argument.find_first_of('=');
     bool
@@ -136,13 +143,13 @@ bool vdb::options_t::parse_long_option(int current)
     else
     {
         name = argument.substr(0, index);
-        value = argument.substr(index + 1).c_str();
+        value = argument.substr(index + 1);
     }
 
-    if (true) // TODO: DEBUG
+    if (OPTIONS_DEBUG)
     {
         std::cout << "DEBUG: parse_long_option: --" << name << "=\""
-                  << (value ? value : "null") << "\"" << std::endl;
+                  << value << "\"" << std::endl;
     }
 
     // Option search
@@ -155,15 +162,25 @@ bool vdb::options_t::parse_long_option(int current)
         {
             option_found = true;
 
-            if (option_ptr->value_required and not value)
+            if (OPTIONS_DEBUG)
+            {
+                std::cout << "DEBUG: parse_long_option: found: "
+                          << *option_ptr << std::endl;
+            }
+
+            if (option_ptr->needs_value and value.empty())
             {
                 std::cerr << command << ": option requires a value: --"
                           << name << std::endl;
-
+            }
+            else if (not option_ptr->needs_value and not value.empty())
+            {
+                std::cerr << command << ": option does not take a value: --"
+                          << name << std::endl;
             }
             else
             {
-                success = (*callback)(*option_ptr, value);
+                success = parse_option(*option_ptr, value);
             }
         }
     }
@@ -345,23 +362,36 @@ bool vdb::options_t::parse_long_option(int current)
 //    }
 
 // ----------------------------------------------------------------------------
+// Parses command line argument starting with a single dash like so: -cxR
+//
 bool vdb::options_t::parse_short_options(int current, int next, bool advance)
 {
     std::string
         argument = values[current].substr(1);
     bool
         option_found = false,
+        value_usable = false,
         success = true;
 
-    if (true) // TODO: DEBUG
+    if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_short_options: '" << values[current]
+        std::cout << "DEBUG: parse_short_options: parsing '" << values[current]
                   << "', '" << ((next > -1) ? values[next] : "null")
                   << "'" << std::endl;
     }
 
+    // Go through short options character by character.
+    //
     for(std::string::size_type i = 0; success and (i < argument.length()); ++i)
     {
+        if (OPTIONS_DEBUG)
+        {
+            std::cout << "DEBUG: parse_short_options: searching for '"
+                      << argument[i] << "'" << std::endl;
+        }
+
+        option_found = false;
+
         // Option search
         //
         for(uint32_t j = 0; (j < options.size()) and not option_found; ++j)
@@ -372,18 +402,32 @@ bool vdb::options_t::parse_short_options(int current, int next, bool advance)
             {
                 option_found = true;
 
-                if (option_ptr->value_required and (next < 0))
+                if (OPTIONS_DEBUG)
+                {
+                    std::cout << "DEBUG: parse_short_options: found: "
+                              << *option_ptr << std::endl;
+                }
+
+                // Value in the next argument is only usable if this option
+                // is the last character in the current argument.
+                //
+                value_usable =
+                    option_ptr->needs_value and
+                    (next > -1) and
+                    (i == (argument.length() - 1));
+
+                if (option_ptr->needs_value and not value_usable)
                 {
                     std::cerr << command << ": option requires a value: -"
                               << argument[i] << std::endl;
                 }
-                else if (next > -1)
+                else if (value_usable)
                 {
-                    success = (*callback)(*option_ptr, values[next].c_str());
+                    success = parse_option(*option_ptr, values[next]);
                 }
                 else
                 {
-                    success = (*callback)(*option_ptr, 0);
+                    success = parse_option(*option_ptr, std::string());
                 }
             }
         }
@@ -392,23 +436,112 @@ bool vdb::options_t::parse_short_options(int current, int next, bool advance)
         {
             std::cerr << command << ": invalid option: -"
                       << argument[i] << std::endl;
+
+            success = false;
         }
     }
 
     return success;
 }
 
+// ----------------------------------------------------------------------------
+bool vdb::options_t::parse_option(
+    const option_t &option,
+    const std::string &value)
+{
+    bool success = true;
+
+    switch(option.short_option)
+    {
+        case O_ADDRESS:
+            options::network_address = value;
+            break;
+        case O_COLOR:
+            color::set_enabled(false);
+            break;
+        case O_DUMP:
+            options::dump = true;
+            break;
+        case O_ERRORS:
+            logger::set_enabled(logger::ERROR, true);
+            break;
+        case O_EXERCISE:
+            success = parse_integers(value, options::include_exercises);
+            break;
+        case O_EXTRA:
+            options::extra = true;
+            break;
+        case O_EXTRACT:
+            options::extracted = true;
+            break;
+        case O_FAMILY:
+            success = parse_integers(value, options::include_families);
+            break;
+        case O_HELP:
+            options::help = true;
+            break;
+        case O_HOSTS:
+            success = parse_string_set(value, options::include_hostnames);
+            break;
+        case O_ID:
+            success = parse_entity_ids(value, options::include_entity_ids);
+            break;
+        case O_INTERFACE:
+            options::network_interface = value;
+            break;
+        case O_IPV6:
+            options::ipv6 = true;
+            break;
+        case O_PDU:
+            success = parse_uint64(value, options::pdu_interval);
+            break;
+        case O_TYPE:
+            success = parse_integers(value, options::include_types);
+            break;
+        case O_VERBOSE:
+            if (logger::is_enabled(logger::VERBOSE))
+            {
+                logger::set_enabled(logger::EXTRA_VERBOSE, true);
+            }
+            else
+            {
+                logger::set_enabled(logger::VERBOSE, true);
+            }
+            break;
+        case O_VERSION:
+            options::version = true;
+            break;
+        case O_WARNINGS:
+            logger::set_enabled(logger::WARNING, true);
+            break;
+        case O_XEXERCISE:
+            success = parse_integers(value, options::exclude_exercises);
+            break;
+        case O_XFAMILY:
+            success = parse_integers(value, options::exclude_families);
+            break;
+        case O_XHOSTS:
+            success = parse_string_set(value, options::exclude_hostnames);
+            break;
+        case O_XID:
+            success = parse_entity_ids(value, options::exclude_entity_ids);
+            break;
+        case O_XTYPE:
+            success = parse_integers(value, options::exclude_types);
+            break;
+        default:
+            success = (*callback)(option, value);
+    }
+
+    if (not success)
+    {
+        // TODO
+    }
+
+    return success;
+}
+
 // TODO: REMOVE
-//            case '6':
-//                ipv6 = true;
-//                break;
-//            case 'a':
-//                success = parse_string(
-//                    "-a",
-//                    next_argument,
-//                    network_address);
-//                advance = true;
-//                break;
 //            case 'A':
 //                summary_collisions = true;
 //                summary_emissions = true;
@@ -568,43 +701,30 @@ bool vdb::options_t::parse_short_options(int current, int next, bool advance)
 //                break;
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_string_set(
-    const char *name_ptr,
-    const char *value_ptr,
-    std::set<std::string> &set)
+bool vdb::options_t::parse_string_set(
+    const std::string &input,
+    std::set<std::string> &output)
 {
     std::vector<std::string>
         values;
     bool
         success = false;
 
-    if (not value_ptr)
+    vdis::tokenize_csv(input, values);
+
+    if (OPTIONS_DEBUG)
     {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+        std::cout << "DEBUG: parse_string_set: '" << input << "'" << std::endl;
     }
-    else
+
+    for(uint32_t i = 0; i < values.size(); ++i)
     {
-        vdis::tokenize_csv(std::string(value_ptr), values);
+        std::string value = vdis::trim(values[i]);
 
-        if (DEBUG)
+        if (not value.empty())
         {
-            std::cout << "DEBUG: parse_string_set: '" << name_ptr
-                      << "'='" << value_ptr << "'" << std::endl;
-        }
-
-        for(uint32_t i = 0; (i < values.size()) and not success; ++i)
-        {
-            if (not vdis::trim(values[i]).empty())
-            {
-                set.insert(values[i]);
-                success = true;
-            }
-        }
-
-        if (not success)
-        {
-            std::cerr << "vdb: invalid value for option: "
-                      << name_ptr << std::endl;
+            output.insert(value);
+            success = true;
         }
     }
 
@@ -612,7 +732,7 @@ bool vdb::options::parse_string_set(
 }
 
 // ----------------------------------------------------------------------------
-bool  vdb::options::parse_scans(
+bool vdb::options_t::parse_scans(
     const char *name_ptr,
     const std::set<std::string> &set)
 {
@@ -625,36 +745,36 @@ bool  vdb::options::parse_scans(
     {
         if (vdis::to_lowercase(*itor) == "associations")
         {
-            scan_associations = true;
+            options::scan_associations = true;
         }
         else if (vdis::to_lowercase(*itor) == "lasers")
         {
-            scan_lasers = true;
+            options::scan_lasers = true;
         }
         else if (vdis::to_lowercase(*itor) == "fires")
         {
-            scan_fires = true;
+            options::scan_fires = true;
         }
         else if (vdis::to_lowercase(*itor) == "collisions")
         {
-            scan_collisions = true;
+            options::scan_collisions = true;
         }
         else if (vdis::to_lowercase(*itor) == "entities")
         {
-            scan_entities = true;
+            options::scan_entities = true;
         }
         else if (vdis::to_lowercase(*itor) == "objects")
         {
-            scan_objects = true;
+            options::scan_objects = true;
         }
         else if (vdis::to_lowercase(*itor) == "all")
         {
-            scan_associations = true;
-            scan_lasers = true;
-            scan_fires = true;
-            scan_collisions = true;
-            scan_entities = true;
-            scan_objects = true;
+            options::scan_associations = true;
+            options::scan_lasers = true;
+            options::scan_fires = true;
+            options::scan_collisions = true;
+            options::scan_entities = true;
+            options::scan_objects = true;
         }
         else
         {
@@ -667,151 +787,130 @@ bool  vdb::options::parse_scans(
         ++itor;
     }
 
-    scanning = true;
+    options::scanning = true;
 
     return success;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_ids(
-    const char *name_ptr,
-    const char *value_ptr,
-    std::set<vdis::id_t> &ids)
+bool vdb::options_t::parse_entity_ids(
+    const std::string &input,
+    std::set<vdis::id_t> &output)
 {
     std::vector<std::string>
         values;
     bool
         success = true;
 
-    if (not value_ptr)
+    vdis::tokenize_csv(input, values);
+
+    if (OPTIONS_DEBUG)
     {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+        std::cout << "DEBUG: parse_entity_ids: '" << input << "'" << std::endl;
     }
-    else
+
+    for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
-        vdis::tokenize_csv(std::string(value_ptr), values);
-
-        if (DEBUG)
-        {
-            std::cout << "DEBUG: parse_entity_ids: '" << name_ptr
-                      << "'='" << value_ptr << "'" << std::endl;
-        }
-
-        for(uint32_t i = 0; success and (i < values.size()); ++i)
-        {
-            success = parse_entity_id(name_ptr, values[i].c_str(), ids);
-        }
+        success = parse_entity_id(values[i], output);
     }
 
     return success;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_entity_id(
-    const char *name_ptr,
-    const char *value_ptr,
-    std::set<vdis::id_t> &ids)
+bool vdb::options_t::parse_entity_id(
+    const std::string &input,
+    std::set<vdis::id_t> &output)
 {
+    std::vector<std::string>
+        tokens;
+    std::string
+        swapped = input;
+    uint32_t
+        id[3];
     bool
         success = false;
 
-    if (not value_ptr)
+    // Tokenization uses space character as delimiter, swap '.' with ' '
+    //
+    for(unsigned i = 0; i < swapped.length(); ++i)
     {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
+        swapped[i] = (swapped[i] == '.') ? ' ' : swapped[i];
+    }
+
+    if (vdis::tokenize(swapped, tokens) != 3)
+    {
+        std::cerr << command << ": expected entity ID fomat is '1.2.3' not '"
+                  << input << "'" << std::endl;
     }
     else
     {
-        std::vector<std::string>
-            tokens;
-        std::string
-            swapped = value_ptr;
-        uint32_t
-            id[3];
-
-        // Tokenization uses space character as delimiter, swap '.' with ' '
+        // Convert wildcards to the 'ALL' value
         //
-        for(unsigned i = 0; i < swapped.length(); ++i)
+        for(unsigned i = 0; i < 3; ++i)
         {
-            swapped[i] = (swapped[i] == '.') ? ' ' : swapped[i];
-        }
-
-        if (vdis::tokenize(swapped, tokens) != 3)
-        {
-            std::cerr << "vdb: expected entity ID in form '1.2.3' instead of '"
-                      << value_ptr << "'" << std::endl;
-        }
-        else
-        {
-            // Convert wildcards to the 'ALL' value
-            //
-            for(unsigned i = 0; i < 3; ++i)
+            if ((tokens[i] == "*") or (tokens[i] == "?"))
             {
-                if ((tokens[i] == "*") or (tokens[i] == "?"))
-                {
-                    tokens[i] = vdis::to_string((int)vdis::id_t::ALL);
-                }
+                tokens[i] = vdis::to_string((int)vdis::id_t::ALL);
             }
+        }
 
-            if (vdis::to_uint32(tokens[0], id[0]) and
-                vdis::to_uint32(tokens[1], id[1]) and
-                vdis::to_uint32(tokens[2], id[2]))
+        if (vdis::to_uint32(tokens[0], id[0]) and
+            vdis::to_uint32(tokens[1], id[1]) and
+            vdis::to_uint32(tokens[2], id[2]))
+        {
+            if ((id[0] >= 0) and (id[0] <= vdis::id_t::ALL) and
+                (id[1] >= 0) and (id[1] <= vdis::id_t::ALL) and
+                (id[2] >= 0) and (id[2] <= vdis::id_t::ALL))
             {
-                if ((id[0] >= 0) and (id[0] <= vdis::id_t::ALL) and
-                    (id[1] >= 0) and (id[1] <= vdis::id_t::ALL) and
-                    (id[2] >= 0) and (id[2] <= vdis::id_t::ALL))
-                {
-                    success = true;
-                }
-                else
-                {
-                    std::cerr << "vdb: value out of range in '" << value_ptr
-                              << "'" << std::endl;
-                }
+                success = true;
             }
             else
             {
-                std::cerr << "vdb: invalid value in '" << value_ptr
+                std::cerr << command << ": value out of range in '" << input
                           << "'" << std::endl;
-            }
-        }
-
-        if (success)
-        {
-            vdis::id_t entity_id = {
-                (uint16_t)id[0],
-                (uint16_t)id[1],
-                (uint16_t)id[2] };
-
-            ids.insert(entity_id);
-
-            if (DEBUG)
-            {
-                std::cout << "DEBUG: parse_entity_id: '"
-                          << value_ptr << "' -> " << entity_id << std::endl;
             }
         }
         else
         {
-            std::cerr << "vdb: option '" << name_ptr
-                      << "': invalid entity ID: " << value_ptr << std::endl;
+            std::cerr << command << ": invalid value in '" << input
+                      << "'" << std::endl;
         }
+    }
+
+    if (success)
+    {
+        vdis::id_t entity_id = {
+            (uint16_t)id[0],
+            (uint16_t)id[1],
+            (uint16_t)id[2] };
+
+        output.insert(entity_id);
+
+        if (OPTIONS_DEBUG)
+        {
+            std::cout << "DEBUG: parse_entity_id: '"
+                      << input << "' -> " << entity_id << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << command << ": invalid entity ID: " << input << std::endl;
     }
 
     return success;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_integers(
-    const char *name_ptr,
-    const char *value_ptr,
-    std::set<uint8_t> &set)
+bool vdb::options_t::parse_integers(
+    const std::string &input,
+    std::set<uint8_t> &output)
 {
     std::set<uint32_t>
         temp_set;
     bool
         success = parse_integers_in_range(
-            name_ptr,
-            value_ptr,
+            input,
             0,
             255,
             temp_set);
@@ -823,7 +922,7 @@ bool vdb::options::parse_integers(
 
         for(itor = temp_set.begin(); itor != temp_set.end(); ++itor)
         {
-            set.insert((uint8_t)*itor);
+            output.insert((uint8_t)*itor);
         }
     }
 
@@ -831,12 +930,11 @@ bool vdb::options::parse_integers(
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_integers_in_range(
-    const char *name_ptr,
-    const char *value_ptr,
+bool vdb::options_t::parse_integers_in_range(
+    const std::string &input,
     int64_t min,
     int64_t max,
-    std::set<uint32_t> &set)
+    std::set<uint32_t> &output)
 {
     std::vector<std::string>
         values,
@@ -844,27 +942,19 @@ bool vdb::options::parse_integers_in_range(
     bool
         success = true;
 
-    if (DEBUG)
+    if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_integers: " << name_ptr << "='"
-                  << (value_ptr ? value_ptr : "null") << "'" << std::endl;
+        std::cout << "DEBUG: parse_integers_in_range (" << min << "-" << max
+                  << "): '" << input << "'" << std::endl;
     }
 
-    if (value_ptr)
-    {
-        vdis::tokenize_csv(std::string(value_ptr), values);
-    }
-    else
-    {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
-        success = false;
-    }
+    vdis::tokenize_csv(input, values);
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
-        if (DEBUG)
+        if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: parse_integers: value '"
+            std::cout << "DEBUG: parse_integers_in_range: value '"
                       << values[i] << "'" << std::endl;
         }
 
@@ -872,12 +962,11 @@ bool vdb::options::parse_integers_in_range(
         //
         if (values[i].find('-') == std::string::npos)
         {
-            int64_t
-                value = 0;
+            int64_t value = 0;
 
             if (vdis::to_int64(values[i], value))
             {
-                if (DEBUG)
+                if (OPTIONS_DEBUG)
                 {
                     std::cout << "DEBUG: parse_integers: value "
                               << value << std::endl;
@@ -885,13 +974,13 @@ bool vdb::options::parse_integers_in_range(
 
                 if ((value < min) or (value > max))
                 {
-                    std::cerr << "vdb: value out of range: " << value
+                    std::cerr << command << ": value out of range: " << value
                               << " (" << min << "-" << max << ")" << std::endl;
                     success = false;
                 }
                 else
                 {
-                    set.insert((uint32_t)value);
+                    output.insert((uint32_t)value);
                 }
             }
         }
@@ -919,19 +1008,19 @@ bool vdb::options::parse_integers_in_range(
                 {
                     if ((value0 < min) or (value0 > max))
                     {
-                        std::cerr << "vdb: value out of range: " << value0
-                                  << " (" << min << "-" << max << ")"
+                        std::cerr << command << ": value out of range: "
+                                  << value0 << " (" << min << "-" << max << ")"
                                   << std::endl;
                     }
                     else if ((value1 < min) or (value1 > max))
                     {
-                        std::cerr << "vdb: value out of range: " << value1
-                                  << " (" << min << "-" << max << ")"
+                        std::cerr << command << ": value out of range: "
+                                  << value1 << " (" << min << "-" << max << ")"
                                   << std::endl;
                     }
                     else if (value0 >= value1)
                     {
-                        std::cerr << "vdb: invalid range: " << value0
+                        std::cerr << command << ": invalid range: " << value0
                                   << "-" << value1 << std::endl;
                     }
                     else
@@ -940,7 +1029,7 @@ bool vdb::options::parse_integers_in_range(
 
                         for(int64_t j = value0; j <= value1; ++j)
                         {
-                            set.insert(j);
+                            output.insert(j);
                         }
                     }
                 }
@@ -948,62 +1037,13 @@ bool vdb::options::parse_integers_in_range(
         }
     }
 
-    if (value_ptr and not success)
-    {
-        std::cerr << "vdb: option '" << name_ptr
-                  << "' invalid argument '" << value_ptr << "'" << std::endl;
-    }
-
     return success;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::options::parse_string(
-    const char *name_ptr,
-    const char *value_ptr,
-    std::string &value)
+bool vdb::options_t::parse_uint64(
+    const std::string &input,
+    uint64_t &output)
 {
-    bool
-        success = true;
-
-    if (value_ptr)
-    {
-        value = value_ptr;
-    }
-    else
-    {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
-    }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options::parse_uint64(
-    const char *name_ptr,
-    const char *value_ptr,
-    uint64_t &value)
-{
-    bool
-        success = false;
-
-    if (not value_ptr)
-    {
-        std::cerr << "vdb: option requires a value: " << name_ptr << std::endl;
-    }
-    else
-    {
-        std::string
-            string_value = value_ptr;
-
-        success = vdis::to_uint64(string_value, value);
-
-        if (not success)
-        {
-            std::cerr << "vdb: invalid value for option: "
-                      << name_ptr << std::endl;
-        }
-    }
-
-    return success;
+    return vdis::to_uint64(input, output);
 }

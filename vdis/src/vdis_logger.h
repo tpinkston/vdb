@@ -7,6 +7,7 @@
 #define LOG_VERBOSE(format, ...)        logger::log(logger::VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__);
 #define LOG_WARNING(format, ...)        logger::log(logger::WARNING, __FILE__, __LINE__, format, ##__VA_ARGS__);
 #define LOG_ERROR(format, ...)          logger::log(logger::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__);
+#define LOG_FATAL(format, ...)          logger::log(logger::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__);
 
 class logger
 {
@@ -14,6 +15,7 @@ class logger
 
     enum level_e
     {
+        FATAL = 0,
         ERROR = 1,
         WARNING = 2,
         VERBOSE = 3,

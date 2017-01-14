@@ -1,7 +1,7 @@
 #ifndef VDB_CAPTURE_H
 #define VDB_CAPTURE_H
 
-#include "vdb_system.h"
+#include "vdb_file_writer.h"
 
 #include "vdis_network.h"
 
@@ -12,43 +12,68 @@ namespace vdis
 
 namespace vdb
 {
-    class file_writer_t;
     class pdu_data_t;
 
-    class capture
+    class capture_t
     {
       public:
 
-        static int capture_pdus(void);
+        capture_t(void) :
+            capturing(false),
+            file_ptr(0),
+            socket_ptr(0),
+            port(0),
+            bytes_received(0),
+            bytes_accepted(0),
+            pdus_received(0),
+            pdus_accepted(0)
+        {
+
+        }
+
+        ~capture_t(void)
+        {
+            if (file_ptr)
+            {
+                delete file_ptr;
+                file_ptr = 0;
+            }
+
+            if (socket_ptr)
+            {
+                delete socket_ptr;
+                socket_ptr = 0;
+            }
+        }
+
+        int run(void);
+
+        bool
+            capturing;
 
       private:
 
-        static void open_socket(void);
-        static void close_socket(void);
+        void open_socket(void);
 
-        static void register_signal(void);
+        void register_signal(void);
 
-        static void start(void);
+        void start(void);
 
-        static void process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu);
+        void process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu);
 
-        static void print_stats(std::ostream &stream);
+        void print_stats(std::ostream &stream);
 
-        static void signal_handler(int value);
-
-        static file_writer_t
+        file_writer_t
             *file_ptr;
-        static vdis::receive_socket_t
+        vdis::receive_socket_t
             *socket_ptr;
-        static int32_t
+        int32_t
             port;
-        static uint32_t
+        uint32_t
             bytes_received,
             bytes_accepted,
             pdus_received,
             pdus_accepted;
-        static bool
-            capturing;
     };
 }
 

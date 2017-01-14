@@ -1,10 +1,10 @@
 #include "vdb_associations.h"
 #include "vdb_capture.h"
+#include "vdb_capture_help.h"
 #include "vdb_common.h"
 #include "vdb_entities.h"
 #include "vdb_file_stream.h"
 #include "vdb_file_types.h"
-#include "vdb_file_writer.h"
 #include "vdb_filter.h"
 #include "vdb_fires.h"
 #include "vdb_lasers.h"
@@ -17,99 +17,104 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-vdb::file_writer_t
-    *vdb::capture::file_ptr = 0;
-vdis::receive_socket_t
-    *vdb::capture::socket_ptr = 0;
-int32_t
-    vdb::capture::port = 0;
-uint32_t
-    vdb::capture::bytes_received = 0,
-    vdb::capture::bytes_accepted = 0,
-    vdb::capture::pdus_received = 0,
-    vdb::capture::pdus_accepted = 0;
-bool
-    vdb::capture::capturing = false;
+namespace
+{
+    vdb::capture_t
+        capture;
+}
 
-bool option_callback(const vdb::option_t &option, const char *value);
+bool option_callback(const vdb::option_t &option, const std::string &value);
+
+// ----------------------------------------------------------------------------
+void signal_handler(int value)
+{
+    capture.capturing = false;
+}
 
 // ----------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    vdb::options_t options("vdb-capture", argc, argv);
+    vdb::options_t
+        options("vdb-capture", argc, argv);
+    int
+        result = 1;
 
-    options.add(vdb::option_t("version",     'V', false));
-    options.add(vdb::option_t("help",        'h', false));
-    options.add(vdb::option_t("ipv6",        '6', false));
-    options.add(vdb::option_t("address",     'a', true));
-    options.add(vdb::option_t("interface",   'N', true));
-    options.add(vdb::option_t("extra",       'e', false));
-    options.add(vdb::option_t("extract",     'x', false));
-    options.add(vdb::option_t("dump",        'd', false));
-    options.add(vdb::option_t("color",       'c', false));
-    options.add(vdb::option_t("errors",      'E', false));
-    options.add(vdb::option_t("warnings",    'W', false));
-    options.add(vdb::option_t("verbose",     'v', false));
-    options.add(vdb::option_t("hostname",    'o', true));
-    options.add(vdb::option_t("xhostname",   'O', true));
-    options.add(vdb::option_t("exercise",    'y', true));
-    options.add(vdb::option_t("xexercise",   'Y', true));
-    options.add(vdb::option_t("type",        't', true));
-    options.add(vdb::option_t("xtype",       'T', true));
-    options.add(vdb::option_t("family",      'f', true));
-    options.add(vdb::option_t("xfamily",     'F', true));
-    options.add(vdb::option_t("id",          'i', true));
-    options.add(vdb::option_t("xid",         'I', true));
+    options.add(OPTION_ADDRESS);
+    options.add(OPTION_INTERFACE);
+    options.add(OPTION_IPV6);
+    options.add(OPTION_COLOR);
+    options.add(OPTION_DUMP);
+    options.add(OPTION_ERRORS);
+    options.add(OPTION_EXTRA);
+    options.add(OPTION_EXTRACT);
+    options.add(OPTION_HELP);
+    options.add(OPTION_VERBOSE);
+    options.add(OPTION_VERSION);
+    options.add(OPTION_WARNINGS);
+    options.add(OPTION_HOSTNAME);
+    options.add(OPTION_XHOSTNAME);
+    options.add(OPTION_EXERCISE);
+    options.add(OPTION_XEXERCISE);
+    options.add(OPTION_TYPE);
+    options.add(OPTION_XTYPE);
+    options.add(OPTION_FAMILY);
+    options.add(OPTION_XFAMILY);
+    options.add(OPTION_ID);
+    options.add(OPTION_XID);
 
     options.set_callback(*option_callback);
 
     if (options.parse())
     {
-        std::cout << "done" << std::endl;
+        if (vdb::options::version)
+        {
+            print_vdb_version();
+            result = 0;
+        }
+        else if (vdb::options::help)
+        {
+            print_help();
+            result = 0;
+        }
+        else
+        {
+            result = capture.run();
+        }
     }
 
-    return 0;
+    return result;
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(const vdb::option_t &option, const char *value)
+bool option_callback(const vdb::option_t &option, const std::string &value)
 {
-    std::cout << option.long_option << "=" << (value ? value : "null") << std::endl;
-    return true;
+    std::cout << "vdb-capture: unexpected argument: " << option << std::endl;
+    return false;
 }
 
 // ----------------------------------------------------------------------------
-int vdb::capture::capture_pdus(void)
+int vdb::capture_t::run(void)
 {
     int
-        result = 0;
+        result = 1;
 
     // Port argument (1st) required, file argument (2nd) optional
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb capture: missing port argument" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-capture: missing port argument" << std::endl;
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb capture: too many arguments" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-capture: too many arguments" << std::endl;
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << "vdb capture: invalid port argument '"
+        std::cerr << "vdb-capture: invalid port argument '"
                   << options::command_arguments[0] << "'" << std::endl;
-
-        result = 1;
     }
     else
     {
-        std::string
-            filename;
-
         capturing = true;
 
         // Was filename provided?  If so check overwrite and open it for
@@ -117,17 +122,16 @@ int vdb::capture::capture_pdus(void)
         //
         if (options::options::command_arguments.size() > 1)
         {
+            std::string
+                filename = options::command_arguments[1];
             struct stat
                 file_stat;
-
-            filename = options::command_arguments[1];
 
             LOG_VERBOSE("Checking file '%s'...", filename.c_str());
 
             if (stat(filename.c_str(), &file_stat) == 0)
             {
                 std::cout << "Overwrite '" << filename << "'? ";
-
                 capturing = user_confirmation();
             }
 
@@ -147,15 +151,7 @@ int vdb::capture::capture_pdus(void)
             register_signal();
             start();
             print_stats(std::cout);
-            close_socket();
-
-            // Close output file.
-            //
-            if (file_ptr)
-            {
-                delete file_ptr;
-                file_ptr = 0;
-            }
+            result = 0;
         }
     }
 
@@ -163,7 +159,7 @@ int vdb::capture::capture_pdus(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::capture::open_socket(void)
+void vdb::capture_t::open_socket(void)
 {
     const char
         *address_ptr = 0;
@@ -180,18 +176,9 @@ void vdb::capture::open_socket(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::capture::close_socket(void)
-{
-    // Actual closing of the socket is handled in destructor
-    //
-    delete socket_ptr;
-    socket_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
 // Register handler for the interrupt signal.
 //
-void vdb::capture::register_signal(void)
+void vdb::capture_t::register_signal(void)
 {
     struct sigaction
         action;
@@ -204,7 +191,7 @@ void vdb::capture::register_signal(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::capture::start(void)
+void vdb::capture_t::start(void)
 {
     uint32_t
         index_counter = 0;
@@ -284,7 +271,7 @@ void vdb::capture::start(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
+void vdb::capture_t::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
 {
     if (file_ptr)
     {
@@ -330,7 +317,7 @@ void vdb::capture::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::capture::print_stats(std::ostream &stream)
+void vdb::capture_t::print_stats(std::ostream &stream)
 {
     stream << std::endl
            << "Summary for port " << port << ": " << std::endl
@@ -338,10 +325,4 @@ void vdb::capture::print_stats(std::ostream &stream)
            << " (" << bytes_received << " bytes)" << std::endl
            << "PDUs accepted: " << pdus_accepted
            << " (" << bytes_accepted << " bytes)" << std::endl;
-}
-
-// ----------------------------------------------------------------------------
-void vdb::capture::signal_handler(int value)
-{
-    capturing = false;
 }

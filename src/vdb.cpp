@@ -12,7 +12,6 @@
 #include "vdis_object_types.h"
 #include "vdis_services.h"
 
-void print_version(void);
 void print_help(void);
 
 // ----------------------------------------------------------------------------
@@ -83,18 +82,6 @@ int main(int argc, char *argv[])
 //    }
 
     return result;
-}
-
-// ----------------------------------------------------------------------------
-void print_version(void)
-{
-    // The macros printed here are available in headers that get generated
-    // during build.
-    //
-    std::cout << "V-DIS Debugger (vdb) Version "
-              << (int)VDB_VERSION_MAJOR << "." << (int)VDB_VERSION_MINOR
-              << " [" << VDB_GIT_BRANCH << "-" << VDB_GIT_COMMIT
-              << " " << __DATE__ << "]" << std::endl;
 }
 
 // ----------------------------------------------------------------------------
