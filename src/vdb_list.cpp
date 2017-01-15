@@ -7,42 +7,117 @@
 #include "vdb_fires.h"
 #include "vdb_lasers.h"
 #include "vdb_list.h"
+#include "vdb_list_help.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
+#include "vdb_version.h"
 
+#include "vdis_entity_types.h"
 #include "vdis_enums.h"
-#include "vdis_pdus.h"
 #include "vdis_logger.h"
+#include "vdis_pdus.h"
+#include "vdis_object_types.h"
 
-vdb::file_writer_t
-    *vdb::list::file_ptr = 0;
-uint32_t
-    vdb::list::output_index = 0,
-    vdb::list::pdus_listed = 0,
-    vdb::list::pdus_filtered_out = 0;
+namespace
+{
+    vdb::list_t
+        list;
+}
+
+bool option_callback(const vdb::option_t &option, const std::string &value);
 
 // ----------------------------------------------------------------------------
-int vdb::list::list_pdus(void)
+int main(int argc, char *argv[])
+{
+    vdb::options_t
+        options("vdb-list", argc, argv);
+    int
+        result = 1;
+
+    options.add(OPTION_EXTRA);
+    options.add(OPTION_EXTRACT);
+    options.add(OPTION_DUMP);
+    options.add(OPTION_COLOR);
+    options.add(OPTION_ERRORS);
+    options.add(OPTION_WARNINGS);
+    options.add(OPTION_VERBOSE);
+    options.add(vdb::option_t("output", 'o', true));
+    options.add(OPTION_HOSTNAME);
+    options.add(OPTION_XHOSTNAME);
+    options.add(OPTION_EXERCISE);
+    options.add(OPTION_XEXERCISE);
+    options.add(OPTION_TYPE);
+    options.add(OPTION_XTYPE);
+    options.add(OPTION_FAMILY);
+    options.add(OPTION_XFAMILY);
+    options.add(OPTION_ID);
+    options.add(OPTION_XID);
+    options.add(OPTION_RANGE);
+    options.add(OPTION_HELP);
+    options.add(OPTION_VERSION);
+
+    options.set_callback(*option_callback);
+
+    if (options.parse())
+    {
+        if (vdb::options::version)
+        {
+            print_vdb_version();
+            result = 0;
+        }
+        else if (vdb::options::help)
+        {
+            print_help();
+            result = 0;
+        }
+        else
+        {
+            result = list.run();
+        }
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+bool option_callback(const vdb::option_t &option, const std::string &value)
+{
+    bool success = true;
+
+    if (option.short_option == 'o')
+    {
+        list.output_file = value;
+    }
+    else
+    {
+        std::cerr << "vdb-list: unexpected argument: "
+                  << option << std::endl;
+        success = false;
+    }
+
+    return false;
+}
+
+// ----------------------------------------------------------------------------
+int vdb::list_t::run(void)
 {
     std::string
         filename;
     file_reader_t
         *reader_ptr = 0;
     int
-        result = 0;
+        result = 1;
 
     // File argument required
     //
     if (options::command_arguments.empty())
     {
         std::cerr << "vdb list: missing file argument" << std::endl;
-        result = 1;
     }
     else if (options::command_arguments.size() > 1)
     {
         std::cerr << "vdb list: too many arguments" << std::endl;
-        result = 1;
     }
     else
     {
@@ -51,28 +126,20 @@ int vdb::list::list_pdus(void)
         filename = options::command_arguments[0];
         reader_ptr = new standard_reader_t(filename);
 
-        if (not reader_ptr->good())
-        {
-            result = 1;
-        }
-        else
+        if (reader_ptr->good())
         {
             bool listing = true;
 
-            if (not options::output_file.empty())
+            if (not output_file.empty())
             {
                 struct stat
                     file_stat;
 
-                LOG_VERBOSE(
-                    "Checking file '%s'...",
-                    options::output_file.c_str());
+                LOG_VERBOSE("Checking file '%s'...", output_file.c_str());
 
-                if (stat(options::output_file.c_str(), &file_stat) == 0)
+                if (stat(output_file.c_str(), &file_stat) == 0)
                 {
-                    std::cout << "Overwrite '"
-                              << options::output_file << "'? ";
-
+                    std::cout << "Overwrite '" << output_file << "'? ";
                     listing = user_confirmation();
                 }
 
@@ -81,9 +148,7 @@ int vdb::list::list_pdus(void)
                     std::string
                         comment = ("List output from '" + filename + "'");
 
-                    file_ptr = new file_writer_t(
-                        options::output_file,
-                        &comment);
+                    file_ptr = new file_writer_t(output_file, &comment);
 
                     // Ensure that file was successfully opened.
                     //
@@ -91,23 +156,19 @@ int vdb::list::list_pdus(void)
                 }
             }
 
-            if (listing and (result == 0))
+            if (listing)
             {
-                if (not reader_ptr->parse(process_pdu_data))
+                vdis::set_byteswapping();
+                vdis::enumerations::load();
+                vdis::entity_types::load();
+                vdis::object_types::load();
+
+                if (reader_ptr->parse(this))
                 {
-                    result = 1;
-                }
-                else
-                {
+                    result = 0;
                     LOG_VERBOSE("PDUs listed: %d...", pdus_listed);
                     LOG_VERBOSE("PDUs filtered out: %d...", pdus_filtered_out);
                 }
-            }
-
-            if (file_ptr)
-            {
-                delete file_ptr;
-                file_ptr = 0;
             }
         }
 
@@ -119,7 +180,7 @@ int vdb::list::list_pdus(void)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::list::process_pdu_data(const pdu_data_t &data)
+bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
 {
     bool
         processed = false,

@@ -19,16 +19,15 @@ vdb::file_reader_t::~file_reader_t(void)
 }
 
 // ----------------------------------------------------------------------------
-// Starts the parsing of the file.  Input is a function pointer for
-// callback handler for PDUs read from the file.  Callback function
-// should return false when file parsing need not continue (true
-// to keep parsing).
+// Starts the parsing of the file.  Input is a pointer to a callback
+// for PDUs read from the file.  Callback function should return false when
+// file parsing need not continue (true to keep parsing).
 //
 // This method returns true if no errors occurred during parsing.
 //
-bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
+bool vdb::file_reader_t::parse(file_read_callback_t *callback_ptr)
 {
-    if (callback)
+    if (callback_ptr)
     {
         const uint64_t
             start_time = vdis::get_system_time();
@@ -43,7 +42,7 @@ bool vdb::file_reader_t::parse(bool (*callback)(const pdu_data_t &))
         {
             if (data.has_pdu())
             {
-                parsing = callback(data);
+                parsing = callback_ptr->process_pdu_data(data);
             }
         }
 

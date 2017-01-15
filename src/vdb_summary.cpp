@@ -330,7 +330,7 @@ int vdb::summary::summarize_pdus(void)
                 //
                 print_results(std::cout);
             }
-            else if (reader_ptr->parse(process_pdu_data))
+            else if (true) // TODO reader_ptr->parse(process_pdu_data))
             {
                 print_results(std::cout);
             }

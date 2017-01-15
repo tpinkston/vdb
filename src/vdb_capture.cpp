@@ -13,7 +13,9 @@
 #include "vdb_print.h"
 #include "vdb_version.h"
 
+#include "vdis_entity_types.h"
 #include "vdis_logger.h"
+#include "vdis_object_types.h"
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
@@ -42,14 +44,11 @@ int main(int argc, char *argv[])
     options.add(OPTION_ADDRESS);
     options.add(OPTION_INTERFACE);
     options.add(OPTION_IPV6);
-    options.add(OPTION_COLOR);
-    options.add(OPTION_DUMP);
-    options.add(OPTION_ERRORS);
     options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
-    options.add(OPTION_HELP);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_VERSION);
+    options.add(OPTION_DUMP);
+    options.add(OPTION_COLOR);
+    options.add(OPTION_ERRORS);
     options.add(OPTION_WARNINGS);
     options.add(OPTION_HOSTNAME);
     options.add(OPTION_XHOSTNAME);
@@ -61,6 +60,9 @@ int main(int argc, char *argv[])
     options.add(OPTION_XFAMILY);
     options.add(OPTION_ID);
     options.add(OPTION_XID);
+    options.add(OPTION_HELP);
+    options.add(OPTION_VERBOSE);
+    options.add(OPTION_VERSION);
 
     options.set_callback(*option_callback);
 
@@ -88,15 +90,14 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------
 bool option_callback(const vdb::option_t &option, const std::string &value)
 {
-    std::cout << "vdb-capture: unexpected argument: " << option << std::endl;
+    std::cerr << "vdb-capture: unexpected argument: " << option << std::endl;
     return false;
 }
 
 // ----------------------------------------------------------------------------
 int vdb::capture_t::run(void)
 {
-    int
-        result = 1;
+    int result = 1;
 
     // Port argument (1st) required, file argument (2nd) optional
     //
@@ -147,6 +148,11 @@ int vdb::capture_t::run(void)
 
         if (capturing)
         {
+            vdis::set_byteswapping();
+            vdis::enumerations::load();
+            vdis::entity_types::load();
+            vdis::object_types::load();
+
             open_socket();
             register_signal();
             start();

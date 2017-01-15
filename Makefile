@@ -2,9 +2,10 @@ SRC_PATH=src
 OBJ_PATH=obj
 BIN_PATH=bin
 HELP_PATH=help
-VDIS=vdis/libvdis.a
-TARGET=$(BIN_PATH)/vdb
+VDIS_LIB=vdis/libvdis.a
 TARGET_CAPTURE=$(BIN_PATH)/vdb-capture
+TARGET_LIST=$(BIN_PATH)/vdb-list
+TARGET_PLAYBACK=$(BIN_PATH)/vdb-playback
 
 CPP=g++
 CPP_FLAGS=-g -fPIC -std=c++0x -Wall -Ivdis/src -Ivdis/enumerations
@@ -34,33 +35,33 @@ $(OBJ_PATH)/vdb_file_writer.o \
 $(OBJ_PATH)/vdb_filter.o \
 $(OBJ_PATH)/vdb_fires.o \
 $(OBJ_PATH)/vdb_lasers.o \
-$(OBJ_PATH)/vdb_list.o \
 $(OBJ_PATH)/vdb_options.o \
 $(OBJ_PATH)/vdb_pdu_data.o \
-$(OBJ_PATH)/vdb_playback.o \
 $(OBJ_PATH)/vdb_print.o \
 $(OBJ_PATH)/vdb_summary.o
 
-all: directories version $(HELP_FILES)
-	@cd vdis; $(MAKE) --no-print-directory
-	@$(MAKE) --no-print-directory $(TARGET)
-	@$(MAKE) --no-print-directory $(TARGET_CAPTURE)
+all: $(TARGET_CAPTURE) $(TARGET_LIST) $(TARGET_PLAYBACK)
+.PHONY : all
 
 version:
 	@echo "version: ${GIT_BRANCH}-${GIT_COMMIT}"
 	@cp ${SRC_PATH}/vdb_git.h.in ${SRC_PATH}/vdb_git.h
 	@sed -i 's/VDB_GIT_BRANCH.*/VDB_GIT_BRANCH "${GIT_BRANCH}"/' ${SRC_PATH}/vdb_git.h
 	@sed -i 's/VDB_GIT_COMMIT.*/VDB_GIT_COMMIT "${GIT_COMMIT}"/' ${SRC_PATH}/vdb_git.h
+.PHONY : version
 
-clean:
-	@cd vdis; $(MAKE) --no-print-directory clean
+clean: clean_vdis
 	@rm -fv ${SRC_PATH}/vdb_git.h
 	@rm -fv $(HELP_FILES)
 	@rm -rfv $(BIN_PATH)
 	@rm -rfv $(OBJ_PATH)
-	@rm -fv $(TARGET)
 	@rm -fv $(TARGET_CAPTURE)
+	@rm -fv $(TARGET_LIST)
+	@rm -fv $(TARGET_PLAYBACK)
 .PHONY : clean
+
+target_depends: vdis directories version $(HELP_FILES) $(OBJECTS) ${SRC_PATH}/vdb_git.h ${SRC_PATH}/vdb_version.h
+.PHONY : target_depends
 
 #### Directories:
 
@@ -71,13 +72,24 @@ $(OBJ_PATH):
 $(BIN_PATH):
 	@mkdir -pv $(BIN_PATH)
 
+# VDIS library:
+vdis: $(VDIS_LIB)
+$(VDIS_LIB):
+	@cd vdis; $(MAKE) --no-print-directory all
+clean_vdis:
+	@cd vdis; $(MAKE) --no-print-directory clean
+.PHONY : clean_vdis
+
 #### Target executables:
-$(TARGET): $(OBJECTS) ${SRC_PATH}/vdb_version.h ${SRC_PATH}/vdb_git.h $(SRC_PATH)/vdb.cpp
-	@echo linking: $(TARGET)
-	@$(CPP) $(CPP_FLAGS) $(SRC_PATH)/vdb.cpp -o $(TARGET) $(OBJECTS) $(VDIS)
-$(TARGET_CAPTURE): $(OBJECTS) ${SRC_PATH}/vdb_version.h ${SRC_PATH}/vdb_git.h $(SRC_PATH)/vdb_capture.cpp
-	@echo linking: $(TARGET_CAPTURE)
-	@$(CPP) $(CPP_FLAGS) ${SRC_PATH}/vdb_capture.cpp -o $(TARGET_CAPTURE) $(OBJECTS) $(VDIS)
+$(TARGET_CAPTURE): target_depends $(SRC_PATH)/vdb_capture.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_capture.cpp
+$(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_list.cpp
+$(TARGET_PLAYBACK): target_depends $(SRC_PATH)/vdb_playback.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_playback.cpp
 
 #### Help files:
 ${SRC_PATH}/vdb_capture_help.h:

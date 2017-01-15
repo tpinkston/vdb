@@ -3,10 +3,9 @@ a capture file (if filename is provided as argument).
 
 Usage: vdb-capture [OPTIONS] PORT [FILE]
 
-  -6 --ipv6             Use IPv6
   -a --address=A        Use IP address, e.g. 192.168.1.123
   -N --interface=I      Use network interface, e.g. 'eth0'
-
+  -6 --ipv6             Use IPv6
   -e --extra            Print extra information (if applicable)
   -x --extract          Print full PDU data extraction (overrides -e)
   -d --dump             Print PDU hex dump (overrides -e and -x)
@@ -14,7 +13,7 @@ Usage: vdb-capture [OPTIONS] PORT [FILE]
   -E --errors           Show errors
   -W --warnings         Show warnings
   -v --verbose          Verbose (-vv for extra verbose)
-  
+
      --hostname=H1,...  Include PDUs from specified host(s)
      --xhostname=H1,... Exclude PDUs from specified host(s)
      --exercise=E1,...  Include PDUs with exercise number(s) (numeric)

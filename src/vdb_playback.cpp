@@ -1,62 +1,143 @@
 #include "vdb_common.h"
-#include "vdb_file_reader.h"
 #include "vdb_filter.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_playback.h"
+#include "vdb_playback_help.h"
 #include "vdb_print.h"
+#include "vdb_version.h"
 
+#include "vdis_entity_types.h"
 #include "vdis_logger.h"
 #include "vdis_network.h"
+#include "vdis_object_types.h"
 #include "vdis_pdus.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
 
-vdis::send_socket_t
-    *vdb::playback::socket_ptr;
-int32_t
-    vdb::playback::port = 0;
-uint32_t
-    vdb::playback::bytes_sent = 0,
-    vdb::playback::pdus_sent = 0;
-uint64_t
-    vdb::playback::capture_start_time = 0,
-    vdb::playback::playback_start_time = 0;
-bool
-    vdb::playback::started = false,
-    vdb::playback::playing_back = false;
+namespace
+{
+    vdb::playback_t
+        playback;
+}
+
+bool option_callback(const vdb::option_t &option, const std::string &value);
 
 // ----------------------------------------------------------------------------
-int vdb::playback::playback_pdus(void)
+void signal_handler(int value)
 {
-    int result = 0;
+    playback.playing_back = false;
+}
+
+// ----------------------------------------------------------------------------
+int main(int argc, char *argv[])
+{
+    vdb::options_t
+        options("vdb-playback", argc, argv);
+    int
+        result = 1;
+
+    options.add(vdb::option_t("pdu", 'P', true));
+    options.add(OPTION_ADDRESS);
+    options.add(OPTION_INTERFACE);
+    options.add(OPTION_IPV6);
+    options.add(OPTION_EXTRA);
+    options.add(OPTION_EXTRACT);
+    options.add(OPTION_DUMP);
+    options.add(OPTION_COLOR);
+    options.add(OPTION_ERRORS);
+    options.add(OPTION_WARNINGS);
+    options.add(OPTION_HOSTNAME);
+    options.add(OPTION_XHOSTNAME);
+    options.add(OPTION_EXERCISE);
+    options.add(OPTION_XEXERCISE);
+    options.add(OPTION_TYPE);
+    options.add(OPTION_XTYPE);
+    options.add(OPTION_FAMILY);
+    options.add(OPTION_XFAMILY);
+    options.add(OPTION_ID);
+    options.add(OPTION_XID);
+    options.add(OPTION_HELP);
+    options.add(OPTION_VERBOSE);
+    options.add(OPTION_VERSION);
+
+    options.set_callback(*option_callback);
+
+    if (options.parse())
+    {
+        if (vdb::options::version)
+        {
+            print_vdb_version();
+            result = 0;
+        }
+        else if (vdb::options::help)
+        {
+            print_help();
+            result = 0;
+        }
+        else
+        {
+            result = playback.run();
+        }
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+bool option_callback(const vdb::option_t &option, const std::string &value)
+{
+    bool success = true;
+
+    if (option.short_option == 'P')
+    {
+        uint64_t interval;
+
+        success = vdis::to_uint64(value, interval);
+
+        if (success)
+        {
+            playback.set_pdu_interval(interval);
+        }
+        else
+        {
+            std::cerr << "vdb-playback: invalid value for PDU interval: "
+                      << value << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "vdb-playback: unexpected argument: "
+                  << option << std::endl;
+        success = false;
+    }
+
+    return false;
+}
+
+// ----------------------------------------------------------------------------
+int vdb::playback_t::run(void)
+{
+    int result = 1;
 
     // Port argument (1st) required, file argument (2nd) required
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb playback: missing playback arguments" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-playback: missing playback arguments" << std::endl;
     }
     else if (options::command_arguments.size() < 2)
     {
-        std::cerr << "vdb playback: too few arguments" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-playback: too few arguments" << std::endl;
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb playback: too many arguments" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-playback: too many arguments" << std::endl;
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << "vdb playback: invalid port argument '"
+        std::cerr << "vdb-playback: invalid port argument '"
                   << options::command_arguments[0] << "'" << std::endl;
-
-        result = 1;
     }
     else
     {
@@ -67,9 +148,9 @@ int vdb::playback::playback_pdus(void)
 
         LOG_EXTRA_VERBOSE("Starting playback...");
 
-        if (options::pdu_interval > 0)
+        if (pdu_interval > 0)
         {
-            reader_ptr = new pdu_reader_t(filename, options::pdu_interval);
+            reader_ptr = new pdu_reader_t(filename, pdu_interval);
         }
         else
         {
@@ -82,21 +163,23 @@ int vdb::playback::playback_pdus(void)
         }
         else
         {
+            vdis::set_byteswapping();
+            vdis::enumerations::load();
+            vdis::entity_types::load();
+            vdis::object_types::load();
+
             open_socket();
             register_signal();
 
+            capture_start_time = 0;
+            playback_start_time = 0;
             playing_back = true;
 
-            if (not reader_ptr->parse(process_pdu_data))
-            {
-                result = 1;
-            }
-            else
+            if (reader_ptr->parse(this))
             {
                 print_stats(std::cout);
+                result = 0;
             }
-
-            close_socket();
         }
 
         delete reader_ptr;
@@ -107,7 +190,7 @@ int vdb::playback::playback_pdus(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::open_socket(void)
+void vdb::playback_t::open_socket(void)
 {
     const char
         *address_ptr = 0;
@@ -126,16 +209,7 @@ void vdb::playback::open_socket(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::close_socket(void)
-{
-    // Actual closing of the socket is handled in destructor
-    //
-    delete socket_ptr;
-    socket_ptr = 0;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::playback::process_pdu_data(const pdu_data_t &data)
+bool vdb::playback_t::process_pdu_data(const pdu_data_t &data)
 {
     bool
         past_end = false;
@@ -163,7 +237,7 @@ bool vdb::playback::process_pdu_data(const pdu_data_t &data)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::send_pdu(
+void vdb::playback_t::send_pdu(
     const pdu_data_t &pdu_data,
     const vdis::pdu_t &pdu)
 {
@@ -172,7 +246,7 @@ void vdb::playback::send_pdu(
         pdu_data.get_pdu_length(),
         false);
 
-    if (not started)
+    if (capture_start_time == 0)
     {
         // First PDU to send marks the start times.
         //
@@ -204,14 +278,12 @@ void vdb::playback::send_pdu(
     print::print_pdu(pdu_data, pdu, std::cout);
 
     socket_ptr->send(pdu_buffer);
-
-    started = true;
 }
 
 // ----------------------------------------------------------------------------
 // Register handler for the interrupt signal.
 //
-void vdb::playback::register_signal(void)
+void vdb::playback_t::register_signal(void)
 {
     struct sigaction
         action;
@@ -224,16 +296,9 @@ void vdb::playback::register_signal(void)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::playback::print_stats(std::ostream &stream)
+void vdb::playback_t::print_stats(std::ostream &stream)
 {
     stream << std::endl
            << "PDUs sent: " << std::fixed << pdus_sent
            << " (" << std::fixed << bytes_sent << " bytes)" << std::endl;
-}
-
-
-// ----------------------------------------------------------------------------
-void vdb::playback::signal_handler(int value)
-{
-    playing_back = false;
 }

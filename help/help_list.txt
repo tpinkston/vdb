@@ -1,6 +1,14 @@
 Lists saved VDIS traffic in capture file. 
 
 Usage: vdb-list [OPTIONS] FILE
+
+  -e --extra            Print extra information (if applicable)
+  -x --extract          Print full PDU data extraction (overrides -e)
+  -d --dump             Print PDU hex dump (overrides -e and -x)
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)
   
   -o --output=FILE      Write listed (filtered) PDUs to output file.
   
@@ -24,11 +32,4 @@ Usage: vdb-list [OPTIONS] FILE
      --scan=objects
   -A --scan=all
 
-  -e --extra            Print extra information (if applicable)
-  -x --extract          Print full PDU data extraction (overrides -e)
-  -d --dump             Print PDU hex dump (overrides -e and -x)
-  -c --color            Suppress colored output
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -v --verbose          Verbose (-vv for extra verbose)
   

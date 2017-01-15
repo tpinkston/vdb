@@ -4,6 +4,7 @@
 // C++ headers
 #include <algorithm>
 #include <cerrno>
+#include <climits>
 #include <cmath>
 #include <csignal>
 #include <cstdarg>

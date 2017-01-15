@@ -21,7 +21,7 @@
 #define O_ID            'i'
 #define O_INTERFACE     'N'
 #define O_IPV6          '6'
-#define O_PDU           'P'
+#define O_RANGE         'r'
 #define O_TYPE          't'
 #define O_VERBOSE       'v'
 #define O_VERSION       'V'
@@ -45,7 +45,7 @@
 #define OPTION_ID           vdb::option_t("id",          O_ID,          true)
 #define OPTION_INTERFACE    vdb::option_t("interface",   O_INTERFACE,   true)
 #define OPTION_IPV6         vdb::option_t("ipv6",        O_IPV6,        false)
-#define OPTION_PDU          vdb::option_t("pdu",         O_PDU,         true)
+#define OPTION_RANGE        vdb::option_t("range",       O_RANGE,       true)
 #define OPTION_TYPE         vdb::option_t("type",        O_TYPE,        true)
 #define OPTION_VERBOSE      vdb::option_t("verbose",     O_VERBOSE,     false)
 #define OPTION_VERSION      vdb::option_t("version",     O_VERSION,     false)
@@ -85,17 +85,14 @@ namespace vdb
 
         options_t(const char *command, int argc, char *argv[]);
 
+        // Adds usable option for provided command.
+        //
+        void add(option_t option);
+
         // Parse options, return true if all options provided in 'argv'
         // are valid.
         //
         bool parse(void);
-
-        // Adds usable option for provided command.
-        //
-        inline void add(option_t option)
-        {
-            options.push_back(option);
-        }
 
         // Sets callback used when option cannot be handled by this class.
         //
@@ -109,7 +106,7 @@ namespace vdb
       private:
 
         bool parse_long_option(int current);
-        bool parse_short_options(int current, int next, bool advance);
+        bool parse_short_options(int current, int next, bool &advance);
         bool parse_option(const option_t &option, const std::string &value);
 
         bool parse_string_set(
@@ -184,11 +181,8 @@ namespace vdb
         static std::set<uint32_t>
             pdu_index_range;
         static std::string
-            output_file,
             network_address,
             network_interface;
-        static uint64_t
-            pdu_interval;
         static bool
             initialized,
             all,

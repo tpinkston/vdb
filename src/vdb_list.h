@@ -1,6 +1,8 @@
 #ifndef VDB_LIST_H
 #define VDB_LIST_H
 
+#include "vdb_file_reader.h"
+
 namespace vdb
 {
     class file_writer_t;
@@ -9,21 +11,39 @@ namespace vdb
     // Lists PDUs in a capture file and optionally outputs PDUs to a separate
     // capture file which is useful when filtering.
     //
-    class list
+    class list_t : file_read_callback_t
     {
       public:
 
-        // Returns 0 on success, 1 on error
-        //
-        static int list_pdus(void);
+        list_t(void) :
+            file_ptr(0),
+            output_index(0),
+            pdus_listed(0),
+            pdus_filtered_out(0)
+        {
+
+        }
+
+        ~list_t(void)
+        {
+            if (file_ptr)
+            {
+                delete file_ptr;
+                file_ptr = 0;
+            }
+        }
+
+        int run(void);
+
+        std::string output_file;
 
       protected:
 
-        static bool process_pdu_data(const pdu_data_t &data);
+        bool process_pdu_data(const pdu_data_t &data);
 
-        static file_writer_t
+        file_writer_t
             *file_ptr;
-        static uint32_t
+        uint32_t
             output_index,
             pdus_listed,
             pdus_filtered_out;

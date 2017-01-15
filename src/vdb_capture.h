@@ -48,8 +48,7 @@ namespace vdb
 
         int run(void);
 
-        bool
-            capturing;
+        bool capturing;
 
       private:
 

@@ -9,6 +9,16 @@
 namespace vdb
 {
     // ------------------------------------------------------------------------
+    class file_read_callback_t
+    {
+      public:
+
+        virtual bool process_pdu_data(const pdu_data_t &) = 0;
+
+        virtual ~file_read_callback_t(void) { }
+    };
+
+    // ------------------------------------------------------------------------
     // Abstract reader for capture files
     //
     class file_reader_t
@@ -28,7 +38,7 @@ namespace vdb
         //
         bool error(void) const { return error_condition; }
 
-        bool parse(bool (*callback)(const pdu_data_t &));
+        bool parse(file_read_callback_t *callback_ptr);
 
       protected:
 

@@ -31,11 +31,8 @@ namespace vdb
     std::set<uint32_t>
         options::pdu_index_range;
     std::string
-        options::output_file,
         options::network_address,
         options::network_interface;
-    uint64_t
-        options::pdu_interval = 0L;
     bool
         options::initialized = false,
         options::quiet = false,
@@ -73,6 +70,31 @@ vdb::options_t::options_t(const char *command, int argc, char *argv[]) :
 }
 
 // ----------------------------------------------------------------------------
+void vdb::options_t::add(option_t option)
+{
+    bool option_found = false;
+
+    for(uint32_t i = 0; (i < options.size()) and not option_found; ++i)
+    {
+        if ((options[i].long_option == option.long_option) or
+            (options[i].short_option == option.short_option))
+        {
+            option_found = true;
+        }
+    }
+
+    if (option_found)
+    {
+        std::cerr << command << ": duplicate option added: "
+                  << option << std::endl;
+    }
+    else
+    {
+        options.push_back(option);
+    }
+}
+
+// ----------------------------------------------------------------------------
 bool vdb::options_t::parse(void)
 {
     bool success = true;
@@ -100,6 +122,13 @@ bool vdb::options_t::parse(void)
             bool advance = false;
 
             success = parse_short_options(i, next, advance);
+
+            if (OPTIONS_DEBUG)
+            {
+                std::cout << "DEBUG: parse: advance: "
+                          << (success ? "true" : "false")
+                          << std::endl;
+            }
 
             if (advance)
             {
@@ -193,178 +222,10 @@ bool vdb::options_t::parse_long_option(int current)
     return success;
 }
 
-// TODO: REMOVE
-//    if (name == "address")
-//    {
-//        success = parse_string("--address", value, network_address);
-//    }
-//    else if (name == "help")
-//    {
-//        help = true;
-//        success = true;
-//    }
-//    else if (name == "mono")
-//    {
-//        color::set_enabled(false);
-//    }
-//    else if (name == "verbose")
-//    {
-//        if (logger::is_enabled(logger::VERBOSE))
-//        {
-//            logger::set_enabled(logger::EXTRA_VERBOSE, true);
-//        }
-//        else
-//        {
-//            logger::set_enabled(logger::VERBOSE, true);
-//        }
-//    }
-//    else if (name == "warnings")
-//    {
-//        logger::set_enabled(logger::WARNING, true);
-//    }
-//    else if (name == "suppress")
-//    {
-//        logger::set_enabled(logger::ERROR, false);
-//    }
-//    else if (name == "version")
-//    {
-//        version = true;
-//        success = true;
-//    }
-//    else if (name == "hostname")
-//    {
-//        success = parse_string_set("--hostname", value, include_hostnames);
-//    }
-//    else if (name == "exercise")
-//    {
-//        success = parse_integers("--exercise", value, include_exercises);
-//    }
-//    else if (name == "xexercise")
-//    {
-//        success = parse_integers("--xexercise", value, exclude_exercises);
-//    }
-//    else if (name == "type")
-//    {
-//        success = parse_integers("--type", value, include_types);
-//    }
-//    else if (name == "xtype")
-//    {
-//        success = parse_integers("--xtype", value, exclude_types);
-//    }
-//    else if (name == "family")
-//    {
-//        success = parse_integers("--family", value, include_families);
-//    }
-//    else if (name == "xfamily")
-//    {
-//        success = parse_integers("--xfamily", value, exclude_families);
-//    }
-//    else if (name == "ids")
-//    {
-//        success = parse_entity_ids("--ids", value, include_entity_ids);
-//    }
-//    else if (name == "xids")
-//    {
-//        success = parse_entity_ids("--xids", value, exclude_entity_ids);
-//    }
-//    else if (name == "ipv6")
-//    {
-//        ipv6 = true;
-//        success = true;
-//    }
-//    else if (name == "iface")
-//    {
-//        success = parse_string("--iface", value, network_interface);
-//    }
-//    else if (name == "range")
-//    {
-//        success = parse_integers_in_range(
-//            "--range",
-//            value,
-//            0x0,
-//            0xFFFFFFFF,
-//            pdu_index_range);
-//    }
-//    else if (name == "pdu")
-//    {
-//        success = parse_uint64("--pdu", value, pdu_interval);
-//    }
-//    else if (name == "output")
-//    {
-//        success = parse_string("--output", value, output_file);
-//    }
-//    else if (name == "quiet")
-//    {
-//        quiet = true;
-//        success = true;
-//    }
-//    else if (name == "dump")
-//    {
-//        dump = true;
-//        success = true;
-//    }
-//    else if (name == "extract")
-//    {
-//        extracted = true;
-//        success = true;
-//    }
-//    else if (name == "extra")
-//    {
-//        extra = true;
-//        success = true;
-//    }
-//    else if (name == "scan")
-//    {
-//        std::set<std::string> scans;
-//
-//        success =
-//            parse_string_set("--hostname", value, scans) and
-//            parse_scans("--name", scans);
-//    }
-//    else if (name == "collisions")
-//    {
-//        summary_collisions = true;
-//        success = true;
-//    }
-//    else if (name == "emissions")
-//    {
-//        summary_collisions = true;
-//        success = true;
-//    }
-//    else if (name == "fires")
-//    {
-//        summary_fires = true;
-//        success = true;
-//    }
-//    else if (name == "lasers")
-//    {
-//        summary_lasers = true;
-//        success = true;
-//    }
-//    else if (name == "objects")
-//    {
-//        summary_objects = true;
-//        success = true;
-//    }
-//    else if (name == "radios")
-//    {
-//        summary_radios = true;
-//        success = true;
-//    }
-//    else if (name == "all")
-//    {
-//        summary_collisions = true;
-//        summary_emissions = true;
-//        summary_fires = true;
-//        summary_lasers = true;
-//        summary_objects = true;
-//        summary_radios = true;
-//    }
-
 // ----------------------------------------------------------------------------
 // Parses command line argument starting with a single dash like so: -cxR
 //
-bool vdb::options_t::parse_short_options(int current, int next, bool advance)
+bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 {
     std::string
         argument = values[current].substr(1);
@@ -420,10 +281,12 @@ bool vdb::options_t::parse_short_options(int current, int next, bool advance)
                 {
                     std::cerr << command << ": option requires a value: -"
                               << argument[i] << std::endl;
+                    success = false;
                 }
                 else if (value_usable)
                 {
                     success = parse_option(*option_ptr, values[next]);
+                    advance = true;
                 }
                 else
                 {
@@ -436,7 +299,6 @@ bool vdb::options_t::parse_short_options(int current, int next, bool advance)
         {
             std::cerr << command << ": invalid option: -"
                       << argument[i] << std::endl;
-
             success = false;
         }
     }
@@ -492,8 +354,13 @@ bool vdb::options_t::parse_option(
         case O_IPV6:
             options::ipv6 = true;
             break;
-        case O_PDU:
-            success = parse_uint64(value, options::pdu_interval);
+            break;
+        case O_RANGE:
+            success = parse_integers_in_range(
+                value,
+                0x0,
+                0xFFFFFFFF,
+                options::pdu_index_range);
             break;
         case O_TYPE:
             success = parse_integers(value, options::include_types);
@@ -535,170 +402,12 @@ bool vdb::options_t::parse_option(
 
     if (not success)
     {
-        // TODO
+        std::cerr << command << ": failed to parse option: "
+                  << option << std::endl;
     }
 
     return success;
 }
-
-// TODO: REMOVE
-//            case 'A':
-//                summary_collisions = true;
-//                summary_emissions = true;
-//                summary_fires = true;
-//                summary_lasers = true;
-//                summary_objects = true;
-//                summary_radios = true;
-//                break;
-//            case 'C':
-//                success = set_command(USER_COMMAND_CAPTURE);
-//                break;
-//            case 'D':
-//                success = parse_uint64(
-//                    "-D",
-//                    next_argument,
-//                    pdu_interval);
-//                advance = true;
-//                break;
-//            case 'd':
-//                dump = true;
-//                break;
-//            case 'e':
-//                success = parse_integers(
-//                    "-e",
-//                    next_argument,
-//                    include_exercises);
-//                advance = true;
-//                break;
-//            case 'E':
-//                success = parse_integers(
-//                    "-E",
-//                    next_argument,
-//                    exclude_exercises);
-//                advance = true;
-//                break;
-//            case 'f':
-//                success = parse_integers(
-//                    "-f",
-//                    next_argument,
-//                    include_families);
-//                advance = true;
-//                break;
-//            case 'F':
-//                success = parse_integers(
-//                    "-F",
-//                    next_argument,
-//                    exclude_families);
-//                advance = true;
-//                break;
-//            case 'h':
-//                help = true;
-//                break;
-//            case 'H':
-//                success = parse_string_set(
-//                    "-H",
-//                    next_argument,
-//                    include_hostnames);
-//                advance = true;
-//                break;
-//            case 'i':
-//                success = parse_entity_ids(
-//                    "-i",
-//                    next_argument,
-//                    include_entity_ids);
-//                advance = true;
-//                break;
-//            case 'I':
-//                success = parse_entity_ids("-I",
-//                    next_argument,
-//                    include_entity_ids);
-//                advance = true;
-//                break;
-//            case 'L':
-//                success = set_command(USER_COMMAND_LIST);
-//                break;
-//            case 'm':
-//                color::set_enabled(false);
-//                break;
-//            case 'M':
-//                success = set_command(USER_COMMAND_ENUMS);
-//                break;
-//            case 'n':
-//                success = parse_string("-n", next_argument, network_interface);
-//                advance = true;
-//                break;
-//            case 'N':
-//                success =
-//                    parse_string_set("-n", next_argument, scans) and
-//                    parse_scans("-n", scans);
-//                advance = true;
-//                break;
-//            case 'O':
-//                success = parse_string("-O", next_argument, output_file);
-//                advance = true;
-//                break;
-//            case 'P':
-//                success = set_command(USER_COMMAND_PLAYBACK);
-//                break;
-//            case 'q':
-//                quiet = true;
-//                break;
-//            case 'r':
-//                success = parse_integers_in_range(
-//                    "-r",
-//                    next_argument,
-//                    0x0,
-//                    0xFFFFFFFF,
-//                    pdu_index_range);
-//                advance = true;
-//                break;
-//            case 'R':
-//                logger::set_enabled(logger::ERROR, false);
-//                break;
-//            case 'S':
-//                success = set_command(USER_COMMAND_SUMMARY);
-//                break;
-//            case 't':
-//                success = parse_integers("-t", next_argument, include_types);
-//                advance = true;
-//                break;
-//            case 'T':
-//                success = parse_integers("-T", next_argument, exclude_types);
-//                advance = true;
-//                break;
-//            case 'v':
-//                if (logger::is_enabled(logger::VERBOSE))
-//                {
-//                    logger::set_enabled(logger::EXTRA_VERBOSE, true);
-//                }
-//                else
-//                {
-//                    logger::set_enabled(logger::VERBOSE, true);
-//                }
-//                break;
-//            case 'U':
-//                success = set_command(USER_COMMAND_UNCOMMENT);
-//                break;
-//            case 'V':
-//                version = true;
-//                break;
-//            case 'w':
-//                logger::set_enabled(logger::WARNING, true);
-//                break;
-//            case 'W':
-//                success = set_command(USER_COMMAND_COMMENT);
-//                break;
-//            case 'x':
-//                extracted = true;
-//                break;
-//            case 'X':
-//                extra = true;
-//                break;
-//            default:
-//                std::cerr << "vdb: invalid option: -" << argument[i]
-//                          << std::endl;
-//                success = false;
-//                break;
 
 // ----------------------------------------------------------------------------
 bool vdb::options_t::parse_string_set(
@@ -964,7 +673,13 @@ bool vdb::options_t::parse_integers_in_range(
         {
             int64_t value = 0;
 
-            if (vdis::to_int64(values[i], value))
+            if (not vdis::to_int64(values[i], value))
+            {
+                std::cerr << command << ": not a valid number: " << values[i]
+                          << std::endl;
+                success = false;
+            }
+            else
             {
                 if (OPTIONS_DEBUG)
                 {
@@ -972,15 +687,16 @@ bool vdb::options_t::parse_integers_in_range(
                               << value << std::endl;
                 }
 
-                if ((value < min) or (value > max))
+                if ((value >= min) and (value <= max))
                 {
-                    std::cerr << command << ": value out of range: " << value
-                              << " (" << min << "-" << max << ")" << std::endl;
-                    success = false;
+                    output.insert((uint32_t)value);
                 }
                 else
                 {
-                    output.insert((uint32_t)value);
+                    std::cerr << command << ": value out of range: "
+                              << values[i] << " (" << min << "-" << max << ")"
+                              << std::endl;
+                    success = false;
                 }
             }
         }
@@ -995,7 +711,13 @@ bool vdb::options_t::parse_integers_in_range(
 
             success = (vdis::tokenize_csv(values[i], subvalues) == 2);
 
-            if (success)
+            if (not success)
+            {
+                std::cerr << command << ": not a format: " << values[i]
+                          << std::endl;
+                success = false;
+            }
+            else
             {
                 int64_t
                     value0 = 0,
