@@ -6,6 +6,7 @@ VDIS_LIB=vdis/libvdis.a
 TARGET_CAPTURE=$(BIN_PATH)/vdb-capture
 TARGET_LIST=$(BIN_PATH)/vdb-list
 TARGET_PLAYBACK=$(BIN_PATH)/vdb-playback
+TARGET_SUMMARIZE=$(BIN_PATH)/vdb-summarize
 
 CPP=g++
 CPP_FLAGS=-g -fPIC -std=c++0x -Wall -Ivdis/src -Ivdis/enumerations
@@ -38,9 +39,12 @@ $(OBJ_PATH)/vdb_lasers.o \
 $(OBJ_PATH)/vdb_options.o \
 $(OBJ_PATH)/vdb_pdu_data.o \
 $(OBJ_PATH)/vdb_print.o \
-$(OBJ_PATH)/vdb_summary.o
+$(OBJ_PATH)/vdb_scan.o
 
-all: $(TARGET_CAPTURE) $(TARGET_LIST) $(TARGET_PLAYBACK)
+all: $(TARGET_CAPTURE) $(TARGET_LIST) $(TARGET_PLAYBACK) $(TARGET_SUMMARIZE)
+.PHONY : all
+
+rebuild: clean all
 .PHONY : all
 
 version:
@@ -58,15 +62,14 @@ clean: clean_vdis
 	@rm -fv $(TARGET_CAPTURE)
 	@rm -fv $(TARGET_LIST)
 	@rm -fv $(TARGET_PLAYBACK)
+	@rm -fv $(TARGET_SUMMARIZE)
 .PHONY : clean
 
 target_depends: vdis directories version $(HELP_FILES) $(OBJECTS) ${SRC_PATH}/vdb_git.h ${SRC_PATH}/vdb_version.h
 .PHONY : target_depends
 
 #### Directories:
-
 directories: $(OBJ_PATH) $(BIN_PATH)
-
 $(OBJ_PATH):
 	@mkdir -pv $(OBJ_PATH)
 $(BIN_PATH):
@@ -90,6 +93,9 @@ $(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.cpp
 $(TARGET_PLAYBACK): target_depends $(SRC_PATH)/vdb_playback.cpp
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_playback.cpp
+$(TARGET_SUMMARIZE): target_depends $(SRC_PATH)/vdb_summarize.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_summarize.cpp
 
 #### Help files:
 ${SRC_PATH}/vdb_capture_help.h:
@@ -158,6 +164,10 @@ $(OBJ_PATH)/vdb_playback.o : $(SRC_PATH)/vdb_playback.cpp $(SRC_PATH)/vdb_playba
 $(OBJ_PATH)/vdb_print.o : $(SRC_PATH)/vdb_print.cpp $(SRC_PATH)/vdb_print.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_summary.o : $(SRC_PATH)/vdb_summary.cpp $(SRC_PATH)/vdb_summary.h
+$(OBJ_PATH)/vdb_scan.o : $(SRC_PATH)/vdb_scan.cpp $(SRC_PATH)/vdb_scan.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
+$(OBJ_PATH)/vdb_summarize.o : $(SRC_PATH)/vdb_summarize.cpp $(SRC_PATH)/vdb_summarize.h
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
+	

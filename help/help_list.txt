@@ -30,6 +30,6 @@ Usage: vdb-list [OPTIONS] FILE
      --scan=collisions 
      --scan=entities
      --scan=objects
-  -A --scan=all
+  -A --scanall
 
   

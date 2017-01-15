@@ -11,6 +11,7 @@
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
+#include "vdb_scan.h"
 #include "vdb_version.h"
 
 #include "vdis_entity_types.h"
@@ -25,7 +26,11 @@ namespace
         list;
 }
 
-bool option_callback(const vdb::option_t &option, const std::string &value);
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success
+);
 
 // ----------------------------------------------------------------------------
 int main(int argc, char *argv[])
@@ -56,6 +61,8 @@ int main(int argc, char *argv[])
     options.add(OPTION_RANGE);
     options.add(OPTION_HELP);
     options.add(OPTION_VERSION);
+    options.add(vdb::option_t("scan", 'S', true));
+    options.add(vdb::option_t("scanall", 'A', false));
 
     options.set_callback(*option_callback);
 
@@ -81,22 +88,37 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(const vdb::option_t &option, const std::string &value)
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success)
 {
-    bool success = true;
+    bool result = true;
 
     if (option.short_option == 'o')
     {
         list.output_file = value;
     }
+    else if (option.short_option == 'A')
+    {
+        vdb::scan::scan_all();
+    }
+    else if (option.short_option == 'S')
+    {
+        success = vdb::scan::parse(value);
+
+        if (not success)
+        {
+            std::cerr << "vdb-list: invalid scan parameters: "
+                      << option << std::endl;
+        }
+    }
     else
     {
-        std::cerr << "vdb-list: unexpected argument: "
-                  << option << std::endl;
-        success = false;
+        result = false;
     }
 
-    return false;
+    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -198,38 +220,38 @@ bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
-                    if (not options::scanning)
+                    if (not scan::scanning)
                     {
                         print::print_pdu(data, *pdu_ptr, std::cout);
                     }
                     else
                     {
-                        if (options::scan_entities)
+                        if (scan::entities)
                         {
                             entities::process_pdu(data, *pdu_ptr);
                         }
 
-                        if (options::scan_associations)
+                        if (scan::associations)
                         {
                             associations::process_pdu(data, *pdu_ptr);
                         }
 
-                        if (options::scan_lasers)
+                        if (scan::lasers)
                         {
                             lasers::process_pdu(data, *pdu_ptr);
                         }
 
-                        if (options::scan_fires)
+                        if (scan::fires)
                         {
                             fires::process_pdu(data, *pdu_ptr);
                         }
 
-                        if (options::scan_collisions)
+                        if (scan::collisions)
                         {
                             // TODO scan_collisions
                         }
 
-                        if (options::scan_objects)
+                        if (scan::objects)
                         {
                             // TODO scan_objects
                         }

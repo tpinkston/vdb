@@ -6,21 +6,37 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
+std::set<std::string>
+    vdb::filter::include_hostnames,
+    vdb::filter::exclude_hostnames;
+std::set<vdis::id_t>
+    vdb::filter::include_entity_ids,
+    vdb::filter::exclude_entity_ids;
+std::set<uint8_t>
+    vdb::filter::include_exercises,
+    vdb::filter::exclude_exercises,
+    vdb::filter::include_types,
+    vdb::filter::exclude_types,
+    vdb::filter::include_families,
+    vdb::filter::exclude_families;
+std::set<uint32_t>
+    vdb::filter::pdu_index_range;
+
 // ----------------------------------------------------------------------------
 bool vdb::filter::filter_by_metadata(const pdu_data_t &data)
 {
     bool pass = true;
 
-    if (pass and not options::include_hostnames.empty())
+    if (pass and not include_hostnames.empty())
     {
         const std::string
             &hostname = data.get_hostname();
         std::set<std::string>::const_iterator
-            itor = options::include_hostnames.begin();
+            itor = include_hostnames.begin();
 
         pass = false;
 
-        while((itor != options::include_hostnames.end()) and not pass)
+        while((itor != include_hostnames.end()) and not pass)
         {
             pass = vdis::contains(hostname, *itor, true);
             ++itor;
@@ -40,42 +56,42 @@ bool vdb::filter::filter_by_header(const pdu_data_t &data)
 {
     bool pass = true;
 
-    if (pass and not options::include_exercises.empty())
+    if (pass and not include_exercises.empty())
     {
         pass = set_contains(
-            options::include_exercises,
+            include_exercises,
             data.get_pdu_exercise());
     }
-    else if (pass and not options::exclude_exercises.empty())
+    else if (pass and not exclude_exercises.empty())
     {
         pass = not set_contains(
-            options::exclude_exercises,
+            exclude_exercises,
             data.get_pdu_exercise());
     }
 
-    if (pass and not options::include_types.empty())
+    if (pass and not include_types.empty())
     {
         pass = set_contains(
-            options::include_types,
+            include_types,
             data.get_pdu_type());
     }
-    else if (pass and not options::exclude_types.empty())
+    else if (pass and not exclude_types.empty())
     {
         pass = not set_contains(
-            options::exclude_types,
+            exclude_types,
             data.get_pdu_type());
     }
 
-    if (pass and not options::include_families.empty())
+    if (pass and not include_families.empty())
     {
         pass = set_contains(
-            options::include_families,
+            include_families,
             data.get_pdu_family());
     }
-    else if (pass and not options::exclude_families.empty())
+    else if (pass and not exclude_families.empty())
     {
         pass = not set_contains(
-            options::exclude_families,
+            exclude_families,
             data.get_pdu_family());
     }
 
@@ -100,15 +116,15 @@ bool vdb::filter::filter_by_range(uint32_t index, bool &past_end)
 {
     bool pass = true;
 
-    if (not options::pdu_index_range.empty())
+    if (not pdu_index_range.empty())
     {
         // Set 'past_end' to true if the provided index is beyond the
         // last index in the set.
         //
-        past_end = (index > *options::pdu_index_range.rbegin());
+        past_end = (index > *pdu_index_range.rbegin());
 
-        if (options::pdu_index_range.find(index) ==
-            options::pdu_index_range.end())
+        if (pdu_index_range.find(index) ==
+            pdu_index_range.end())
         {
             LOG_VERBOSE("Filtered out PDU at index %d...", index);
             pass = false;
@@ -127,12 +143,12 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
     {
         std::set<vdis::id_t>::const_iterator itor;
 
-        if (not options::include_entity_ids.empty())
+        if (not include_entity_ids.empty())
         {
-            itor = options::include_entity_ids.begin();
+            itor = include_entity_ids.begin();
             pass = false;
 
-            while((itor != options::include_entity_ids.end()) and not pass)
+            while((itor != include_entity_ids.end()) and not pass)
             {
                 if (pdu.base()->contains_id(*itor))
                 {
@@ -142,11 +158,11 @@ bool vdb::filter::filter_by_content(const vdis::pdu_t &pdu)
                 ++itor;
             }
         }
-        else if (not options::exclude_entity_ids.empty())
+        else if (not exclude_entity_ids.empty())
         {
-            itor = options::exclude_entity_ids.begin();
+            itor = exclude_entity_ids.begin();
 
-            while(pass and (itor != options::exclude_entity_ids.end()))
+            while(pass and (itor != exclude_entity_ids.end()))
             {
                 if (pdu.base()->contains_id(*itor))
                 {

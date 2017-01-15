@@ -94,11 +94,13 @@ namespace vdb
         //
         bool parse(void);
 
-        // Sets callback used when option cannot be handled by this class.
+        // Sets callback used to for special command options that may or
+        // or may not override default options defined above in macros.
         //
         inline void set_callback(bool (*function)(
             const option_t &option,
-            const std::string &value))
+            const std::string &value,
+            bool &success))
         {
             callback = function;
         }
@@ -112,11 +114,6 @@ namespace vdb
         bool parse_string_set(
             const std::string &input,
             std::set<std::string> &output
-        );
-
-        bool parse_scans(
-            const char *name_ptr,
-            const std::set<std::string> &set
         );
 
         bool parse_entity_ids(
@@ -154,8 +151,14 @@ namespace vdb
             values;
         std::vector<option_t>
             options;
-        bool
-            (*callback)(const option_t &, const std::string &);
+
+        // Callback function will return true if the option was processed.
+        //
+        bool (*callback)(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
     };
 
     // ------------------------------------------------------------------------
@@ -163,23 +166,9 @@ namespace vdb
     {
       public:
 
+        // TODO: Move network options to vdis::network
         static std::vector<std::string>
             command_arguments;
-        static std::set<std::string>
-            include_hostnames,
-            exclude_hostnames;
-        static std::set<vdis::id_t>
-            include_entity_ids,
-            exclude_entity_ids;
-        static std::set<uint8_t>
-            include_exercises,
-            exclude_exercises,
-            include_types,
-            exclude_types,
-            include_families,
-            exclude_families;
-        static std::set<uint32_t>
-            pdu_index_range;
         static std::string
             network_address,
             network_interface;
@@ -192,20 +181,7 @@ namespace vdb
             help,
             dump,
             extracted,
-            extra,
-            scanning,
-            scan_associations,
-            scan_lasers,
-            scan_fires,
-            scan_collisions,
-            scan_entities,
-            scan_objects,
-            summary_collisions,
-            summary_emissions,
-            summary_fires,
-            summary_lasers,
-            summary_objects,
-            summary_radios;
+            extra;
     };
 }
 

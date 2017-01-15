@@ -1,9 +1,15 @@
 #include "vdb_file_reader.h"
 #include "vdb_filter.h"
+#include "vdb_options.h"
 #include "vdb_pdu_data.h"
-#include "vdb_summary.h"
+#include "vdb_summarize.h"
+#include "vdb_summarize_help.h"
+#include "vdb_version.h"
 
+#include "vdis_entity_types.h"
+#include "vdis_enums.h"
 #include "vdis_logger.h"
+#include "vdis_object_types.h"
 #include "vdis_services.h"
 #include "vdis_string.h"
 
@@ -11,6 +17,8 @@ namespace
 {
     const std::string
         separator = "----------------------------------------------------";
+    vdb::summarize_t
+        summarize;
 
     // ------------------------------------------------------------------------
     void increment(std::map<uint8_t, uint32_t> &counters, uint8_t value)
@@ -24,22 +32,108 @@ namespace
     }
 }
 
-vdb::standard_reader_t
-    *vdb::summary::reader_ptr = 0;
-std::string
-    vdb::summary::filename,
-    vdb::summary::current_source;
-uint64_t
-    vdb::summary::first_pdu_time = 0,
-    vdb::summary::last_pdu_time = 0;
-vdb::source_data_node_t
-    vdb::summary::all_sources;
-std::map<std::string, vdb::source_data_node_t>
-    vdb::summary::source_data;
-std::map<vdis::id_t, vdb::entity_data_node_t>
-    vdb::summary::entity_data;
-std::map<vdis::id_t, vdb::object_data_node_t>
-    vdb::summary::object_data;
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success
+);
+
+// ----------------------------------------------------------------------------
+int main(int argc, char *argv[])
+{
+    vdb::options_t
+        options("vdb-summarize", argc, argv);
+    int
+        result = 1;
+
+    options.add(OPTION_EXTRA);
+    options.add(OPTION_EXTRACT);
+    options.add(OPTION_DUMP);
+    options.add(OPTION_COLOR);
+    options.add(OPTION_ERRORS);
+    options.add(OPTION_WARNINGS);
+    options.add(OPTION_VERBOSE);
+    options.add(OPTION_HELP);
+    options.add(OPTION_VERSION);
+    options.add(vdb::option_t("collisions", 'C', false));
+    options.add(vdb::option_t("emissions", 'M', false));
+    options.add(vdb::option_t("fires", 'F', false));
+    options.add(vdb::option_t("lasers", 'L', false));
+    options.add(vdb::option_t("radios", 'R', false));
+    options.add(vdb::option_t("objects", 'O', false));
+    options.add(vdb::option_t("all", 'A', false));
+
+    options.set_callback(*option_callback);
+
+    if (options.parse())
+    {
+        if (vdb::options::version)
+        {
+            print_vdb_version();
+            result = 0;
+        }
+        else if (vdb::options::help)
+        {
+            print_help();
+            result = 0;
+        }
+        else
+        {
+            result = summarize.run();
+        }
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success)
+{
+    bool result = true;
+
+    if (option.short_option == 'A')
+    {
+        summarize.collisions = true;
+        summarize.emissions = true;
+        summarize.fires = true;
+        summarize.lasers = true;
+        summarize.objects = true;
+        summarize.radios = true;
+    }
+    else if (option.short_option == 'C')
+    {
+        summarize.collisions = true;
+    }
+    else if (option.short_option == 'M')
+    {
+        summarize.emissions = true;
+    }
+    else if (option.short_option == 'F')
+    {
+        summarize.fires = true;
+    }
+    else if (option.short_option == 'L')
+    {
+        summarize.lasers = true;
+    }
+    else if (option.short_option == 'O')
+    {
+        summarize.objects = true;
+    }
+    else if (option.short_option == 'R')
+    {
+        summarize.radios = true;
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
 
 // ----------------------------------------------------------------------------
 void vdb::designator_node_t::print(std::ostream &out) const
@@ -227,7 +321,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
                << color::none << std::endl;
     }
 
-    if (options::summary_collisions and not collisions.empty())
+    if (summarize.collisions and not collisions.empty())
     {
         out << "    Collisions(" << collisions.size() << "):" << std::endl;
 
@@ -241,7 +335,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (options::summary_lasers and not designations.empty())
+    if (summarize.lasers and not designations.empty())
     {
         std::map<uint8_t, designator_node_t>::const_iterator
             laser_itor = designations.begin();
@@ -259,7 +353,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (options::summary_fires and not fires.empty())
+    if (summarize.fires and not fires.empty())
     {
         std::map<vdis::id_t, warfare_data_node_t>::const_iterator
             fire_itor = fires.begin();
@@ -279,36 +373,19 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
 }
 
 // ----------------------------------------------------------------------------
-void vdb::object_data_node_t::print(std::ostream &out) const
+int vdb::summarize_t::run(void)
 {
-
-}
-
-// ----------------------------------------------------------------------------
-void vdb::source_data_node_t::print(std::ostream &out) const
-{
-
-}
-
-// ----------------------------------------------------------------------------
-int vdb::summary::summarize_pdus(void)
-{
-    int
-        result = 0;
+    int result = 1;
 
     // File argument required
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb summary: missing file argument" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-summarize: missing file argument" << std::endl;
     }
     else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb summary: too many arguments" << std::endl;
-
-        result = 1;
+        std::cerr << "vdb-summarize: too many arguments" << std::endl;
     }
     else
     {
@@ -317,11 +394,7 @@ int vdb::summary::summarize_pdus(void)
         filename = options::command_arguments[0];
         reader_ptr = new standard_reader_t(filename);
 
-        if (not reader_ptr->good())
-        {
-            result = 1;
-        }
-        else
+        if (reader_ptr->good())
         {
             if (options::quiet)
             {
@@ -330,25 +403,28 @@ int vdb::summary::summarize_pdus(void)
                 //
                 print_results(std::cout);
             }
-            else if (true) // TODO reader_ptr->parse(process_pdu_data))
-            {
-                print_results(std::cout);
-            }
             else
             {
-                result = 1;
-            }
-        }
+                vdis::set_byteswapping();
+                vdis::enumerations::load();
+                vdis::entity_types::load();
+                vdis::object_types::load();
 
-        delete reader_ptr;
-        reader_ptr = 0;
+                if (reader_ptr->parse(this))
+                {
+                    print_results(std::cout);
+                }
+            }
+
+            result = 0;
+        }
     }
 
     return result;
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::summary::process_pdu_data(const pdu_data_t &data)
+bool vdb::summarize_t::process_pdu_data(const pdu_data_t &data)
 {
     bool
         past_end = false;
@@ -378,7 +454,7 @@ bool vdb::summary::process_pdu_data(const pdu_data_t &data)
 #define PDU_BASE(T, P) *static_cast<const vdis::T*>((P)->base())
 
 // ----------------------------------------------------------------------------
-bool vdb::summary::process_pdu_data(
+bool vdb::summarize_t::process_pdu_data(
     const pdu_data_t &data,
     const vdis::pdu_t &pdu)
 {
@@ -434,7 +510,7 @@ bool vdb::summary::process_pdu_data(
 #undef PDU_BASE
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process_pdu(
+void vdb::summarize_t::process_pdu(
     const pdu_data_t &data,
     const vdis::pdu_t &pdu,
     source_data_node_t &source)
@@ -463,7 +539,7 @@ void vdb::summary::process_pdu(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::entity_state_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::entity_state_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.id];
@@ -476,7 +552,7 @@ void vdb::summary::process(const vdis::entity_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(
+void vdb::summarize_t::process(
     const pdu_data_t &data,
     const vdis::fire_pdu_t &pdu)
 {
@@ -496,7 +572,7 @@ void vdb::summary::process(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(
+void vdb::summarize_t::process(
     const pdu_data_t &data,
     const vdis::detonation_pdu_t &pdu)
 {
@@ -517,7 +593,7 @@ void vdb::summary::process(
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::collision_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::collision_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.issuing_entity];
@@ -536,7 +612,7 @@ void vdb::summary::process(const vdis::collision_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::designator_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::designator_pdu_t &pdu)
 {
     entity_data_node_t
         &node = entity_data[pdu.designating_id];
@@ -592,7 +668,7 @@ void vdb::summary::process(const vdis::designator_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::point_object_state_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::point_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -603,7 +679,7 @@ void vdb::summary::process(const vdis::point_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::linear_object_state_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::linear_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -614,7 +690,7 @@ void vdb::summary::process(const vdis::linear_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::process(const vdis::areal_object_state_pdu_t &pdu)
+void vdb::summarize_t::process(const vdis::areal_object_state_pdu_t &pdu)
 {
     object_data_node_t
         &node = object_data[pdu.object_id];
@@ -625,7 +701,7 @@ void vdb::summary::process(const vdis::areal_object_state_pdu_t &pdu)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::print_results(std::ostream &out, bool quiet)
+void vdb::summarize_t::print_results(std::ostream &out, bool quiet)
 {
     struct stat
         file_stat;
@@ -749,7 +825,7 @@ void vdb::summary::print_results(std::ostream &out, bool quiet)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::summary::print_results(
+void vdb::summarize_t::print_results(
     const source_data_node_t &source,
     std::ostream &out)
 {

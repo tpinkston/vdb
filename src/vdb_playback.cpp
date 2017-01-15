@@ -21,7 +21,11 @@ namespace
         playback;
 }
 
-bool option_callback(const vdb::option_t &option, const std::string &value);
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success
+);
 
 // ----------------------------------------------------------------------------
 void signal_handler(int value)
@@ -85,14 +89,18 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(const vdb::option_t &option, const std::string &value)
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success)
 {
-    bool success = true;
+    uint64_t
+        interval = 0;
+    bool
+        result = true;
 
     if (option.short_option == 'P')
     {
-        uint64_t interval;
-
         success = vdis::to_uint64(value, interval);
 
         if (success)
@@ -107,12 +115,10 @@ bool option_callback(const vdb::option_t &option, const std::string &value)
     }
     else
     {
-        std::cerr << "vdb-playback: unexpected argument: "
-                  << option << std::endl;
-        success = false;
+        result = false;
     }
 
-    return false;
+    return result;
 }
 
 // ----------------------------------------------------------------------------

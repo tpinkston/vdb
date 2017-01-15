@@ -4,7 +4,7 @@ captured PDUs in the file.
 Usage: vdb-summarize [OPTIONS] FILE
   
   -C --collisions       Show collisions
-  -E --emissions        Show emissions (radar/IFF)
+  -M --emissions        Show emissions (radar/IFF)
   -F --fires            Show fires and detonations
   -L --lasers           Show designators
   -R --radios           Show radios

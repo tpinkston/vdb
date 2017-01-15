@@ -1,8 +1,7 @@
-#ifndef VDB_SUMMARY_H
-#define VDB_SUMMARY_H
+#ifndef VDB_SUMMARIZE_H
+#define VDB_SUMMARIZE_H
 
-#include "vdb_options.h"
-#include "vdb_system.h"
+#include "vdb_file_reader.h"
 
 #include "vdis_pdus.h"
 
@@ -122,8 +121,6 @@ namespace vdb
         object_data_node_t(const object_data_node_t &copy);
         ~object_data_node_t(void);
 
-        void print(std::ostream &out) const;
-
         vdis::force_id_e
             force_id;
         vdis::object_geometry_e
@@ -141,8 +138,6 @@ namespace vdb
         source_data_node_t(const source_data_node_t &copy);
         ~source_data_node_t(void);
 
-        void print(std::ostream &out) const;
-
         uint32_t
             total_pdus,
             total_bytes;
@@ -153,54 +148,85 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class summary
+    class summarize_t : file_read_callback_t
     {
       public:
 
-        static int summarize_pdus(void);
+        summarize_t(void) :
+            collisions(false),
+            emissions(false),
+            fires(false),
+            lasers(false),
+            objects(false),
+            radios(false),
+            reader_ptr(0),
+            first_pdu_time(0),
+            last_pdu_time(0)
+        {
+
+        }
+
+        ~summarize_t(void)
+        {
+            if (reader_ptr)
+            {
+                delete reader_ptr;
+                reader_ptr = 0;
+            }
+        }
+
+        int run(void);
+
+        bool
+            collisions,
+            emissions,
+            fires,
+            lasers,
+            objects,
+            radios;
 
       protected:
 
-        static bool process_pdu_data(const pdu_data_t &);
-        static bool process_pdu_data(const pdu_data_t &, const vdis::pdu_t &);
+        bool process_pdu_data(const pdu_data_t &);
+        bool process_pdu_data(const pdu_data_t &, const vdis::pdu_t &);
 
-        static void process_pdu(
+        void process_pdu(
             const pdu_data_t &,
             const vdis::pdu_t &,
             source_data_node_t &
         );
 
-        static void process(const vdis::entity_state_pdu_t &);
-        static void process(const pdu_data_t &, const vdis::fire_pdu_t &);
-        static void process(const pdu_data_t &, const vdis::detonation_pdu_t &);
-        static void process(const vdis::collision_pdu_t &);
-        static void process(const vdis::designator_pdu_t &);
-        static void process(const vdis::point_object_state_pdu_t &);
-        static void process(const vdis::linear_object_state_pdu_t &);
-        static void process(const vdis::areal_object_state_pdu_t &);
+        void process(const vdis::entity_state_pdu_t &);
+        void process(const pdu_data_t &, const vdis::fire_pdu_t &);
+        void process(const pdu_data_t &, const vdis::detonation_pdu_t &);
+        void process(const vdis::collision_pdu_t &);
+        void process(const vdis::designator_pdu_t &);
+        void process(const vdis::point_object_state_pdu_t &);
+        void process(const vdis::linear_object_state_pdu_t &);
+        void process(const vdis::areal_object_state_pdu_t &);
 
-        static void print_results(std::ostream &, bool quiet = false);
+        void print_results(std::ostream &, bool quiet = false);
 
-        static void print_results(
+        void print_results(
             const source_data_node_t &,
             std::ostream &
         );
 
-        static standard_reader_t
+        standard_reader_t
             *reader_ptr;
-        static std::string
+        std::string
             filename,
             current_source;
-        static uint64_t
+        uint64_t
             first_pdu_time,
             last_pdu_time;
-        static source_data_node_t
+        source_data_node_t
             all_sources;
-        static std::map<std::string, source_data_node_t>
+        std::map<std::string, source_data_node_t>
             source_data;
-        static std::map<vdis::id_t, entity_data_node_t>
+        std::map<vdis::id_t, entity_data_node_t>
             entity_data;
-        static std::map<vdis::id_t, object_data_node_t>
+        std::map<vdis::id_t, object_data_node_t>
             object_data;
     };
 }

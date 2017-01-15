@@ -1,3 +1,4 @@
+#include "vdb_filter.h"
 #include "vdb_options.h"
 
 #include "vdis_data_types.h"
@@ -15,21 +16,6 @@ namespace vdb
 {
     std::vector<std::string>
         options::command_arguments;
-    std::set<std::string>
-        options::include_hostnames,
-        options::exclude_hostnames;
-    std::set<vdis::id_t>
-        options::include_entity_ids,
-        options::exclude_entity_ids;
-    std::set<uint8_t>
-        options::include_exercises,
-        options::exclude_exercises,
-        options::include_types,
-        options::exclude_types,
-        options::include_families,
-        options::exclude_families;
-    std::set<uint32_t>
-        options::pdu_index_range;
     std::string
         options::network_address,
         options::network_interface;
@@ -41,20 +27,7 @@ namespace vdb
         options::help = false,
         options::dump = false,
         options::extracted = false,
-        options::extra = false,
-        options::scanning = false,
-        options::scan_associations = false,
-        options::scan_lasers = false,
-        options::scan_fires = false,
-        options::scan_collisions = false,
-        options::scan_entities = false,
-        options::scan_objects = false,
-        options::summary_collisions = false,
-        options::summary_emissions = false,
-        options::summary_fires = false,
-        options::summary_lasers = false,
-        options::summary_objects = false,
-        options::summary_radios = false;
+        options::extra = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +99,7 @@ bool vdb::options_t::parse(void)
             if (OPTIONS_DEBUG)
             {
                 std::cout << "DEBUG: parse: advance: "
-                          << (success ? "true" : "false")
+                          << (advance ? "true" : "false")
                           << std::endl;
             }
 
@@ -313,97 +286,106 @@ bool vdb::options_t::parse_option(
 {
     bool success = true;
 
-    switch(option.short_option)
+    if ((*callback)(option, value, success))
     {
-        case O_ADDRESS:
-            options::network_address = value;
-            break;
-        case O_COLOR:
-            color::set_enabled(false);
-            break;
-        case O_DUMP:
-            options::dump = true;
-            break;
-        case O_ERRORS:
-            logger::set_enabled(logger::ERROR, true);
-            break;
-        case O_EXERCISE:
-            success = parse_integers(value, options::include_exercises);
-            break;
-        case O_EXTRA:
-            options::extra = true;
-            break;
-        case O_EXTRACT:
-            options::extracted = true;
-            break;
-        case O_FAMILY:
-            success = parse_integers(value, options::include_families);
-            break;
-        case O_HELP:
-            options::help = true;
-            break;
-        case O_HOSTS:
-            success = parse_string_set(value, options::include_hostnames);
-            break;
-        case O_ID:
-            success = parse_entity_ids(value, options::include_entity_ids);
-            break;
-        case O_INTERFACE:
-            options::network_interface = value;
-            break;
-        case O_IPV6:
-            options::ipv6 = true;
-            break;
-            break;
-        case O_RANGE:
-            success = parse_integers_in_range(
-                value,
-                0x0,
-                0xFFFFFFFF,
-                options::pdu_index_range);
-            break;
-        case O_TYPE:
-            success = parse_integers(value, options::include_types);
-            break;
-        case O_VERBOSE:
-            if (logger::is_enabled(logger::VERBOSE))
-            {
-                logger::set_enabled(logger::EXTRA_VERBOSE, true);
-            }
-            else
-            {
-                logger::set_enabled(logger::VERBOSE, true);
-            }
-            break;
-        case O_VERSION:
-            options::version = true;
-            break;
-        case O_WARNINGS:
-            logger::set_enabled(logger::WARNING, true);
-            break;
-        case O_XEXERCISE:
-            success = parse_integers(value, options::exclude_exercises);
-            break;
-        case O_XFAMILY:
-            success = parse_integers(value, options::exclude_families);
-            break;
-        case O_XHOSTS:
-            success = parse_string_set(value, options::exclude_hostnames);
-            break;
-        case O_XID:
-            success = parse_entity_ids(value, options::exclude_entity_ids);
-            break;
-        case O_XTYPE:
-            success = parse_integers(value, options::exclude_types);
-            break;
-        default:
-            success = (*callback)(option, value);
-    }
+        if (OPTIONS_DEBUG)
+        {
+            std::cout << "DEBUG: parse_option: callback returned true, "
+                      << "success: " << (success ? "true" : "false")
+                      << std::endl;
+        }
 
-    if (not success)
+        return success;
+    }
+    else if (success)
     {
-        std::cerr << command << ": failed to parse option: "
-                  << option << std::endl;
+        switch(option.short_option)
+        {
+            case O_ADDRESS:
+                options::network_address = value;
+                break;
+            case O_COLOR:
+                color::set_enabled(false);
+                break;
+            case O_DUMP:
+                options::dump = true;
+                break;
+            case O_ERRORS:
+                logger::set_enabled(logger::ERROR, true);
+                break;
+            case O_EXERCISE:
+                success = parse_integers(value, filter::include_exercises);
+                break;
+            case O_EXTRA:
+                options::extra = true;
+                break;
+            case O_EXTRACT:
+                options::extracted = true;
+                break;
+            case O_FAMILY:
+                success = parse_integers(value, filter::include_families);
+                break;
+            case O_HELP:
+                options::help = true;
+                break;
+            case O_HOSTS:
+                success = parse_string_set(value, filter::include_hostnames);
+                break;
+            case O_ID:
+                success = parse_entity_ids(value, filter::include_entity_ids);
+                break;
+            case O_INTERFACE:
+                options::network_interface = value;
+                break;
+            case O_IPV6:
+                options::ipv6 = true;
+                break;
+                break;
+            case O_RANGE:
+                success = parse_integers_in_range(
+                    value,
+                    0x0,
+                    0xFFFFFFFF,
+                    filter::pdu_index_range);
+                break;
+            case O_TYPE:
+                success = parse_integers(value, filter::include_types);
+                break;
+            case O_VERBOSE:
+                if (logger::is_enabled(logger::VERBOSE))
+                {
+                    logger::set_enabled(logger::EXTRA_VERBOSE, true);
+                }
+                else
+                {
+                    logger::set_enabled(logger::VERBOSE, true);
+                }
+                break;
+            case O_VERSION:
+                options::version = true;
+                break;
+            case O_WARNINGS:
+                logger::set_enabled(logger::WARNING, true);
+                break;
+            case O_XEXERCISE:
+                success = parse_integers(value, filter::exclude_exercises);
+                break;
+            case O_XFAMILY:
+                success = parse_integers(value, filter::exclude_families);
+                break;
+            case O_XHOSTS:
+                success = parse_string_set(value, filter::exclude_hostnames);
+                break;
+            case O_XID:
+                success = parse_entity_ids(value, filter::exclude_entity_ids);
+                break;
+            case O_XTYPE:
+                success = parse_integers(value, filter::exclude_types);
+                break;
+            default:
+                std::cerr << command << ": unexpected option '"
+                          << option << "'" << std::endl;
+        }
     }
 
     return success;
@@ -436,67 +418,6 @@ bool vdb::options_t::parse_string_set(
             success = true;
         }
     }
-
-    return success;
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::options_t::parse_scans(
-    const char *name_ptr,
-    const std::set<std::string> &set)
-{
-    std::set<std::string>::const_iterator
-        itor = set.begin();
-    bool
-        success = true;
-
-    while(success and (itor != set.end()))
-    {
-        if (vdis::to_lowercase(*itor) == "associations")
-        {
-            options::scan_associations = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "lasers")
-        {
-            options::scan_lasers = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "fires")
-        {
-            options::scan_fires = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "collisions")
-        {
-            options::scan_collisions = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "entities")
-        {
-            options::scan_entities = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "objects")
-        {
-            options::scan_objects = true;
-        }
-        else if (vdis::to_lowercase(*itor) == "all")
-        {
-            options::scan_associations = true;
-            options::scan_lasers = true;
-            options::scan_fires = true;
-            options::scan_collisions = true;
-            options::scan_entities = true;
-            options::scan_objects = true;
-        }
-        else
-        {
-            std::cerr << "vdb: invalid scan token '" << *itor << "'"
-                      << std::endl;
-
-            success = false;
-        }
-
-        ++itor;
-    }
-
-    options::scanning = true;
 
     return success;
 }

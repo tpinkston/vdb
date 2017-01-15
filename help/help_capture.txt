@@ -24,4 +24,12 @@ Usage: vdb-capture [OPTIONS] PORT [FILE]
   -F --xfamily=F1,...   Exclude PDUs with PDU family(s) (numeric)
   -i --id=I1,...        Include PDUs containing specified entity ID(s)
   -I --xid=I1,...       Exclude PDUs containing specified entity ID(s)
+  
+  -S --scan=associations
+     --scan=lasers
+     --scan=fires
+     --scan=collisions 
+     --scan=entities
+     --scan=objects
+  -A --scanall
 
