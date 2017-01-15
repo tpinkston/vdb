@@ -53,6 +53,18 @@ namespace vdis
     bool query_hostname(const socket_address_ipv6_t &, std::string &);
 
     // ------------------------------------------------------------------------
+    class network_options
+    {
+      public:
+
+        static std::string
+            address,
+            interface;
+        static bool
+            ipv6;
+
+    };
+    // ------------------------------------------------------------------------
     class socket_base_t
     {
       public:

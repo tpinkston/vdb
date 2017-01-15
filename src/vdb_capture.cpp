@@ -113,7 +113,7 @@ bool option_callback(
         if (not success)
         {
             std::cerr << "vdb-capture: invalid scan parameters: "
-                      << option << std::endl;
+                      << value << std::endl;
         }
     }
     else
@@ -200,13 +200,13 @@ void vdb::capture_t::open_socket(void)
     const char
         *address_ptr = 0;
 
-    if (not options::network_address.empty())
+    if (not vdis::network_options::address.empty())
     {
-        address_ptr = options::network_address.c_str();
+        address_ptr = vdis::network_options::address.c_str();
     }
 
     socket_ptr = new vdis::receive_socket_t(
-        options::ipv6,
+        vdis::network_options::ipv6,
         port,
         address_ptr);
 }
@@ -314,16 +314,9 @@ void vdb::capture_t::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
         file_ptr->write_pdu_data(data);
     }
 
-    if (not scan::scanning)
+    if (scan::scanning)
     {
-        print::print_pdu(data, pdu, std::cout);
-    }
-    else
-    {
-        if (scan::entities)
-        {
-            entities::process_pdu(data, pdu);
-        }
+        scan::process_pdu(data, pdu);
 
         if (scan::associations)
         {
@@ -349,7 +342,11 @@ void vdb::capture_t::process_pdu(const pdu_data_t &data, const vdis::pdu_t &pdu)
         {
             // TODO scan_objects
         }
-   }
+    }
+    else
+    {
+        print::print_pdu(data, pdu, std::cout);
+    }
 }
 
 // ----------------------------------------------------------------------------

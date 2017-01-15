@@ -81,6 +81,8 @@ int main(int argc, char *argv[])
         }
         else
         {
+            vdb::print::print_pdu_source_time = false;
+
             result = playback.run();
         }
     }
@@ -203,13 +205,13 @@ void vdb::playback_t::open_socket(void)
 
     // Default address for 'vdis::send_socket_t' is 'broadcast'
     //
-    if (not options::network_address.empty())
+    if (not vdis::network_options::address.empty())
     {
-        address_ptr = options::network_address.c_str();
+        address_ptr = vdis::network_options::address.c_str();
     }
 
     socket_ptr = new vdis::send_socket_t(
-        options::ipv6,
+        vdis::network_options::ipv6,
         port,
         address_ptr);
 }

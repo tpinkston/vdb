@@ -11,15 +11,18 @@ namespace vdis
     {
       public:
 
+        typedef std::map<uint64_t, std::string>
+            mapping_t;
+
         static void load(void);
 
         static void print(std::ostream &stream);
 
-        static const string_t &get_name(uint64_t value);
-        static const string_t &get_description(uint64_t value);
+        static const std::string &get_name(uint64_t value);
+        static const std::string &get_description(uint64_t value);
 
-        static bool get_name(uint64_t value, string_t &name);
-        static bool get_description(uint64_t value, string_t &description);
+        static bool get_name(uint64_t value, std::string &name);
+        static bool get_description(uint64_t value, std::string &description);
 
         static bool get_parent(
             const entity_type_t &child,
@@ -32,6 +35,16 @@ namespace vdis
         );
 
         static void get_values(const entity_type_t &type, uint16_t values[7]);
+
+        inline static mapping_t::const_iterator begin(void)
+        {
+            return names.begin();
+        }
+
+        inline static mapping_t::const_iterator end(void)
+        {
+            return names.end();
+        }
 
       private:
 
@@ -49,7 +62,7 @@ namespace vdis
             const char *description_ptr
         );
 
-        static std::map<uint64_t, string_t>
+        static mapping_t
             names,
             descriptions;
         static bool

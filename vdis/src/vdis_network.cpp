@@ -38,6 +38,15 @@ namespace
         ipv6_hostnames;
 }
 
+namespace vdis
+{
+    std::string
+        network_options::address,
+        network_options::interface;
+    bool
+        network_options::ipv6 = false;
+}
+
 // ----------------------------------------------------------------------------
 int32_t vdis::open_socket(bool ipv6)
 {

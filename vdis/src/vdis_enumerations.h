@@ -18,7 +18,7 @@ namespace vdis
         //
         static bool valid(const string_t &enumeration, int value);
 
-        // Streams with format "%s [%d (%h)]" where:
+        // Streams with format "%s (%d [%h])" where:
         //   %s - String name of enumeration value
         //   %d - Decimal enumeration value
         //   %h - Hexadecimal enumeration value

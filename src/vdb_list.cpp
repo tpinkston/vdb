@@ -220,16 +220,9 @@ bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
             {
                 if (filter::filter_by_content(*pdu_ptr))
                 {
-                    if (not scan::scanning)
+                    if (scan::scanning)
                     {
-                        print::print_pdu(data, *pdu_ptr, std::cout);
-                    }
-                    else
-                    {
-                        if (scan::entities)
-                        {
-                            entities::process_pdu(data, *pdu_ptr);
-                        }
+                        scan::process_pdu(data, *pdu_ptr);
 
                         if (scan::associations)
                         {
@@ -255,6 +248,10 @@ bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
                         {
                             // TODO scan_objects
                         }
+                    }
+                    else
+                    {
+                        print::print_pdu(data, *pdu_ptr, std::cout);
                     }
 
                     if (file_ptr)

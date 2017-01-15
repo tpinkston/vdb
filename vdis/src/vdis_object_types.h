@@ -11,6 +11,9 @@ namespace vdis
     {
       public:
 
+        typedef std::map<uint32_t, std::string>
+            mapping_t;
+
         static void load(void);
 
         static void print(std::ostream &stream);
@@ -30,10 +33,42 @@ namespace vdis
             object_type_t &parent
         );
 
+        inline
+        static mapping_t::const_iterator begin(object_geometry_e geometry)
+        {
+            switch(geometry)
+            {
+                case vdis::OBJECT_GEOMETRY_POINT:
+                    return point_descriptions.begin();
+                case vdis::OBJECT_GEOMETRY_LINEAR:
+                    return linear_descriptions.begin();
+                case vdis::OBJECT_GEOMETRY_AREAL:
+                    return areal_descriptions.begin();
+                default:
+                    return unknown_descriptions.begin();
+            }
+        }
+
+        inline
+        static mapping_t::const_iterator end(object_geometry_e geometry)
+        {
+            switch(geometry)
+            {
+                case vdis::OBJECT_GEOMETRY_POINT:
+                    return point_descriptions.end();
+                case vdis::OBJECT_GEOMETRY_LINEAR:
+                    return linear_descriptions.end();
+                case vdis::OBJECT_GEOMETRY_AREAL:
+                    return areal_descriptions.end();
+                default:
+                    return unknown_descriptions.end();
+            }
+        }
+
       private:
 
         static void print(
-            const std::map<uint32_t, std::string> &descriptions,
+            const mapping_t &descriptions,
             object_geometry_e geometry,
             std::ostream &stream);
 
@@ -48,7 +83,8 @@ namespace vdis
             const char *geometry_ptr
         );
 
-        static std::map<uint32_t, std::string>
+        static mapping_t
+            unknown_descriptions,
             point_descriptions,
             linear_descriptions,
             areal_descriptions;

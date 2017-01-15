@@ -4,6 +4,7 @@
 #include "vdis_data_types.h"
 #include "vdis_integer.h"
 #include "vdis_logger.h"
+#include "vdis_network.h"
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
@@ -16,13 +17,8 @@ namespace vdb
 {
     std::vector<std::string>
         options::command_arguments;
-    std::string
-        options::network_address,
-        options::network_interface;
     bool
-        options::initialized = false,
         options::quiet = false,
-        options::ipv6 = false,
         options::version = false,
         options::help = false,
         options::dump = false,
@@ -302,7 +298,7 @@ bool vdb::options_t::parse_option(
         switch(option.short_option)
         {
             case O_ADDRESS:
-                options::network_address = value;
+                vdis::network_options::address = value;
                 break;
             case O_COLOR:
                 color::set_enabled(false);
@@ -335,10 +331,10 @@ bool vdb::options_t::parse_option(
                 success = parse_entity_ids(value, filter::include_entity_ids);
                 break;
             case O_INTERFACE:
-                options::network_interface = value;
+                vdis::network_options::interface = value;
                 break;
             case O_IPV6:
-                options::ipv6 = true;
+                vdis::network_options::ipv6 = true;
                 break;
                 break;
             case O_RANGE:

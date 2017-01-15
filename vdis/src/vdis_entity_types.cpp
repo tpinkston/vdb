@@ -5,11 +5,11 @@
 
 namespace
 {
-    const string_t
+    const std::string
         empty_string;
 }
 
-std::map<uint64_t, string_t>
+vdis::entity_types::mapping_t
     vdis::entity_types::names,
     vdis::entity_types::descriptions;
 bool
@@ -30,7 +30,7 @@ void vdis::entity_types::load(void)
 // ----------------------------------------------------------------------------
 void vdis::entity_types::print(std::ostream &stream)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         name = names.begin();
     entity_type_t
         entity_type;
@@ -46,9 +46,9 @@ void vdis::entity_types::print(std::ostream &stream)
 }
 
 // ----------------------------------------------------------------------------
-const string_t &vdis::entity_types::get_name(uint64_t value)
+const std::string &vdis::entity_types::get_name(uint64_t value)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor = names.find(value);
 
     if (search_itor != names.end())
@@ -60,9 +60,9 @@ const string_t &vdis::entity_types::get_name(uint64_t value)
 }
 
 // ----------------------------------------------------------------------------
-const string_t &vdis::entity_types::get_description(uint64_t value)
+const std::string &vdis::entity_types::get_description(uint64_t value)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor = descriptions.find(value);
 
     if (search_itor != descriptions.end())
@@ -76,9 +76,9 @@ const string_t &vdis::entity_types::get_description(uint64_t value)
 // ----------------------------------------------------------------------------
 bool vdis::entity_types::get_name(
     uint64_t value,
-    string_t &name)
+    std::string &name)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor = names.find(value);
 
     if (search_itor != names.end())
@@ -93,9 +93,9 @@ bool vdis::entity_types::get_name(
 // ----------------------------------------------------------------------------
 bool vdis::entity_types::get_description(
     uint64_t value,
-    string_t &description)
+    std::string &description)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor = descriptions.find(value);
 
     if (search_itor != descriptions.end())
@@ -160,7 +160,7 @@ bool vdis::entity_types::get_valid_parent(
     const entity_type_t &child,
     entity_type_t &parent)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor;
     entity_type_t
         temp_child = child,
@@ -212,7 +212,7 @@ void vdis::entity_types::add(
     const char *name_ptr,
     const char *description_ptr)
 {
-    std::map<uint64_t, string_t>::const_iterator
+    mapping_t::const_iterator
         search_itor;
     uint64_t
         value = 0;

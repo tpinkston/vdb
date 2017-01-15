@@ -105,12 +105,6 @@ namespace vdb
             callback = function;
         }
 
-      private:
-
-        bool parse_long_option(int current);
-        bool parse_short_options(int current, int next, bool &advance);
-        bool parse_option(const option_t &option, const std::string &value);
-
         bool parse_string_set(
             const std::string &input,
             std::set<std::string> &output
@@ -143,6 +137,12 @@ namespace vdb
             uint64_t &output
         );
 
+      private:
+
+        bool parse_long_option(int current);
+        bool parse_short_options(int current, int next, bool &advance);
+        bool parse_option(const option_t &option, const std::string &value);
+
         const std::string
             command;
         const int
@@ -166,17 +166,11 @@ namespace vdb
     {
       public:
 
-        // TODO: Move network options to vdis::network
         static std::vector<std::string>
             command_arguments;
-        static std::string
-            network_address,
-            network_interface;
         static bool
-            initialized,
             all,
             quiet,
-            ipv6,
             version,
             help,
             dump,

@@ -1,7 +1,34 @@
 Prints all VDIS standard entity type definitions to STDOUT in CSV format.
 
-Usage: vdb-entities
+Usage: vdb-entities [OPTIONS]
 
   -E --errors           Show errors
   -W --warnings         Show warnings
+  -c --color            Suppress colored output
   -v --verbose          Verbose (-vv for extra verbose)
+  
+  -k --kind=K1,K2,...   List of entity types with specified kinds, numeric: 
+                        0 = other
+                        1 = platform
+                        2 = munition
+                        3 = lifeform
+                        4 = environmental
+                        5 = cultural feature
+                        6 = supplies
+                        7 = radios
+                        8 = expendables
+                        9 = sensor emitters
+  
+  -d --domain=D1,D2,... List of entity types with specified domains, numeric: 
+                        0 = other
+                        1 = land
+                        2 = air
+                        3 = surface
+                        4 = subsurface
+                        5 = space
+
+  -t --country=C1,...   List entities belonging to specified countries,
+                        numeric, too many to list here.  Use -C to list
+                        them.
+  -T --countries        List country names and numeric values
+                        

@@ -92,6 +92,7 @@ namespace vdb
 
         virtual bool next_entry(pdu_data_t &data);
 
+        // TODO: Are socket address members really needed?
         vdis::socket_address_ipv4_t
             address_ipv4;
         vdis::socket_address_ipv6_t

@@ -11,6 +11,7 @@ namespace
 }
 
 std::map<uint32_t, std::string>
+    vdis::object_types::unknown_descriptions,
     vdis::object_types::point_descriptions,
     vdis::object_types::linear_descriptions,
     vdis::object_types::areal_descriptions;

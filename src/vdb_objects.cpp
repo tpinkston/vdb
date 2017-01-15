@@ -1,9 +1,9 @@
-#include "vdb_entities.h"
-#include "vdb_entities_help.h"
+#include "vdb_objects.h"
+#include "vdb_objects_help.h"
 #include "vdb_options.h"
 #include "vdb_version.h"
 
-#include "vdis_entity_types.h"
+#include "vdis_object_types.h"
 #include "vdis_integer.h"
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
@@ -13,8 +13,8 @@ namespace
 {
     vdb::options_t
         *options_ptr = 0;
-    vdb::entities_t
-        entities;
+    vdb::objects_t
+        objects;
 }
 
 bool option_callback(
@@ -28,17 +28,16 @@ int main(int argc, char *argv[])
 {
     int result = 1;
 
-    options_ptr = new vdb::options_t("vdb-entities", argc, argv);
+    options_ptr = new vdb::options_t("vdb-objects", argc, argv);
     options_ptr->add(OPTION_COLOR);
     options_ptr->add(OPTION_EXTRA);
     options_ptr->add(OPTION_ERRORS);
     options_ptr->add(OPTION_WARNINGS);
     options_ptr->add(OPTION_VERBOSE);
     options_ptr->add(OPTION_HELP);
-    options_ptr->add(vdb::option_t("kind", 'k', true));
+    options_ptr->add(vdb::option_t("geometry", 'g', true));
     options_ptr->add(vdb::option_t("domain", 'd', true));
-    options_ptr->add(vdb::option_t("country", 't', true));
-    options_ptr->add(vdb::option_t("countries", 'T', false));
+    options_ptr->add(vdb::option_t("kind", 'k', true));
 
     options_ptr->set_callback(*option_callback);
 
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            result = entities.run();
+            result = objects.run();
         }
     }
 
@@ -75,17 +74,17 @@ bool option_callback(
     {
         LOG_ERROR("Options parser not available!");
     }
-    else if (option.short_option == 'k')
+    else if (option.short_option == 'g')
     {
         success = options_ptr->parse_integers_in_range(
             value,
             0,
-            (vdis::ent_kind_e::ENT_KIND_END - 1),
-            entities.kinds);
+            (vdis::object_geometry_e::OBJECT_GEOMETRY_END - 1),
+            objects.geometries);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity kind: "
+            std::cerr << "vdb-objects: invalid value for object geometry: "
                       << value << std::endl;
         }
     }
@@ -95,31 +94,27 @@ bool option_callback(
             value,
             0,
             (vdis::domain_e::DOMAIN_END - 1),
-            entities.domains);
+            objects.domains);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity domain: "
+            std::cerr << "vdb-objects: invalid value for object domain: "
                       << value << std::endl;
         }
     }
-    else if (option.short_option == 't')
+    else if (option.short_option == 'k')
     {
         success = options_ptr->parse_integers_in_range(
             value,
             0,
-            (vdis::country_e::COUNTRY_END - 1),
-            entities.countries);
+            (vdis::object_kind_e::OBJECT_KIND_END - 1),
+            objects.kinds);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity country: "
+            std::cerr << "vdb-objects: invalid value for object kind: "
                       << value << std::endl;
         }
-    }
-    else if (option.short_option == 'T')
-    {
-        entities.print_countries = true;
     }
     else
     {
@@ -130,7 +125,7 @@ bool option_callback(
 }
 
 // ----------------------------------------------------------------------------
-int vdb::entities_t::run(void)
+int vdb::objects_t::run(void)
 {
     int result = 1;
 
@@ -138,44 +133,36 @@ int vdb::entities_t::run(void)
     //
     if (options::command_arguments.size() > 0)
     {
-        std::cerr << "vdb-entities: too many arguments" << std::endl;
+        std::cerr << "vdb-objects: too many arguments" << std::endl;
     }
     else
     {
         vdis::enumerations::load();
-        vdis::entity_types::load();
+        vdis::object_types::load();
 
-        if (print_countries)
+        if (geometries.empty())
         {
-            for(uint16_t i = 0; i < vdis::country_e::COUNTRY_END; ++i)
-            {
-                if (vdis::enumerations::valid(ENUM_COUNTRY, i))
-                {
-                    if (i < 10)
-                    {
-                        std::cout << "  ";
-                    }
-                    else if (i < 100)
-                    {
-                        std::cout << " ";
-                    }
-
-                    std::cout << i << " "
-                              << color::cyan << "0x"
-                              << vdis::to_hex_string(i) << " " << color::yellow
-                              << vdis::enumerations::get_name(ENUM_COUNTRY, i)
-                              << color::none << std::endl;
-                }
-            }
+            // List all geometries
+            //
+            geometries.insert(vdis::OBJECT_GEOMETRY_POINT);
+            geometries.insert(vdis::OBJECT_GEOMETRY_LINEAR);
+            geometries.insert(vdis::OBJECT_GEOMETRY_AREAL);
         }
-        else
+
+        std::set<uint32_t>::const_iterator
+            geometry_itor = geometries.begin();
+
+        while(geometry_itor != geometries.end())
         {
-            vdis::entity_types::mapping_t::const_iterator
-                itor = vdis::entity_types::begin();
-            vdis::entity_type_t
+            const vdis::object_geometry_e
+                geometry = (vdis::object_geometry_e)*geometry_itor;
+            vdis::object_types::mapping_t::const_iterator
+                itor = vdis::object_types::begin(geometry),
+                itor_end = vdis::object_types::end(geometry);
+            vdis::object_type_t
                 type;
 
-            while(itor != vdis::entity_types::end())
+            while(itor != itor_end)
             {
                 const uint64_t value = itor->first;
 
@@ -183,10 +170,17 @@ int vdb::entities_t::run(void)
 
                 if (list_type(type))
                 {
-                    std::cout << type << " " << color::blue
-                              << vdis::entity_types::get_name(value)
-                              << " " << color::yellow
-                              << vdis::entity_types::get_description(value)
+                    const std::string
+                        geometry_name = vdis::enumerations::get_name(
+                            ENUM_OBJECT_GEOMETRY,
+                            geometry),
+                        &description = vdis::object_types::get_description(
+                            geometry,
+                            value);
+
+                    std::cout << color::blue << geometry_name << " "
+                              << color::none << type << " "
+                              << color::yellow << description
                               << color::none << std::endl;
 
                     if (options::extra)
@@ -197,14 +191,13 @@ int vdb::entities_t::run(void)
                         std::cout << "  domain: " << color::green
                                   << type.domain_enum()
                                   << color::none << std::endl;
-                        std::cout << "  country: " << color::green
-                                  << type.country_enum()
-                                  << color::none << std::endl;
                     }
                 }
 
                 ++itor;
             }
+
+            ++geometry_itor;
         }
 
         result = 0;
@@ -214,7 +207,7 @@ int vdb::entities_t::run(void)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::entities_t::list_type(const vdis::entity_type_t &type)
+bool vdb::objects_t::list_type(const vdis::object_type_t &type)
 {
     if (not kinds.empty())
     {
@@ -227,14 +220,6 @@ bool vdb::entities_t::list_type(const vdis::entity_type_t &type)
     if (not domains.empty())
     {
         if (domains.find((uint32_t)type.domain) == domains.end())
-        {
-            return false;
-        }
-    }
-
-    if (not countries.empty())
-    {
-        if (countries.find((uint32_t)type.country) == countries.end())
         {
             return false;
         }

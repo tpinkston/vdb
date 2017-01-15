@@ -7,8 +7,10 @@ VDIS_LIB=vdis/libvdis.a
 
 TARGET_CAPTURE=$(BIN_PATH)/vdb-capture
 TARGET_COMMENT=$(BIN_PATH)/vdb-comment
+TARGET_ENTITIES=$(BIN_PATH)/vdb-entities
 TARGET_ENUMS=$(BIN_PATH)/vdb-enums
 TARGET_LIST=$(BIN_PATH)/vdb-list
+TARGET_OBJECTS=$(BIN_PATH)/vdb-objects
 TARGET_PLAYBACK=$(BIN_PATH)/vdb-playback
 TARGET_SUMMARIZE=$(BIN_PATH)/vdb-summarize
 
@@ -21,8 +23,10 @@ GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
 TARGETS=\
 $(TARGET_CAPTURE) \
 $(TARGET_COMMENT) \
+$(TARGET_ENTITIES) \
 $(TARGET_ENUMS) \
 $(TARGET_LIST) \
+$(TARGET_OBJECTS) \
 $(TARGET_PLAYBACK) \
 $(TARGET_SUMMARIZE)
 
@@ -39,7 +43,6 @@ ${SRC_PATH}/vdb_summarize_help.h
 OBJECTS=\
 $(OBJ_PATH)/vdb_associations.o \
 $(OBJ_PATH)/vdb_common.o \
-$(OBJ_PATH)/vdb_entities.o \
 $(OBJ_PATH)/vdb_file_reader.o \
 $(OBJ_PATH)/vdb_file_stream.o \
 $(OBJ_PATH)/vdb_file_types.o \
@@ -92,22 +95,28 @@ clean_vdis:
 .PHONY : clean_vdis
 
 #### Target executables:
-$(TARGET_CAPTURE): target_depends $(SRC_PATH)/vdb_capture.cpp
+$(TARGET_CAPTURE): target_depends $(SRC_PATH)/vdb_capture.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_capture.cpp
-$(TARGET_COMMENT): target_depends $(SRC_PATH)/vdb_comment.cpp
+$(TARGET_COMMENT): target_depends $(SRC_PATH)/vdb_comment.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_comment.cpp
-$(TARGET_ENUMS): target_depends $(SRC_PATH)/vdb_enums.cpp
+$(TARGET_ENTITIES): target_depends $(SRC_PATH)/vdb_entities.*
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_entities.cpp
+$(TARGET_ENUMS): target_depends $(SRC_PATH)/vdb_enums.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_enums.cpp
-$(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.cpp
+$(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_list.cpp
-$(TARGET_PLAYBACK): target_depends $(SRC_PATH)/vdb_playback.cpp
+$(TARGET_OBJECTS): target_depends $(SRC_PATH)/vdb_objects.*
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_objects.cpp
+$(TARGET_PLAYBACK): target_depends $(SRC_PATH)/vdb_playback.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_playback.cpp
-$(TARGET_SUMMARIZE): target_depends $(SRC_PATH)/vdb_summarize.cpp
+$(TARGET_SUMMARIZE): target_depends $(SRC_PATH)/vdb_summarize.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_summarize.cpp
 

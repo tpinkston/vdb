@@ -123,6 +123,16 @@ namespace vdis
         uint8_t                     category;                   // 1 byte
         uint8_t                     subcategory;                // 1 byte
 
+        inline domain_e domain_enum(void) const
+        {
+            return (domain_e)domain;
+        }
+
+        inline object_kind_e kind_enum(void) const
+        {
+            return (object_kind_e)kind;
+        }
+
         inline void clear(void)
         {
             domain = 0;

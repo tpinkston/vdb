@@ -21,6 +21,8 @@ namespace vdb
             std::ostream &out
         );
 
+        static bool     print_pdu_source_time;
+
       private:
 
         static void print_data(

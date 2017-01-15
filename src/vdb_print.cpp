@@ -8,6 +8,9 @@
 #include "vdis_string.h"
 #include "vdis_variable_parameter_records.h"
 
+bool
+    vdb::print::print_pdu_source_time = true;
+
 // ----------------------------------------------------------------------------
 void vdb::print::print_pdu(
     const pdu_data_t &data,
@@ -105,15 +108,15 @@ void vdb::print::print_pdu_normal(
 
     out << data.get_index() << ": ";
 
-    // On playback print the current system time instead of source.
-    //
-    if (true) // TODO options::command == USER_COMMAND_PLAYBACK)
+    if (print_pdu_source_time)
     {
-        time = vdis::get_system_time();
+        out << data.get_source() << "; ";
     }
     else
     {
-        out << data.get_source() << "; ";
+        // Playback...
+        //
+        time = vdis::get_system_time();
     }
 
     out << color::green << (int)data.get_pdu_exercise()

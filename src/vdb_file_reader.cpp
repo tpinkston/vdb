@@ -121,7 +121,7 @@ vdb::pdu_reader_t::pdu_reader_t(const string_t &filename, uint32_t interval) :
     interval_milliseconds(interval),
     index(0)
 {
-    if (options::ipv6)
+    if (vdis::network_options::ipv6)
     {
         vdis::set_address("::1", 0, address_ipv6);
     }
@@ -163,7 +163,7 @@ bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
         data.set_index(index++);
         data.set_pdu_buffer(stream.buffer(), stream.length());
 
-        if (options::ipv6)
+        if (vdis::network_options::ipv6)
         {
             data.set_source(address_ipv6, 0);
         }

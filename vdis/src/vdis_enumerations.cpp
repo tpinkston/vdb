@@ -84,8 +84,6 @@ std::ostream &vdis::enumerations::print(
 {
     std::ostringstream
         stream;
-    string_t
-        string = get_name(enumeration, value);
 
     stream << std::hex << value;
 

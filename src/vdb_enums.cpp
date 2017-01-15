@@ -3,11 +3,9 @@
 #include "vdb_options.h"
 #include "vdb_version.h"
 
-#include "vdis_entity_types.h"
 #include "vdis_enums.h"
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
-#include "vdis_object_types.h"
 
 namespace
 {
