@@ -1,7 +1,9 @@
-#include "vdb_comments.h"
+#include "vdb_comment.h"
+#include "vdb_comment_help.h"
 #include "vdb_common.h"
 #include "vdb_file_reader.h"
 #include "vdb_options.h"
+#include "vdb_version.h"
 
 #include "vdis_logger.h"
 #include "vdis_services.h"
@@ -11,27 +13,137 @@ namespace
 {
     const uint32_t
         COPY_BUFFER_LENGTH = 0x1000;
+    vdb::comment_t
+        comment;
+}
+
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success
+);
+
+// ----------------------------------------------------------------------------
+int main(int argc, char *argv[])
+{
+    vdb::options_t
+        options("vdb-comment", argc, argv);
+    int
+        result = 1;
+
+    options.add(OPTION_COLOR);
+    options.add(OPTION_ERRORS);
+    options.add(OPTION_HELP);
+    options.add(OPTION_WARNINGS);
+    options.add(OPTION_VERBOSE);
+    options.add(vdb::option_t("add", 'A', false));
+    options.add(vdb::option_t("remove", 'R', true));
+
+    options.set_callback(*option_callback);
+
+    if (options.parse())
+    {
+        if (vdb::options::version)
+        {
+            print_vdb_version();
+            result = 0;
+        }
+        else if (vdb::options::help)
+        {
+            print_help();
+            result = 0;
+        }
+        else
+        {
+            result = comment.run();
+        }
+    }
+
+    return result;
 }
 
 // ----------------------------------------------------------------------------
-int vdb::comments::add(void)
+bool option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success)
 {
-    int
-        result = 1;
+    bool result = true;
+
+    if (option.short_option == 'A')
+    {
+        comment.action = vdb::comment_t::ADD;
+    }
+    else if (option.short_option == 'R')
+    {
+        comment.action = vdb::comment_t::REMOVE;
+
+        if (value != "all")
+        {
+            success = vdis::to_uint32(value, comment.deletion);
+
+            if (not success)
+            {
+                std::cerr << "vdb-comment: invalid comment index: "
+                          << value << std::endl;
+            }
+        }
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+int vdb::comment_t::run(void)
+{
+    int result = 1;
+
+    // File argument required
+    //
+    if (options::command_arguments.empty())
+    {
+        std::cerr << "vdb-comment: missing file argument" << std::endl;
+    }
+    switch(action)
+    {
+        case ADD:
+            result = add();
+            break;
+        case REMOVE:
+            result = remove();
+            break;
+        case PRINT:
+            result = print();
+            break;
+        default:
+            std::cerr << "vdb-comment: unexpected action" << std::endl;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+int vdb::comment_t::add(void)
+{
+    int result = 1;
 
     // File argument (1st) required, comment text argument (2nd) optional
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb comment: missing file argument" << std::endl;
+        std::cerr << "vdb-comment: missing file argument" << std::endl;
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb comment: too many arguments" << std::endl;
+        std::cerr << "vdb-comment: too many arguments" << std::endl;
     }
     else
     {
-        const string_t
+        const std::string
             filename = options::command_arguments[0];
         file_header_comment_t
             comment;
@@ -136,24 +248,23 @@ int vdb::comments::add(void)
 }
 
 // ----------------------------------------------------------------------------
-int vdb::comments::remove(void)
+int vdb::comment_t::remove(void)
 {
-    int
-        result = 1;
+    int result = 1;
 
     // File argument (1st) required, comment number argument (2nd) optional
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb uncomment: missing file argument" << std::endl;
+        std::cerr << "vdb-comment: missing file argument" << std::endl;
     }
-    else if (options::command_arguments.size() > 2)
+    else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb uncomment: too many arguments" << std::endl;
+        std::cerr << "vdb-comment: too many arguments" << std::endl;
     }
     else
     {
-        const string_t
+        const std::string
             filename = options::command_arguments[0];
         standard_reader_t
             reader(filename);
@@ -162,10 +273,10 @@ int vdb::comments::remove(void)
         {
             if (reader.header.comments.size() == 0)
             {
-                std::cout << "vdb uncomment: no comments in file '"
+                std::cout << "vdb-comment: no comments in file '"
                           << filename << "'" << std::endl;
             }
-            else if (not options::command_arguments.size() == 1)
+            else if (deletion == 0)
             {
                 // Not comment number specified...
                 //
@@ -176,42 +287,19 @@ int vdb::comments::remove(void)
                 // User provided a number for the comment to remove.
                 // Numbers start at 1 so it must be decremented to an index.
                 //
-                const string_t
-                    value = options::command_arguments[1];
-                int32_t
-                    number = 0;
+                deletion--;
 
-                if (not vdis::to_int32(value, number))
+                if (deletion <= reader.header.comments.size())
                 {
-                    std::cout << "vdb uncomment: invalid comment number '"
-                              << value << "'" << std::endl;
+                    // Convert number to index
+                    //
+                    result = remove_comment(reader, (deletion - 1));
                 }
                 else
                 {
-                    if (number < 1)
-                    {
-                        std::cerr << "vdb uncomment: invalid comment number '"
-                                  << value << "'" << std::endl;
-                    }
-                    else
-                    {
-                        const int32_t
-                            current_count = reader.header.comments.size();
-
-                        if (number <= current_count)
-                        {
-                            // Convert number to index
-                            //
-                            result = remove_comment(reader, (number - 1));
-                        }
-                        else
-                        {
-                            std::cerr << "vdb uncomment: comment number "
-                                      << "out of range: " << number
-                                      << ", range is 1.." << current_count
-                                      << std::endl;
-                        }
-                    }
+                    std::cerr << "vdb-comment: comment number out of range: "
+                              << (deletion + 1) << ", range is 1.."
+                              << reader.header.comments.size() << std::endl;
                 }
             }
         }
@@ -221,7 +309,7 @@ int vdb::comments::remove(void)
 }
 
 // ----------------------------------------------------------------------------
-int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
+int vdb::comment_t::remove_comment(standard_reader_t &reader, uint32_t index)
 {
     file_stream
         &input = reader.stream;
@@ -230,7 +318,7 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 
     // Print comment and get user confirmation
     //
-    reader.header.print_comment(string_t(), index, std::cout);
+    reader.header.print_comment(std::string(), index, std::cout);
     std::cout << "Delete this comment (y/n)? ";
 
     if (not user_confirmation())
@@ -315,7 +403,7 @@ int vdb::comments::remove_comment(standard_reader_t &reader, int32_t index)
 }
 
 // ----------------------------------------------------------------------------
-int vdb::comments::remove_all_comments(standard_reader_t &reader)
+int vdb::comment_t::remove_all_comments(standard_reader_t &reader)
 {
     file_stream
         &input = reader.stream;
@@ -369,6 +457,52 @@ int vdb::comments::remove_all_comments(standard_reader_t &reader)
             std::cout << "All comments removed." << std::endl;
         }
      }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+int vdb::comment_t::print(void)
+{
+    const std::vector<std::string>
+        &files = options::command_arguments;
+    int
+        result = 1;
+
+    // At least one file argument required
+    //
+    if (options::command_arguments.empty())
+    {
+        std::cerr << "vdb-comment: missing file argument(s)" << std::endl;
+    }
+    else for(uint32_t i = 0; i < files.size(); ++i)
+    {
+        const std::string
+            filename = files[i];
+
+        standard_reader_t
+            reader(filename);
+
+        if (reader.good())
+        {
+            if (reader.header.comments.empty())
+            {
+                std::cout << "No comments in file: " << color::bold_cyan
+                          << filename << color::none << std::endl;
+            }
+            else
+            {
+                std::cout << "Printing comments in file: " << color::bold_cyan
+                          << filename << color::none << std::endl;
+
+
+                for(uint32_t j = 0; j < reader.header.comments.size(); ++j)
+                {
+                    reader.header.print_comment(std::string(), j, std::cout);
+                }
+            }
+        }
+    }
 
     return result;
 }

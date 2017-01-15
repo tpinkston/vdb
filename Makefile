@@ -2,8 +2,12 @@ SRC_PATH=src
 OBJ_PATH=obj
 BIN_PATH=bin
 HELP_PATH=help
+
 VDIS_LIB=vdis/libvdis.a
+
 TARGET_CAPTURE=$(BIN_PATH)/vdb-capture
+TARGET_COMMENT=$(BIN_PATH)/vdb-comment
+TARGET_ENUMS=$(BIN_PATH)/vdb-enums
 TARGET_LIST=$(BIN_PATH)/vdb-list
 TARGET_PLAYBACK=$(BIN_PATH)/vdb-playback
 TARGET_SUMMARIZE=$(BIN_PATH)/vdb-summarize
@@ -13,6 +17,14 @@ CPP_FLAGS=-g -fPIC -std=c++0x -Wall -Ivdis/src -Ivdis/enumerations
 
 GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
+
+TARGETS=\
+$(TARGET_CAPTURE) \
+$(TARGET_COMMENT) \
+$(TARGET_ENUMS) \
+$(TARGET_LIST) \
+$(TARGET_PLAYBACK) \
+$(TARGET_SUMMARIZE)
 
 HELP_FILES=\
 ${SRC_PATH}/vdb_capture_help.h \
@@ -26,7 +38,6 @@ ${SRC_PATH}/vdb_summarize_help.h
 
 OBJECTS=\
 $(OBJ_PATH)/vdb_associations.o \
-$(OBJ_PATH)/vdb_comments.o \
 $(OBJ_PATH)/vdb_common.o \
 $(OBJ_PATH)/vdb_entities.o \
 $(OBJ_PATH)/vdb_file_reader.o \
@@ -41,7 +52,7 @@ $(OBJ_PATH)/vdb_pdu_data.o \
 $(OBJ_PATH)/vdb_print.o \
 $(OBJ_PATH)/vdb_scan.o
 
-all: $(TARGET_CAPTURE) $(TARGET_LIST) $(TARGET_PLAYBACK) $(TARGET_SUMMARIZE)
+all: $(TARGETS)
 .PHONY : all
 
 rebuild: clean all
@@ -59,13 +70,10 @@ clean: clean_vdis
 	@rm -fv $(HELP_FILES)
 	@rm -rfv $(BIN_PATH)
 	@rm -rfv $(OBJ_PATH)
-	@rm -fv $(TARGET_CAPTURE)
-	@rm -fv $(TARGET_LIST)
-	@rm -fv $(TARGET_PLAYBACK)
-	@rm -fv $(TARGET_SUMMARIZE)
+	@rm -fv $(TARGETS)
 .PHONY : clean
 
-target_depends: vdis directories version $(HELP_FILES) $(OBJECTS) ${SRC_PATH}/vdb_git.h ${SRC_PATH}/vdb_version.h
+target_depends: vdis directories version $(HELP_FILES) $(OBJECTS)
 .PHONY : target_depends
 
 #### Directories:
@@ -87,6 +95,12 @@ clean_vdis:
 $(TARGET_CAPTURE): target_depends $(SRC_PATH)/vdb_capture.cpp
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_capture.cpp
+$(TARGET_COMMENT): target_depends $(SRC_PATH)/vdb_comment.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_comment.cpp
+$(TARGET_ENUMS): target_depends $(SRC_PATH)/vdb_enums.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_enums.cpp
 $(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.cpp
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_list.cpp
@@ -98,34 +112,34 @@ $(TARGET_SUMMARIZE): target_depends $(SRC_PATH)/vdb_summarize.cpp
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_summarize.cpp
 
 #### Help files:
-${SRC_PATH}/vdb_capture_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_capture.txt ${SRC_PATH}/vdb_capture_help.h
-${SRC_PATH}/vdb_comment_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_comment.txt ${SRC_PATH}/vdb_comment_help.h
-${SRC_PATH}/vdb_entities_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_entities.txt ${SRC_PATH}/vdb_entities_help.h
-${SRC_PATH}/vdb_enums_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_enums.txt ${SRC_PATH}/vdb_enums_help.h
-${SRC_PATH}/vdb_list_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_list.txt ${SRC_PATH}/vdb_list_help.h
-${SRC_PATH}/vdb_objects_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_objects.txt ${SRC_PATH}/vdb_objects_help.h
-${SRC_PATH}/vdb_playback_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_playback.txt ${SRC_PATH}/vdb_playback_help.h
-${SRC_PATH}/vdb_summarize_help.h:
-	@$(HELP_PATH)/parse.sh $(HELP_PATH)/help_summarize.txt ${SRC_PATH}/vdb_summarize_help.h
+${SRC_PATH}/vdb_capture_help.h: $(HELP_PATH)/help_capture.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_comment_help.h: $(HELP_PATH)/help_comment.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_entities_help.h: $(HELP_PATH)/help_entities.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_enums_help.h: $(HELP_PATH)/help_enums.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_list_help.h: $(HELP_PATH)/help_list.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_objects_help.h: $(HELP_PATH)/help_objects.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_playback_help.h: $(HELP_PATH)/help_playback.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_summarize_help.h: $(HELP_PATH)/help_summarize.txt
+	@$(HELP_PATH)/parse.sh $< $@
 
 #### Object files:
 $(OBJ_PATH)/vdb_associations.o : $(SRC_PATH)/vdb_associations.cpp $(SRC_PATH)/vdb_associations.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_comments.o : $(SRC_PATH)/vdb_comments.cpp $(SRC_PATH)/vdb_comments.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_common.o : $(SRC_PATH)/vdb_common.cpp $(SRC_PATH)/vdb_common.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_entities.o : $(SRC_PATH)/vdb_entities.cpp $(SRC_PATH)/vdb_entities.h
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
+$(OBJ_PATH)/vdb_enums.o : $(SRC_PATH)/vdb_enums.cpp $(SRC_PATH)/vdb_enums.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_file_reader.o : $(SRC_PATH)/vdb_file_reader.cpp $(SRC_PATH)/vdb_file_reader.h

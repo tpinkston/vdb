@@ -135,11 +135,11 @@ int vdb::list_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb list: missing file argument" << std::endl;
+        std::cerr << "vdb-list: missing file argument" << std::endl;
     }
     else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb list: too many arguments" << std::endl;
+        std::cerr << "vdb-list: too many arguments" << std::endl;
     }
     else
     {
