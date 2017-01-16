@@ -139,12 +139,6 @@ ${SRC_PATH}/vdb_summarize_help.h: $(HELP_PATH)/help_summarize.txt
 $(OBJ_PATH)/vdb_common.o : $(SRC_PATH)/vdb_common.cpp $(SRC_PATH)/vdb_common.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_entities.o : $(SRC_PATH)/vdb_entities.cpp $(SRC_PATH)/vdb_entities.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_enums.o : $(SRC_PATH)/vdb_enums.cpp $(SRC_PATH)/vdb_enums.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_file_reader.o : $(SRC_PATH)/vdb_file_reader.cpp $(SRC_PATH)/vdb_file_reader.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
@@ -160,25 +154,16 @@ $(OBJ_PATH)/vdb_file_writer.o : $(SRC_PATH)/vdb_file_writer.cpp $(SRC_PATH)/vdb_
 $(OBJ_PATH)/vdb_filter.o : $(SRC_PATH)/vdb_filter.cpp $(SRC_PATH)/vdb_filter.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_list.o : $(SRC_PATH)/vdb_list.cpp $(SRC_PATH)/vdb_list.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_options.o : $(SRC_PATH)/vdb_options.cpp $(SRC_PATH)/vdb_options.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_pdu_data.o : $(SRC_PATH)/vdb_pdu_data.cpp $(SRC_PATH)/vdb_pdu_data.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_playback.o : $(SRC_PATH)/vdb_playback.cpp $(SRC_PATH)/vdb_playback.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_print.o : $(SRC_PATH)/vdb_print.cpp $(SRC_PATH)/vdb_print.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_scan.o : $(SRC_PATH)/vdb_scan.cpp $(SRC_PATH)/vdb_scan.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_summarize.o : $(SRC_PATH)/vdb_summarize.cpp $(SRC_PATH)/vdb_summarize.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 	
