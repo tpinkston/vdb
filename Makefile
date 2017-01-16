@@ -41,15 +41,12 @@ ${SRC_PATH}/vdb_playback_help.h \
 ${SRC_PATH}/vdb_summarize_help.h
 
 OBJECTS=\
-$(OBJ_PATH)/vdb_associations.o \
 $(OBJ_PATH)/vdb_common.o \
 $(OBJ_PATH)/vdb_file_reader.o \
 $(OBJ_PATH)/vdb_file_stream.o \
 $(OBJ_PATH)/vdb_file_types.o \
 $(OBJ_PATH)/vdb_file_writer.o \
 $(OBJ_PATH)/vdb_filter.o \
-$(OBJ_PATH)/vdb_fires.o \
-$(OBJ_PATH)/vdb_lasers.o \
 $(OBJ_PATH)/vdb_options.o \
 $(OBJ_PATH)/vdb_pdu_data.o \
 $(OBJ_PATH)/vdb_print.o \
@@ -139,9 +136,6 @@ ${SRC_PATH}/vdb_summarize_help.h: $(HELP_PATH)/help_summarize.txt
 	@$(HELP_PATH)/parse.sh $< $@
 
 #### Object files:
-$(OBJ_PATH)/vdb_associations.o : $(SRC_PATH)/vdb_associations.cpp $(SRC_PATH)/vdb_associations.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_common.o : $(SRC_PATH)/vdb_common.cpp $(SRC_PATH)/vdb_common.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
@@ -164,12 +158,6 @@ $(OBJ_PATH)/vdb_file_writer.o : $(SRC_PATH)/vdb_file_writer.cpp $(SRC_PATH)/vdb_
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_filter.o : $(SRC_PATH)/vdb_filter.cpp $(SRC_PATH)/vdb_filter.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_fires.o : $(SRC_PATH)/vdb_fires.cpp $(SRC_PATH)/vdb_fires.h
-	@echo compiling: $<
-	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
-$(OBJ_PATH)/vdb_lasers.o : $(SRC_PATH)/vdb_lasers.cpp $(SRC_PATH)/vdb_lasers.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 $(OBJ_PATH)/vdb_list.o : $(SRC_PATH)/vdb_list.cpp $(SRC_PATH)/vdb_list.h

@@ -85,27 +85,31 @@ void logger::log_message(
 {
     std::ostream
         *stream_ptr = &out;
+    std::string
+        filename(file);
     bool
         console_logging = console_logging_out;
 
-    if ((level == logger::ERROR) or (level == logger::WARNING))
+    if ((level == logger::FATAL) or
+        (level == logger::ERROR) or
+        (level == logger::WARNING))
     {
         stream_ptr = &err;
         console_logging = console_logging_err;
     }
+
+    basename(filename);
 
     // For console logging only print file and line number on errors
     // or warnings, always when console logging is off.
     //
     if (not console_logging)
     {
-        std::string
-            filename(file);
-
-        basename(filename);
-
         switch(level)
         {
+            case FATAL:
+                *stream_ptr << "FATAL";
+                break;
             case ERROR:
                 *stream_ptr << "ERROR";
                 break;
@@ -127,12 +131,11 @@ void logger::log_message(
     }
     else if ((level == ERROR) or (level == WARNING))
     {
-        std::string
-            filename(file);
-
-        basename(filename);
-
-        if (level == ERROR)
+        if (level == FATAL)
+        {
+            *stream_ptr << color::bold_red << "FATAL" << color::none;
+        }
+        else if (level == ERROR)
         {
             *stream_ptr << color::bold_red << "ERROR" << color::none;
         }

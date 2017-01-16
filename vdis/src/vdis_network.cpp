@@ -117,7 +117,7 @@ void vdis::set_address(
 
         if (result == -1)
         {
-            LOG_ERROR("inet_pton: '%s'", std::strerror(errno));
+            LOG_FATAL("inet_pton: '%s'", std::strerror(errno));
 
             if (exit_on_error)
             {
@@ -126,7 +126,7 @@ void vdis::set_address(
         }
         else if (result == 0)
         {
-            LOG_ERROR("Invalid address '%s'", address);
+            LOG_FATAL("Invalid address '%s'", address);
 
             if (exit_on_error)
             {
@@ -206,7 +206,7 @@ void vdis::set_address(
 
         if (result == -1)
         {
-            LOG_ERROR("inet_pton: '%s'", std::strerror(errno));
+            LOG_FATAL("inet_pton: '%s'", std::strerror(errno));
 
             if (exit_on_error)
             {
@@ -215,7 +215,7 @@ void vdis::set_address(
         }
         else if (result == 0)
         {
-            LOG_ERROR("Invalid address '%s'", address);
+            LOG_FATAL("Invalid address '%s'", address);
 
             if (exit_on_error)
             {
@@ -458,7 +458,7 @@ vdis::socket_base_t::socket_base_t(
 
     if (socket_descriptor == -1)
     {
-        LOG_ERROR(
+        LOG_FATAL(
             "Failed to open %s socket: %s",
             (socket_ipv6 ? "IPv6" : "IPv4"),
             std::strerror(errno));
@@ -514,7 +514,7 @@ void vdis::socket_base_t::set_socket_option(
 
     if (result != 0)
     {
-        LOG_ERROR(
+        LOG_FATAL(
             "Failed to set option (level %d, option %d, value %d)"
             "on %s socket: %s",
             level,
@@ -544,7 +544,7 @@ void vdis::socket_base_t::bind_socket(void)
 
         if (result < 0)
         {
-            LOG_ERROR(
+            LOG_FATAL(
                 "Failed to bind IPv6 socket (address '%s'): %s",
                 socket_address,
                 std::strerror(errno));
@@ -574,7 +574,7 @@ void vdis::socket_base_t::bind_socket(void)
 
         if (result < 0)
         {
-            LOG_ERROR(
+            LOG_FATAL(
                 "Failed to bind IPv4 socket (address '%s'): %s",
                 socket_address,
                 std::strerror(errno));

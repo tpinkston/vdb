@@ -1,11 +1,8 @@
-#include "vdb_associations.h"
 #include "vdb_common.h"
 #include "vdb_entities.h"
 #include "vdb_file_reader.h"
 #include "vdb_file_writer.h"
 #include "vdb_filter.h"
-#include "vdb_fires.h"
-#include "vdb_lasers.h"
 #include "vdb_list.h"
 #include "vdb_list_help.h"
 #include "vdb_options.h"
@@ -223,31 +220,6 @@ bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
                     if (scan::scanning)
                     {
                         scan::process_pdu(data, *pdu_ptr);
-
-                        if (scan::associations)
-                        {
-                            associations::process_pdu(data, *pdu_ptr);
-                        }
-
-                        if (scan::lasers)
-                        {
-                            lasers::process_pdu(data, *pdu_ptr);
-                        }
-
-                        if (scan::fires)
-                        {
-                            fires::process_pdu(data, *pdu_ptr);
-                        }
-
-                        if (scan::collisions)
-                        {
-                            // TODO scan_collisions
-                        }
-
-                        if (scan::objects)
-                        {
-                            // TODO scan_objects
-                        }
                     }
                     else
                     {
@@ -256,8 +228,10 @@ bool vdb::list_t::process_pdu_data(const pdu_data_t &data)
 
                     if (file_ptr)
                     {
-                        pdu_data_t
-                            data_copy(data);
+                        // Make a copy of the data, overwrite the index
+                        // and write it to the output file.
+                        //
+                        pdu_data_t data_copy(data);
 
                         data_copy.set_index(output_index++);
 

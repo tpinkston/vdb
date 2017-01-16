@@ -451,25 +451,25 @@ vdis::pdu_t::pdu_t(byte_stream_t &stream) : base_ptr(0)
                 base_ptr = new iff_pdu_t;
                 break;
             }
-//            case PDU_TYPE_MINEFIELD_STATE: TODO
+//            case PDU_TYPE_MINEFIELD_STATE: TODO PDU_TYPE_MINEFIELD_STATE
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new minefield_state_pdu_t...");
 //                base_ptr = new minefield_state_pdu_t;
 //                break;
 //            }
-//            case PDU_TYPE_MINEFIELD_QUERY: TODO
+//            case PDU_TYPE_MINEFIELD_QUERY: TODO PDU_TYPE_MINEFIELD_QUERY
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new minefield_query_pdu_t...");
 //                base_ptr = new minefield_query_pdu_t;
 //                break;
 //            }
-//            case PDU_TYPE_MINEFIELD_DATA: TODO
+//            case PDU_TYPE_MINEFIELD_DATA: TODO PDU_TYPE_MINEFIELD_DATA
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new minefield_data_pdu_t...");
 //                base_ptr = new minefield_data_pdu_t;
 //                break;
 //            }
-//            case PDU_TYPE_MINEFIELD_RESPONSE_NAK: TODO
+//            case PDU_TYPE_MINEFIELD_RESPONSE_NAK: TODO PDU_TYPE_MINEFIELD_RESPONSE_NAK
 //            {
 //                LOG_EXTRA_VERBOSE("Creating new minefield_response_nack_pdu_t...");
 //                base_ptr = new minefield_response_nack_pdu_t;
