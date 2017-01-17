@@ -53,8 +53,6 @@ namespace vdb
 
         const string_t
             filename;
-        uint64_t
-            start_time;     // milliseconds
         bool
             error_condition;
     };
