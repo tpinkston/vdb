@@ -2,7 +2,7 @@
 #include "vdb_options.h"
 
 #include "vdis_logger.h"
-#include "vdis_network.h"
+#include "vdis_string.h"
 
 // ----------------------------------------------------------------------------
 vdb::file_reader_t::file_reader_t(const string_t &filename) :
@@ -108,6 +108,7 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
         }
         else
         {
+            LOG_EXTRA_VERBOSE("Valid entry at index %d...", data.get_index());
             valid_entry = true;
         }
     }
@@ -116,7 +117,7 @@ bool vdb::standard_reader_t::next_entry(pdu_data_t &data)
 }
 
 // ----------------------------------------------------------------------------
-vdb::pdu_reader_t::pdu_reader_t(const string_t &filename, uint32_t interval) :
+vdb::pdu_reader_t::pdu_reader_t(const string_t &filename, uint64_t interval) :
     file_reader_t(filename),
     interval_milliseconds(interval),
     index(0)
@@ -170,6 +171,53 @@ bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
         else
         {
             data.set_source(address_ipv4, 0);
+        }
+
+        if (index == 0)
+        {
+            // Set initial value for the timestamp.
+            //
+            vdis::byte_stream_t
+                timestamp_stream(4);
+            const uint8_t
+                *pdu_buffer = data.get_pdu_buffer();
+            uint8_t
+                *timestamp_buffer = timestamp_stream.update_buffer();
+
+            timestamp_buffer[0] = pdu_buffer[4];
+            timestamp_buffer[1] = pdu_buffer[5];
+            timestamp_buffer[2] = pdu_buffer[6];
+            timestamp_buffer[3] = pdu_buffer[7];
+            timestamp.read(timestamp_stream);
+
+            LOG_EXTRA_VERBOSE(
+                "Initial timestamp '%d' has value %d...",
+                vdis::to_string(timestamp).c_str(),
+                timestamp.value);
+        }
+        else
+        {
+            // Update the 4 bytes in the PDU for the timestamp (in PDU header)
+            //
+            vdis::byte_stream_t
+                timestamp_stream(4);
+            uint8_t
+                *pdu_buffer = data.update_pdu_buffer();
+
+            timestamp.add_milliseconds(interval_milliseconds);
+            timestamp.write(timestamp_stream);
+
+            // Set adjusted timestamp on PDU buffer to be sent.
+            //
+            pdu_buffer[4] = timestamp_stream[0];
+            pdu_buffer[5] = timestamp_stream[1];
+            pdu_buffer[6] = timestamp_stream[2];
+            pdu_buffer[7] = timestamp_stream[3];
+
+            LOG_EXTRA_VERBOSE(
+                "Updated timestamp '%s' has value %d...",
+                vdis::to_string(timestamp).c_str(),
+                timestamp.value);
         }
 
         success = true;

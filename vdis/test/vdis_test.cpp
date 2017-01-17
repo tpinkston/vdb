@@ -50,12 +50,14 @@ void vdis::test::assert(
 int vdis::test::run(int argc, char *argv[])
 {
     //logger::set_enabled(logger::EXTRA_VERBOSE, true);
-    //logger::set_enabled(logger::VERBOSE, true);
+    logger::set_enabled(logger::VERBOSE, true);
     logger::set_enabled(logger::WARNING, true);
+    logger::set_enabled(logger::ERROR, true);
 
     LOG_EXTRA_VERBOSE("Extra verbose on...");
     LOG_VERBOSE("Verbose on...");
     LOG_WARNING("Warnings on...");
+    LOG_ERROR("Errors on...");
 
     set_byteswapping();
     enumerations::load();
@@ -65,13 +67,13 @@ int vdis::test::run(int argc, char *argv[])
     {
         out << "Try one of the following:" << std::endl
             << "  vdis_test all" << std::endl
-            << "  vdis_test test_byte_buffer" << std::endl
-            << "  vdis_test test_byte_stream" << std::endl
-            << "  vdis_test test_common" << std::endl
-            << "  vdis_test test_entity_types" << std::endl
-            << "  vdis_test test_object_types" << std::endl
-            << "  vdis_test test_pdus" << std::endl
-            << "  vdis_test test_services" << std::endl;
+            << "  vdis_test byte_buffer" << std::endl
+            << "  vdis_test byte_stream" << std::endl
+            << "  vdis_test common" << std::endl
+            << "  vdis_test entity_types" << std::endl
+            << "  vdis_test object_types" << std::endl
+            << "  vdis_test pdus" << std::endl
+            << "  vdis_test services" << std::endl;
     }
     else if (argc > 2)
     {
@@ -81,6 +83,8 @@ int vdis::test::run(int argc, char *argv[])
     {
         std::string
             test_name(argv[1]);
+        bool
+            tested = true;
 
         if (test_name == "byte_buffer")
         {
@@ -110,7 +114,7 @@ int vdis::test::run(int argc, char *argv[])
         {
             test_services();
         }
-        else
+        else if (test_name == "all")
         {
             test_byte_buffer();
             test_byte_stream();
@@ -120,10 +124,17 @@ int vdis::test::run(int argc, char *argv[])
             test_object_types();
             test_pdus();
         }
+        else
+        {
+            out << "Unknown test name: " << test_name << std::endl;
+        }
 
-        out << "==============================================" << std::endl
-            << "Test complete (" << failures << " FAILURES)" << std::endl
-            << "==============================================" << std::endl;
+        if (tested)
+        {
+            out << "==============================================" << std::endl
+                << "Test complete (" << failures << " FAILURES)" << std::endl
+                << "==============================================" << std::endl;
+        }
     }
 
     return failures;
@@ -133,7 +144,7 @@ int vdis::test::run(int argc, char *argv[])
 bool vdis::test::import_pdu(const std::string &filename, byte_stream_t &stream)
 {
     const std::string
-        path = ("vdis/data/pdus/" + filename);
+        path = ("data/pdus/" + filename);
     std::ifstream
         input;
     bool

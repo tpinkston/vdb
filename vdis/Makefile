@@ -1,5 +1,6 @@
 SRC_PATH=src
 OBJ_PATH=obj
+TEST_PATH=test
 LIB_NAME=libvdis.a
 
 CPP=g++
@@ -26,25 +27,44 @@ $(OBJ_PATH)/vdis_standard_variable_records.o \
 $(OBJ_PATH)/vdis_string.o \
 $(OBJ_PATH)/vdis_variable_parameter_records.o
 
-all: data directories $(LIB_NAME)
+TEST_OBJECTS=\
+$(OBJ_PATH)/vdis_test_byte_buffer.o \
+$(OBJ_PATH)/vdis_test_byte_stream.o \
+$(OBJ_PATH)/vdis_test_common.o \
+$(OBJ_PATH)/vdis_test_entity_types.o \
+$(OBJ_PATH)/vdis_test_object_types.o \
+$(OBJ_PATH)/vdis_test_pdus.o \
+$(OBJ_PATH)/vdis_test_services.o
+
+TARGET=vdis_test
+TARGET_INCLUDES=-I$(TEST_PATH) -I$(SRC_PATH)
+
+all: $(TARGET)
 
 clean:
-	@rm -rfv $(LIB_NAME) $(OBJ_PATH)
+	@rm -rfv $(TARGET) $(LIB_NAME) $(OBJ_PATH)
 .PHONY: clean
 
 data:
 	@data/update.sh
 .PHONY: data
 
+#### Directories:
 directories: $(OBJ_PATH)
-
 $(OBJ_PATH):
 	@mkdir -pv $(OBJ_PATH)
 	
+#### Library:
 $(LIB_NAME): $(OBJECTS)
 	@echo linking: $(LIB_NAME)
 	@ar -rs $(LIB_NAME) $(OBJECTS)
-	
+
+#### Target executables:
+$(TARGET) : data directories $(LIB_NAME) $(TEST_OBJECTS) $(TEST_PATH)/vdis_test.h $(TEST_PATH)/vdis_test.cpp
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(TEST_OBJECTS) $(LIB_NAME) $(TARGET_INCLUDES) ${TEST_PATH}/vdis_test.cpp
+
+#### Object files:
 $(OBJ_PATH)/vdis_appearance.o : $(SRC_PATH)/vdis_appearance.cpp $(SRC_PATH)/vdis_appearance.h
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
@@ -103,3 +123,25 @@ $(OBJ_PATH)/vdis_variable_parameter_records.o : $(SRC_PATH)/vdis_variable_parame
 	@echo compiling: $<
 	@$(CPP) $(CPP_FLAGS) -c -o $@ $<
 
+#### Test object files:
+$(OBJ_PATH)/vdis_test_byte_buffer.o : $(TEST_PATH)/vdis_test_byte_buffer.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_byte_stream.o : $(TEST_PATH)/vdis_test_byte_stream.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_common.o : $(TEST_PATH)/vdis_test_common.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_entity_types.o : $(TEST_PATH)/vdis_test_entity_types.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_object_types.o : $(TEST_PATH)/vdis_test_object_types.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_pdus.o : $(TEST_PATH)/vdis_test_pdus.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)
+$(OBJ_PATH)/vdis_test_services.o : $(TEST_PATH)/vdis_test_services.cpp
+	@echo compiling: $<
+	@$(CPP) $(CPP_FLAGS) -c -o $@ $< $(TARGET_INCLUDES)

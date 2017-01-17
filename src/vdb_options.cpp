@@ -54,8 +54,10 @@ void vdb::options_t::add(option_t option)
 
     if (option_found)
     {
-        std::cerr << command << ": duplicate option added: "
-                  << option << std::endl;
+        LOG_FATAL(
+            "%s: duplicate option added: %s",
+            command.c_str(),
+            vdis::to_string(option).c_str());
     }
     else
     {
@@ -70,15 +72,14 @@ bool vdb::options_t::parse(void)
 
     if (not callback)
     {
-        std::cerr << command << ": No option callback!" << std::endl;
+        LOG_FATAL("%s: No option callback!", command.c_str());
         success = false;
     }
     else for(int i = 0; success and (i < count); ++i)
     {
         if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: values[" << i << "]='"
-                      << values[i] << "'" << std::endl;
+            CONSOLE_OUT("DEBUG: parse: values[%d]='%s'", i, values[i].c_str());
         }
 
         if (vdis::starts_with(values[i], "--"))
@@ -94,9 +95,9 @@ bool vdb::options_t::parse(void)
 
             if (OPTIONS_DEBUG)
             {
-                std::cout << "DEBUG: parse: advance: "
-                          << (advance ? "true" : "false")
-                          << std::endl;
+                CONSOLE_OUT(
+                    "DEBUG: parse: advance: %s",
+                    (advance ? "true" : "false"));
             }
 
             if (advance)
@@ -112,9 +113,7 @@ bool vdb::options_t::parse(void)
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse: returning: "
-                  << (success ? "true" : "false")
-                  << std::endl;
+        CONSOLE_OUT("DEBUG: parse: returning: %s", success ? "true" : "false");
     }
 
     return success;
@@ -146,8 +145,10 @@ bool vdb::options_t::parse_long_option(int current)
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_long_option: --" << name << "=\""
-                  << value << "\"" << std::endl;
+        CONSOLE_OUT(
+            "DEBUG: parse_long_option: --%s=%s",
+            name.c_str(),
+            value.c_str());
     }
 
     // Option search
@@ -162,19 +163,24 @@ bool vdb::options_t::parse_long_option(int current)
 
             if (OPTIONS_DEBUG)
             {
-                std::cout << "DEBUG: parse_long_option: found: "
-                          << *option_ptr << std::endl;
+                CONSOLE_OUT(
+                    "DEBUG: parse_long_option: found: %s",
+                    vdis::to_string(*option_ptr).c_str());
             }
 
             if (option_ptr->needs_value and value.empty())
             {
-                std::cerr << command << ": option requires a value: --"
-                          << name << std::endl;
+                LOG_FATAL(
+                    "%s: option requires a value: -- %s",
+                    command.c_str(),
+                    name.c_str());
             }
             else if (not option_ptr->needs_value and not value.empty())
             {
-                std::cerr << command << ": option does not take a value: --"
-                          << name << std::endl;
+                LOG_FATAL(
+                    "%s: option does not take a value: -- %s",
+                    command.c_str(),
+                    name.c_str());
             }
             else
             {
@@ -185,7 +191,10 @@ bool vdb::options_t::parse_long_option(int current)
 
     if (not option_found)
     {
-        std::cerr << command << ": invalid option: --" << name << std::endl;
+        LOG_FATAL(
+            "%s: invalid option: -- %s",
+            command.c_str(),
+            name.c_str());
     }
 
     return success;
@@ -205,9 +214,10 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_short_options: parsing '" << values[current]
-                  << "', '" << ((next > -1) ? values[next] : "null")
-                  << "'" << std::endl;
+        CONSOLE_OUT(
+            "DEBUG: parse_short_options: parsing '%s', '%s'",
+            values[current].c_str(),
+            ((next > -1) ? values[next].c_str() : "null"));
     }
 
     // Go through short options character by character.
@@ -216,8 +226,9 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
     {
         if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: parse_short_options: searching for '"
-                      << argument[i] << "'" << std::endl;
+            CONSOLE_OUT(
+                "DEBUG: parse_short_options: searching for '%c'",
+                argument[i]);
         }
 
         option_found = false;
@@ -234,8 +245,9 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
                 if (OPTIONS_DEBUG)
                 {
-                    std::cout << "DEBUG: parse_short_options: found: "
-                              << *option_ptr << std::endl;
+                    CONSOLE_OUT(
+                        "DEBUG: parse_short_options: found: %s",
+                        vdis::to_string(*option_ptr).c_str());
                 }
 
                 // Value in the next argument is only usable if this option
@@ -248,8 +260,10 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
                 if (option_ptr->needs_value and not value_usable)
                 {
-                    std::cerr << command << ": option requires a value: -"
-                              << argument[i] << std::endl;
+                    LOG_FATAL(
+                        "%s: option requires a value: -%c",
+                        command.c_str(),
+                        argument[i]);
                     success = false;
                 }
                 else if (value_usable)
@@ -266,8 +280,10 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
         if (not option_found)
         {
-            std::cerr << command << ": invalid option: -"
-                      << argument[i] << std::endl;
+            LOG_FATAL(
+                "%s: invalid option: -%c",
+                command.c_str(),
+                argument[i]);
             success = false;
         }
     }
@@ -286,9 +302,9 @@ bool vdb::options_t::parse_option(
     {
         if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: parse_option: callback returned true, "
-                      << "success: " << (success ? "true" : "false")
-                      << std::endl;
+            CONSOLE_OUT(
+                "DEBUG: parse_option: callback returned true, success: %s",
+                (success ? "true" : "false"));
         }
 
         return success;
@@ -379,8 +395,11 @@ bool vdb::options_t::parse_option(
                 success = parse_integers(value, filter::exclude_types);
                 break;
             default:
-                std::cerr << command << ": unexpected option '"
-                          << option << "'" << std::endl;
+                LOG_FATAL(
+                    "%s: unexpected option: -%c/--%s",
+                    command.c_str(),
+                    option.short_option,
+                    option.long_option.c_str());
         }
     }
 
@@ -401,7 +420,7 @@ bool vdb::options_t::parse_string_set(
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_string_set: '" << input << "'" << std::endl;
+        CONSOLE_OUT("DEBUG: parse_string_set: '%s'", input.c_str());
     }
 
     for(uint32_t i = 0; i < values.size(); ++i)
@@ -432,7 +451,7 @@ bool vdb::options_t::parse_entity_ids(
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_entity_ids: '" << input << "'" << std::endl;
+        CONSOLE_OUT("DEBUG: parse_entity_ids: '%s'", input.c_str());
     }
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
@@ -466,8 +485,10 @@ bool vdb::options_t::parse_entity_id(
 
     if (vdis::tokenize(swapped, tokens) != 3)
     {
-        std::cerr << command << ": expected entity ID fomat is '1.2.3' not '"
-                  << input << "'" << std::endl;
+        LOG_FATAL(
+            "%s: expected entity ID fomat is '1.2.3' not '%s'",
+            command.c_str(),
+            input.c_str());
     }
     else
     {
@@ -493,14 +514,18 @@ bool vdb::options_t::parse_entity_id(
             }
             else
             {
-                std::cerr << command << ": value out of range in '" << input
-                          << "'" << std::endl;
+                LOG_FATAL(
+                    "%s: value out of range in '%s'",
+                    command.c_str(),
+                    input.c_str());
             }
         }
         else
         {
-            std::cerr << command << ": invalid value in '" << input
-                      << "'" << std::endl;
+            LOG_FATAL(
+                "%s: invalid value in '%s'",
+                command.c_str(),
+                input.c_str());
         }
     }
 
@@ -515,13 +540,18 @@ bool vdb::options_t::parse_entity_id(
 
         if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: parse_entity_id: '"
-                      << input << "' -> " << entity_id << std::endl;
+            CONSOLE_OUT(
+                "DEBUG: parse_entity_id: '%s' -> %s",
+                input.c_str(),
+                vdis::to_string(entity_id).c_str());
         }
     }
     else
     {
-        std::cerr << command << ": invalid entity ID: " << input << std::endl;
+        LOG_FATAL(
+            "%s: invalid entity ID '%s'",
+            command.c_str(),
+            input.c_str());
     }
 
     return success;
@@ -570,8 +600,11 @@ bool vdb::options_t::parse_integers_in_range(
 
     if (OPTIONS_DEBUG)
     {
-        std::cout << "DEBUG: parse_integers_in_range (" << min << "-" << max
-                  << "): '" << input << "'" << std::endl;
+        CONSOLE_OUT(
+            "DEBUG: parse_integers_in_range (%d-%d): '%s'",
+            min,
+            max,
+            input.c_str());
     }
 
     vdis::tokenize_csv(input, values);
@@ -580,8 +613,9 @@ bool vdb::options_t::parse_integers_in_range(
     {
         if (OPTIONS_DEBUG)
         {
-            std::cout << "DEBUG: parse_integers_in_range: value '"
-                      << values[i] << "'" << std::endl;
+            CONSOLE_OUT(
+                "DEBUG: parse_integers_in_range: value '%s'",
+                values[i].c_str());
         }
 
         // Is this token a range "N-M" or a single value N
@@ -592,16 +626,17 @@ bool vdb::options_t::parse_integers_in_range(
 
             if (not vdis::to_int64(values[i], value))
             {
-                std::cerr << command << ": not a valid number: " << values[i]
-                          << std::endl;
+                LOG_FATAL(
+                    "%s: not a valid number: %s",
+                    command.c_str(),
+                    values[i].c_str());
                 success = false;
             }
             else
             {
                 if (OPTIONS_DEBUG)
                 {
-                    std::cout << "DEBUG: parse_integers: value "
-                              << value << std::endl;
+                    CONSOLE_OUT("DEBUG: parse_integers: value %d", value);
                 }
 
                 if ((value >= min) and (value <= max))
@@ -610,9 +645,12 @@ bool vdb::options_t::parse_integers_in_range(
                 }
                 else
                 {
-                    std::cerr << command << ": value out of range: "
-                              << values[i] << " (" << min << "-" << max << ")"
-                              << std::endl;
+                    LOG_FATAL(
+                        "%s: value out of range: %s (%d-%d)",
+                        command.c_str(),
+                        values[i].c_str(),
+                        min,
+                        max);
                     success = false;
                 }
             }
@@ -630,8 +668,10 @@ bool vdb::options_t::parse_integers_in_range(
 
             if (not success)
             {
-                std::cerr << command << ": not a format: " << values[i]
-                          << std::endl;
+                LOG_FATAL(
+                    "%s: not a valid format for range: %s",
+                    command.c_str(),
+                    values[i].c_str());
                 success = false;
             }
             else
@@ -647,20 +687,29 @@ bool vdb::options_t::parse_integers_in_range(
                 {
                     if ((value0 < min) or (value0 > max))
                     {
-                        std::cerr << command << ": value out of range: "
-                                  << value0 << " (" << min << "-" << max << ")"
-                                  << std::endl;
+                        LOG_FATAL(
+                            "%s: value out of range: %d (%d-%d)",
+                            command.c_str(),
+                            value0,
+                            min,
+                            max);
                     }
                     else if ((value1 < min) or (value1 > max))
                     {
-                        std::cerr << command << ": value out of range: "
-                                  << value1 << " (" << min << "-" << max << ")"
-                                  << std::endl;
+                        LOG_FATAL(
+                            "%s: value out of range: %d (%d-%d)",
+                            command.c_str(),
+                            value1,
+                            min,
+                            max);
                     }
                     else if (value0 >= value1)
                     {
-                        std::cerr << command << ": invalid range: " << value0
-                                  << "-" << value1 << std::endl;
+                        LOG_FATAL(
+                            "%s: invalid range: %d-%d",
+                            command.c_str(),
+                            value0,
+                            value1);
                     }
                     else
                     {

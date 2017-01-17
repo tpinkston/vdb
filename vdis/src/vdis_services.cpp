@@ -607,6 +607,19 @@ vdis::pdu_family_e vdis::get_family(pdu_type_e type)
 }
 
 // ----------------------------------------------------------------------------
+bool vdis::is_close(float32_t first, float32_t second, float32_t threshold)
+{
+
+    return (std::abs(first - second) <= threshold);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::is_close(float64_t first, float64_t second, float64_t threshold)
+{
+    return (std::abs(first - second) <= threshold);
+}
+
+// ----------------------------------------------------------------------------
 // Returns the number of bytes needed to pad data with the specified
 // length to a certain word boundary (default 8 bytes).
 //

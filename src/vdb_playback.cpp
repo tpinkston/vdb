@@ -274,6 +274,8 @@ void vdb::playback_t::send_pdu(
             capture_elapsed,
             playback_elapsed);
 
+        // Pause and wait if needed before sending next PDU.
+        //
         if (delay_time > 0)
         {
             pause((uint32_t)delay_time);

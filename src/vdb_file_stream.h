@@ -16,6 +16,13 @@ namespace vdb
 
         virtual bool read_file(const string_t &filename);
         virtual void write_file(const string_t &filename);
+
+        inline bool ferror(void) const { return file_error; }
+
+      protected:
+
+        bool
+            file_error;
     };
 }
 

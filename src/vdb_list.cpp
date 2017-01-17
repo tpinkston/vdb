@@ -1,5 +1,4 @@
 #include "vdb_common.h"
-#include "vdb_entities.h"
 #include "vdb_file_reader.h"
 #include "vdb_file_writer.h"
 #include "vdb_filter.h"

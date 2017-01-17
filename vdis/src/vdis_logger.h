@@ -3,11 +3,14 @@
 
 #include "vdis_system.h"
 
-#define LOG_EXTRA_VERBOSE(format, ...)  logger::log(logger::EXTRA_VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__);
-#define LOG_VERBOSE(format, ...)        logger::log(logger::VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__);
-#define LOG_WARNING(format, ...)        logger::log(logger::WARNING, __FILE__, __LINE__, format, ##__VA_ARGS__);
-#define LOG_ERROR(format, ...)          logger::log(logger::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__);
-#define LOG_FATAL(format, ...)          logger::log(logger::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__);
+#define CONSOLE_OUT(format, ...)        logger::console_out(__FILE__, __LINE__, format, ##__VA_ARGS__)
+#define CONSOLE_ERR(format, ...)        logger::console_err(__FILE__, __LINE__, format, ##__VA_ARGS__)
+
+#define LOG_EXTRA_VERBOSE(format, ...)  logger::log(logger::EXTRA_VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_VERBOSE(format, ...)        logger::log(logger::VERBOSE, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_WARNING(format, ...)        logger::log(logger::WARNING, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...)          logger::log(logger::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_FATAL(format, ...)          logger::log(logger::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 class logger
 {
@@ -15,19 +18,35 @@ class logger
 
     enum level_e
     {
-        FATAL = 0,
-        ERROR = 1,
-        WARNING = 2,
-        VERBOSE = 3,
-        EXTRA_VERBOSE = 4,
-        END = 5
+        BEGIN = 0,
+        FATAL = 1,
+        ERROR = 2,
+        WARNING = 3,
+        VERBOSE = 4,
+        EXTRA_VERBOSE = 5,
+        END = 6
     };
 
+    static bool is_valid(level_e level);
     static bool is_enabled(level_e level);
     static void set_enabled(level_e level, bool value);
 
     static void log(
         level_e level,
+        const char *file,
+        int line,
+        const char *format,
+        ...
+    );
+
+    static void console_out(
+        const char *file,
+        int line,
+        const char *format,
+        ...
+    );
+
+    static void console_err(
         const char *file,
         int line,
         const char *format,

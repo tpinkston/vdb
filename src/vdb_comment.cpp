@@ -233,13 +233,16 @@ int vdb::comment_t::add(void)
                 // Overwrite the file with new stream.
                 //
                 output.write_file(filename);
-                result = output.error() ? 1 : 0;
+                result = (output.error() or output.ferror()) ? 1 : 0;
 
-                std::cout << "Comment (" << comment.value.length()
-                          << " bytes) added to file '" << filename
-                          << "'" << std::endl
-                          << "Total number of comments is now "
-                          << reader.header.comments.size() << std::endl;
+                if (result == 0)
+                {
+                    std::cout << "Comment (" << comment.value.length()
+                              << " bytes) added to file '" << filename
+                              << "'" << std::endl
+                              << "Total number of comments is now "
+                              << reader.header.comments.size() << std::endl;
+                }
             }
         }
     }
@@ -394,8 +397,11 @@ int vdb::comment_t::remove_comment(standard_reader_t &reader, uint32_t index)
             //
             output.write_file(reader.get_filename());
 
-            std::cout << "Comment #" << (index + 1)
-                      << " removed." << std::endl;
+            if (not output.error() and not output.ferror())
+            {
+                std::cout << "Comment #" << (index + 1)
+                          << " removed." << std::endl;
+            }
         }
     }
 
@@ -454,7 +460,10 @@ int vdb::comment_t::remove_all_comments(standard_reader_t &reader)
             //
             output.write_file(reader.get_filename());
 
-            std::cout << "All comments removed." << std::endl;
+            if (not output.error() and not output.ferror())
+            {
+                std::cout << "All comments removed." << std::endl;
+            }
         }
      }
 

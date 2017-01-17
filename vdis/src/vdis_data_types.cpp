@@ -687,6 +687,65 @@ void vdis::dead_reckoning_t::write(byte_stream_t &stream)
 }
 
 // ----------------------------------------------------------------------------
+uint64_t vdis::timestamp_t::get_milliseconds(void) const
+{
+    float64_t time;
+
+    time = (TIME_UNIT_TO_SECONDS * (float64_t)((value >> 1) & 0x7FFFFFFF));
+    time = (time * 1000.0);
+
+    return (uint64_t)time;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::timestamp_t::set_milliseconds(uint64_t millis)
+{
+    const bool
+        absolute = is_absolute();
+    float32_t
+        time = (float64_t)((float32_t)millis / 1000.0);
+
+    LOG_VERBOSE("set_milliseconds() millis = %d", millis);
+    LOG_VERBOSE("set_milliseconds() time = %f", time);
+
+    value = (uint32_t)(time * SECONDS_TO_TIME_UNITS);
+    value = (value << 1);
+
+    LOG_VERBOSE("set_milliseconds() value = %d", value);
+
+    set_absolute(absolute);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::timestamp_t::add_milliseconds(uint64_t millis)
+{
+    set_milliseconds(get_milliseconds() + millis);
+}
+
+// ----------------------------------------------------------------------------
+bool vdis::timestamp_t::is_absolute(void) const
+{
+    return ((value & 0x01) > 0);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::timestamp_t::set_absolute(bool absolute)
+{
+    LOG_VERBOSE("set_absolute() value before = %d", value);
+
+    if (absolute)
+    {
+        value = (value | 0x01);
+    }
+    else
+    {
+        value = ((uint64_t)value & 0xFFFFFFFELU);
+    }
+
+    LOG_VERBOSE("set_absolute() value after = %d", value);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::timestamp_t::set(
     uint32_t minutes,
     float32_t seconds,

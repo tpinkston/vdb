@@ -9,6 +9,7 @@ TARGET_CAPTURE=$(BIN_PATH)/vdb-capture
 TARGET_COMMENT=$(BIN_PATH)/vdb-comment
 TARGET_ENTITIES=$(BIN_PATH)/vdb-entities
 TARGET_ENUMS=$(BIN_PATH)/vdb-enums
+TARGET_EXTRACT=$(BIN_PATH)/vdb-extract
 TARGET_LIST=$(BIN_PATH)/vdb-list
 TARGET_OBJECTS=$(BIN_PATH)/vdb-objects
 TARGET_PLAYBACK=$(BIN_PATH)/vdb-playback
@@ -25,6 +26,7 @@ $(TARGET_CAPTURE) \
 $(TARGET_COMMENT) \
 $(TARGET_ENTITIES) \
 $(TARGET_ENUMS) \
+$(TARGET_EXTRACT) \
 $(TARGET_LIST) \
 $(TARGET_OBJECTS) \
 $(TARGET_PLAYBACK) \
@@ -35,6 +37,7 @@ ${SRC_PATH}/vdb_capture_help.h \
 ${SRC_PATH}/vdb_comment_help.h \
 ${SRC_PATH}/vdb_entities_help.h \
 ${SRC_PATH}/vdb_enums_help.h \
+${SRC_PATH}/vdb_extract_help.h \
 ${SRC_PATH}/vdb_list_help.h \
 ${SRC_PATH}/vdb_objects_help.h \
 ${SRC_PATH}/vdb_playback_help.h \
@@ -83,7 +86,7 @@ $(OBJ_PATH):
 $(BIN_PATH):
 	@mkdir -pv $(BIN_PATH)
 
-# VDIS library:
+#### VDIS library:
 vdis: $(VDIS_LIB)
 $(VDIS_LIB):
 	@cd vdis; $(MAKE) --no-print-directory all
@@ -104,6 +107,9 @@ $(TARGET_ENTITIES): target_depends $(SRC_PATH)/vdb_entities.*
 $(TARGET_ENUMS): target_depends $(SRC_PATH)/vdb_enums.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_enums.cpp
+$(TARGET_EXTRACT): target_depends $(SRC_PATH)/vdb_extract.*
+	@echo linking: $@
+	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_extract.cpp
 $(TARGET_LIST): target_depends $(SRC_PATH)/vdb_list.*
 	@echo linking: $@
 	@$(CPP) $(CPP_FLAGS) -o $@ $(OBJECTS) $(VDIS_LIB) ${SRC_PATH}/vdb_list.cpp
@@ -125,6 +131,8 @@ ${SRC_PATH}/vdb_comment_help.h: $(HELP_PATH)/help_comment.txt
 ${SRC_PATH}/vdb_entities_help.h: $(HELP_PATH)/help_entities.txt
 	@$(HELP_PATH)/parse.sh $< $@
 ${SRC_PATH}/vdb_enums_help.h: $(HELP_PATH)/help_enums.txt
+	@$(HELP_PATH)/parse.sh $< $@
+${SRC_PATH}/vdb_extract_help.h: $(HELP_PATH)/help_extract.txt
 	@$(HELP_PATH)/parse.sh $< $@
 ${SRC_PATH}/vdb_list_help.h: $(HELP_PATH)/help_list.txt
 	@$(HELP_PATH)/parse.sh $< $@

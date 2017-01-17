@@ -6,6 +6,9 @@
 #include "vdb_pdu_data.h"
 #include "vdb_system.h"
 
+#include "vdis_data_types.h"
+#include "vdis_network.h"
+
 namespace vdb
 {
     // ------------------------------------------------------------------------
@@ -50,6 +53,8 @@ namespace vdb
 
         const string_t
             filename;
+        uint64_t
+            start_time;     // milliseconds
         bool
             error_condition;
     };
@@ -82,10 +87,10 @@ namespace vdb
     {
       public:
 
-        pdu_reader_t(const string_t &filename, uint32_t interval);
+        pdu_reader_t(const string_t &filename, uint64_t interval);
         virtual ~pdu_reader_t(void);
 
-        const uint32_t
+        const uint64_t
             interval_milliseconds;
 
       protected:
@@ -97,6 +102,8 @@ namespace vdb
             address_ipv4;
         vdis::socket_address_ipv6_t
             address_ipv6;
+        vdis::timestamp_t
+            timestamp;
         uint32_t
             index;
     };

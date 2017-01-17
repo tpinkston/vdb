@@ -27,11 +27,17 @@ void logger::initialize(void)
 }
 
 // ----------------------------------------------------------------------------
+bool logger::is_valid(level_e level)
+{
+    return (level > BEGIN) and (level < END);
+}
+
+// ----------------------------------------------------------------------------
 bool logger::is_enabled(level_e level)
 {
     initialize();
 
-    return ((level > 0) and (level < END)) ? levels[level] : false;
+    return (is_valid(level) ? levels[level] : false);
 }
 
 // ----------------------------------------------------------------------------
@@ -39,7 +45,7 @@ void logger::set_enabled(level_e level, bool value)
 {
     initialize();
 
-    if ((level > 0) and (level < END))
+    if (is_valid(level))
     {
         levels[level] = value;
     }
@@ -62,6 +68,46 @@ void logger::log(
 
         log_message(level, buffer, file, line);
     }
+}
+
+// ----------------------------------------------------------------------------
+void logger::console_out(
+    const char *file,
+    int line,
+    const char *format,
+    ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    std::string
+        filename(file);
+
+    basename(filename);
+
+    sout() << filename << "[" << line << "]: " << buffer << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void logger::console_err(
+    const char *file,
+    int line,
+    const char *format,
+    ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    std::string
+        filename(file);
+
+    basename(filename);
+
+    serr() << filename << "[" << line << "]: " << buffer << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -129,19 +175,19 @@ void logger::log_message(
 
         *stream_ptr << "[" << filename << ":" << line << "]: ";
     }
-    else if ((level == ERROR) or (level == WARNING))
+    else if ((level == FATAL) or (level == ERROR) or (level == WARNING))
     {
         if (level == FATAL)
         {
-            *stream_ptr << color::bold_red << "FATAL" << color::none;
+            *stream_ptr << color::red << "FATAL" << color::none;
         }
         else if (level == ERROR)
         {
-            *stream_ptr << color::bold_red << "ERROR" << color::none;
+            *stream_ptr << color::red << "ERROR" << color::none;
         }
         else if (level == WARNING)
         {
-            *stream_ptr << color::bold_yellow << "WARNING" << color::none;
+            *stream_ptr << color::yellow << "WARNING" << color::none;
         }
 
         *stream_ptr << "[" << filename << ":" << line << "]: ";

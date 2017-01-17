@@ -24,11 +24,30 @@ void vdis::test::test_common(void)
     out << "timestamp " << to_string(timestamp) << std::endl
         << "timestamp.minutes " << to_string(minutes) << std::endl
         << "timestamp.seconds " << to_string(seconds) << std::endl
-        << "timestamp.absolute " << to_string(absolute) << std::endl;
+        << "timestamp.absolute " << to_string(absolute)
+        << " (" << timestamp.is_absolute() << ")" << std::endl
+        << "timestamp.milliseconds " << timestamp.get_milliseconds()
+        << std::endl;
 
-    TEST_TRUE(2.01, (int)minutes == 4);
-    TEST_TRUE(2.02, (int)seconds == 35);
+    TEST_TRUE(2.01, minutes == 4);
+    TEST_TRUE(2.02, is_close(seconds, 35.0f));
     TEST_TRUE(2.03, absolute);
+
+    timestamp.set_milliseconds(630000);
+    timestamp.set_absolute(false);
+    timestamp.get(minutes, seconds, absolute);
+
+    out << "timestamp " << to_string(timestamp) << std::endl
+        << "timestamp.minutes " << to_string(minutes) << std::endl
+        << "timestamp.seconds " << to_string(seconds) << std::endl
+        << "timestamp.absolute " << to_string(absolute)
+        << " (" << timestamp.is_absolute() << ")" << std::endl
+        << "timestamp.milliseconds " << timestamp.get_milliseconds()
+        << std::endl;
+
+    TEST_TRUE(2.04, (int)minutes == 10);
+    TEST_TRUE(2.05, is_close(seconds, 30.0f));
+    TEST_FALSE(2.06, absolute);
 
     id_t
         entity_id = { 1, 2, 3 };

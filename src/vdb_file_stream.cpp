@@ -4,14 +4,15 @@
 #include "vdis_logger.h"
 
 // ----------------------------------------------------------------------------
-vdb::file_stream::file_stream(void)
+vdb::file_stream::file_stream(void) : file_error(false)
 {
 
 }
 
 // ----------------------------------------------------------------------------
 vdb::file_stream::file_stream(uint32_t length) :
-    vdis::byte_stream_t(length)
+    vdis::byte_stream_t(length),
+    file_error(false)
 {
 
 }
@@ -104,6 +105,8 @@ void vdb::file_stream::write_file(const string_t &filename)
     std::streamsize
         bytes_written = 0;
 
+    file_error = false;
+
     LOG_VERBOSE("Opening file %s...", filename.c_str());
 
     stream.open(filename.c_str(), std::ios::out | std::ios::binary);
@@ -111,10 +114,9 @@ void vdb::file_stream::write_file(const string_t &filename)
     if (stream.fail())
     {
         std::cerr << "vdb: failed to open file: " << filename << std::endl;
-        exit(1);
+        file_error = true;
     }
-
-    if (data_buffer and (data_length > 0))
+    else if (data_buffer and (data_length > 0))
     {
         stream.write((char *)data_buffer, data_length);
 
@@ -122,18 +124,20 @@ void vdb::file_stream::write_file(const string_t &filename)
         {
             std::cerr << "vdb: failed to write to file: " << filename
                       << std::endl;
-            exit(1);
+            file_error = true;
         }
-    }
+        else
+        {
+            bytes_written = stream.tellp();
 
-    bytes_written = stream.tellp();
-
-    if (bytes_written != data_length)
-    {
-        std::cerr << "vdb: failed to write (" << bytes_written
-                  << " of " << data_length << " bytes) from file: "
-                  << filename << std::endl;
-        exit(1);
+            if (bytes_written != data_length)
+            {
+                std::cerr << "vdb: failed to write (" << bytes_written
+                          << " of " << data_length << " bytes) from file: "
+                          << filename << std::endl;
+                file_error = true;
+            }
+        }
     }
 
     stream.close();

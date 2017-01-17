@@ -356,6 +356,13 @@ namespace vdis
             value = 0;
         }
 
+        uint64_t get_milliseconds(void) const;
+        void set_milliseconds(uint64_t millis);
+        void add_milliseconds(uint64_t millis);
+
+        bool is_absolute(void) const;
+        void set_absolute(bool absolute);
+
         void set(uint32_t minutes, float32_t seconds, bool absolute);
         void get(uint32_t &minutes, float32_t &seconds, bool &absolute) const;
         void read(byte_stream_t &);

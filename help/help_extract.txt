@@ -1,0 +1,14 @@
+Extracts single PDU from capture file, saves it to file for use with
+the 'vdb-playback' tool with the '-P' or '--pdu' option. 
+
+Usage: vdb-list [OPTIONS] INDEX INPUT OUTPUT
+
+  -e --extra            Print extra information (if applicable)
+  -x --extract          Print full PDU data extraction (overrides -e)
+  -d --dump             Print PDU hex dump (overrides -e and -x)
+  -c --color            Suppress colored output
+  -E --errors           Show errors
+  -W --warnings         Show warnings
+  -v --verbose          Verbose (-vv for extra verbose)
+
+  

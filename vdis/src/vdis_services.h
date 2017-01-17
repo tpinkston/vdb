@@ -109,6 +109,9 @@ namespace vdis
     // ------------------------------------------------------------------------
     // Miscellaneous
 
+    bool is_close(float32_t, float32_t, float32_t threshold = 0.0001);
+    bool is_close(float64_t, float64_t, float64_t threshold = 0.0001);
+
     pdu_family_e get_family(pdu_type_e type);
 
     uint32_t padding_length(uint32_t length, uint32_t boundary = 8);
