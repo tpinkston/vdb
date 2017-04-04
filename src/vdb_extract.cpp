@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     int
         result = 1;
 
+    options.add(OPTION_HELP);
     options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
