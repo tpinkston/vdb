@@ -964,6 +964,31 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    union hifi_light_flags_t
+    {
+        struct bits_t
+        {
+            uint8_t                 powered_on:1;               // Bit 0
+            uint8_t                 attached:1;                 // Bit 1
+            uint8_t                 directional:1;              // Bit 2
+            uint8_t                 feather_enabled:1;          // Bit 3
+            uint8_t                 padding:4;                  // Bits 4-7
+        };
+
+        uint8_t                     value;
+        bits_t                      bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        void print(const std::string &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     union ncm3_engine_rates_t
     {
         float32_t                   generator;                  // 4 bytes (%)

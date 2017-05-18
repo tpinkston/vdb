@@ -188,6 +188,32 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct high_fidelity_lights_t : variable_parameter_content_t
+    {
+        hifi_light_flags_t      flags;                  // 1 byte
+        uint16_t                light_type;             // 2 bytes
+        uint8_t                 part_id;                // 1 byte
+        uint8_t                 padding;                // 1 byte
+        uint8_t                 color;                  // 1 byte
+        uint8_t                 beam_half_angle;        // 1 byte
+        uint16_t                range_attenuation;      // 2 bytes
+        uint16_t                intensity;              // 2 bytes
+        uint8_t                 flash_rate;             // 1 byte
+        uint8_t                 infrared_index;         // 1 byte
+        uint8_t                 thermal_index;          // 1 byte
+        uint8_t                 feather;                // 1 byte
+
+        inline vp_record_type_e type(void) const
+        {
+            return VP_RECORD_TYPE_HIFI_LIGHTS;
+        }
+
+        void print(const string_t &, std::ostream &) const;
+        void read(byte_stream_t &);
+        void write(byte_stream_t &);
+    };
+
+    // ------------------------------------------------------------------------
     struct legacy_extended_lifeform_appearance_t : variable_parameter_content_t
     {
         uint8_t                 clothing_scheme;        // 1 byte

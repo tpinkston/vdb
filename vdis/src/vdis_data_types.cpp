@@ -2030,6 +2030,52 @@ void vdis::linear_segment_t::using_type(const object_type_t *type_ptr)
 }
 
 // ----------------------------------------------------------------------------
+void vdis::hifi_light_flags_t::print(
+    const std::string &prefix,
+    std::ostream &out) const
+{
+    out << prefix << "value " << to_bin_string(value) << std::endl;
+
+    if (bits.powered_on)
+    {
+        out << prefix << "powered_on yes" << std::endl;
+    }
+
+    if (bits.attached)
+    {
+        out << prefix << "attached yes" << std::endl;
+    }
+
+    if (bits.directional)
+    {
+        out << prefix << "directional yes" << std::endl;
+    }
+
+    if (bits.feather_enabled)
+    {
+        out << prefix << "feather_enabled yes" << std::endl;
+    }
+
+    if (bits.padding)
+    {
+        out << prefix << "padding(4 bits) "
+            << to_bin_string((uint8_t)bits.padding) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::hifi_light_flags_t::read(byte_stream_t &stream)
+{
+    stream.read(value);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::hifi_light_flags_t::write(byte_stream_t &stream)
+{
+    stream.write(value);
+}
+
+// ----------------------------------------------------------------------------
 void vdis::ncm3_engine_rates_t::print(
     const std::string &prefix,
     std::ostream &out) const

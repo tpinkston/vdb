@@ -136,6 +136,11 @@ void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
                 content_ptr = new extended_cultural_feature_appearance_t;
                 break;
             }
+            case VP_RECORD_TYPE_HIFI_LIGHTS:
+            {
+                content_ptr = new high_fidelity_lights_t;
+                break;
+            }
             default:
             {
                 content_ptr = new default_variable_content_t(type);
@@ -298,6 +303,71 @@ void vdis::entity_offset_t::write(byte_stream_t &stream)
     stream.write(offset_type);
     stream.write(padding);
     position.write(stream);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::high_fidelity_lights_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    flags.print((prefix + "high_fidelity_lights.flags."), out);
+
+    out << prefix << "high_fidelity_lights.light_type "
+        << (int)light_type << std::endl
+        << prefix << "high_fidelity_lights.part_id "
+        << (int)part_id << std::endl
+        << prefix << "high_fidelity_lights.padding "
+        << (int)padding << std::endl
+        << prefix << "high_fidelity_lights.color "
+        << (int)color << std::endl
+        << prefix << "high_fidelity_lights.beam_half_angle "
+        << (int)beam_half_angle << std::endl
+        << prefix << "high_fidelity_lights.range_attenuation "
+        << (int)range_attenuation << std::endl
+        << prefix << "high_fidelity_lights.intensity "
+        << (int)intensity << std::endl
+        << prefix << "high_fidelity_lights.flash_rate "
+        << (int)flash_rate << std::endl
+        << prefix << "high_fidelity_lights.infrared_index "
+        << (int)infrared_index << std::endl
+        << prefix << "high_fidelity_lights.thermal_index "
+        << (int)thermal_index << std::endl
+        << prefix << "high_fidelity_lights.feather "
+        << (int)feather << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+void vdis::high_fidelity_lights_t::read(byte_stream_t &stream)
+{
+    flags.read(stream);
+    stream.read(light_type);
+    stream.read(part_id);
+    stream.read(padding);
+    stream.read(color);
+    stream.read(beam_half_angle);
+    stream.read(range_attenuation);
+    stream.read(intensity);
+    stream.read(flash_rate);
+    stream.read(infrared_index);
+    stream.read(thermal_index);
+    stream.read(feather);
+}
+
+// ----------------------------------------------------------------------------
+void vdis::high_fidelity_lights_t::write(byte_stream_t &stream)
+{
+    flags.write(stream);
+    stream.write(light_type);
+    stream.write(part_id);
+    stream.write(padding);
+    stream.write(color);
+    stream.write(beam_half_angle);
+    stream.write(range_attenuation);
+    stream.write(intensity);
+    stream.write(flash_rate);
+    stream.write(infrared_index);
+    stream.write(thermal_index);
+    stream.write(feather);
 }
 
 // ----------------------------------------------------------------------------
