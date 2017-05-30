@@ -6,6 +6,19 @@
 namespace
 {
     const vdis::entity_type_t *entity_type_ptr = 0;
+
+    // ------------------------------------------------------------------------
+    void print_flag(
+        const std::string &prefix,
+        const char *name,
+        int value,
+        std::ostream &out)
+    {
+        if (value)
+        {
+            out << prefix << name << " yes" << std::endl;
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -526,9 +539,45 @@ void vdis::extended_platform_appearance_t::print(
 
     if (lights != 0)
     {
-        // TODO: ext_platform_appearance.lights
-        out << prefix << "ext_platform_app.lights "
+        domain_e
+            domain = vdis::DOMAIN_OTHER;
+        string_t
+            domain_name;
+
+        if (entity_type_ptr)
+        {
+            domain = (domain_e)entity_type_ptr->domain;
+        }
+
+        out << prefix << "ext_platform_app.lights.value "
             << to_bin_string(lights, true) << std::endl;
+
+        switch(domain)
+        {
+            case vdis::DOMAIN_AIR:
+            {
+                air_extended_lights_t
+                    air_lights;
+
+                air_lights.value = lights;
+                air_lights.bits.print(prefix + "ext_platform_app.", out);
+                break;
+            }
+            case vdis::DOMAIN_LAND:
+            {
+                land_extended_lights_t
+                    land_lights;
+
+                land_lights.value = lights;
+                land_lights.bits.print(prefix + "ext_platform_app.", out);
+                break;
+            }
+            default:
+            {
+                // Nothing to print yet...
+                break;
+            }
+        }
     }
 
     if (thermal_indicators != 0)
@@ -675,15 +724,8 @@ void vdis::extended_equipment_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (sling_loaded != 0)
-    {
-        out << prefix << "equipment.sling_loaded " << "yes" << std::endl;
-    }
-
-    if (ied != 0)
-    {
-        out << prefix << "equipment.ied " << "yes" << std::endl;
-    }
+    print_flag(prefix, "equipment.sling_loaded", sling_loaded, out);
+    print_flag(prefix, "equipment.ied", ied, out);
 }
 
 // ----------------------------------------------------------------------------
@@ -691,20 +733,9 @@ void vdis::air_platform_extended_equipment_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (aux_power_plant2 != 0)
-    {
-        out << prefix << "aux_power_plant2 " << "yes" << std::endl;
-    }
-
-    if (aux_power_plant3 != 0)
-    {
-        out << prefix << "aux_power_plant3 " << "yes" << std::endl;
-    }
-
-    if (aux_power_plant4 != 0)
-    {
-        out << prefix << "aux_power_plant4 " << "yes" << std::endl;
-    }
+    print_flag(prefix, "aux_power_plant2", aux_power_plant2, out);
+    print_flag(prefix, "aux_power_plant3", aux_power_plant3, out);
+    print_flag(prefix, "aux_power_plant4", aux_power_plant4, out);
 
     if (sling_load != 0)
     {
@@ -723,10 +754,7 @@ void vdis::air_platform_extended_equipment_bits_t::print(
             << (sling_damage_e)sling_damage << std::endl;
     }
 
-    if (sa_server != 0)
-    {
-        out << prefix << "sa_server " << "yes" << std::endl;
-    }
+    print_flag(prefix, "sa_server", sa_server, out);
 
     if (ied != 0)
     {
@@ -738,20 +766,9 @@ void vdis::air_platform_extended_equipment_bits_t::print(
         out << prefix << "hoist " << (hoist_status_e)hoist << std::endl;
     }
 
-    if (right_door_open != 0)
-    {
-        out << prefix << "right_door_open " << "yes" << std::endl;
-    }
-
-    if (left_door_open != 0)
-    {
-        out << prefix << "left_door_open " << "yes" << std::endl;
-    }
-
-    if (countermeasures_active != 0)
-    {
-        out << prefix << "countermeasures_active " << "yes" << std::endl;
-    }
+    print_flag(prefix, "right_door_open", right_door_open, out);
+    print_flag(prefix, "left_door_open", left_door_open, out);
+    print_flag(prefix, "countermeasures_active", countermeasures_active, out);
 }
 
 // ----------------------------------------------------------------------------
@@ -759,43 +776,67 @@ void vdis::land_platform_extended_equipment_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (spoiler != 0)
-    {
-        out << prefix << "spoiler " << "yes" << std::endl;
-    }
-
-    if (cargo_racks != 0)
-    {
-        out << prefix << "cargo_racks " << "yes" << std::endl;
-    }
-
-    if (aux_power_plant != 0)
-    {
-        out << prefix << "aux_power_plant " << "yes" << std::endl;
-    }
-
-    if (emergency_lights != 0)
-    {
-        out << prefix << "emergency_lights " << "yes" << std::endl;
-    }
-
-    if (sling_loaded != 0)
-    {
-        out << prefix << "sling_loaded " << "yes" << std::endl;
-    }
-
-    if (crew_antenna != 0)
-    {
-        out << prefix << "crew_antenna " << "yes" << std::endl;
-    }
-
-    if (sa_server != 0)
-    {
-        out << prefix << "sa_server " << "yes" << std::endl;
-    }
+    print_flag(prefix, "spoiler", spoiler, out);
+    print_flag(prefix, "cargo_racks", cargo_racks, out);
+    print_flag(prefix, "aux_power_plant", aux_power_plant, out);
+    print_flag(prefix, "emergency_lights", emergency_lights, out);
+    print_flag(prefix, "sling_loaded", sling_loaded, out);
+    print_flag(prefix, "crew_antenna", crew_antenna, out);
+    print_flag(prefix, "sa_server", sa_server, out);
 
     if (ied != 0)
     {
         out << prefix << "ied " << (ied_presence_e)ied << std::endl;
     }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::air_platform_extended_lights_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    if (formation_intensity != 0)
+    {
+        out << prefix << "air_lights.formation_intensity "
+            << (int)formation_intensity << std::endl;
+    }
+
+    print_flag(prefix, "air_lights.formation_flashing", formation_flashing, out);
+    print_flag(prefix, "air_lights.spot_search_2", spot_search_2, out);
+    print_flag(prefix, "air_lights.spot_search_1_nvg", spot_search_1_nvg, out);
+    print_flag(prefix, "air_lights.spot_search_2_nvg", spot_search_2_nvg, out);
+    print_flag(prefix, "air_lights.spot_search_1_extended", spot_search_1_extended, out);
+    print_flag(prefix, "air_lights.spot_search_2_extended", spot_search_2_extended, out);
+    print_flag(prefix, "air_lights.aft_navigation", aft_navigation, out);
+    print_flag(prefix, "air_lights.landing_extended", landing_extended, out);
+
+    if (ir_collision_flash != 0)
+    {
+        out << prefix << "air_lights.ir_collision_flash "
+            << (int)ir_collision_flash << std::endl;
+    }
+
+    if (ir_collision_intensity != 0)
+    {
+        out << prefix << "air_lights.ir_collision_intensity "
+            << (int)ir_collision_intensity << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdis::land_platform_extended_lights_bits_t::print(
+    const string_t &prefix,
+    std::ostream &out) const
+{
+    print_flag(prefix, "land_lights.left_turn_signal", left_turn_signal, out);
+    print_flag(prefix, "land_lights.right_turn_signal", right_turn_signal, out);
+    print_flag(prefix, "land_lights.high_beams", high_beams, out);
+    print_flag(prefix, "land_lights.spot_search_2", spot_search_2, out);
+    print_flag(prefix, "land_lights.running", running, out);
+    print_flag(prefix, "land_lights.fog", fog, out);
+    print_flag(prefix, "land_lights.parking", parking, out);
+    print_flag(prefix, "land_lights.reverse", reverse, out);
+    print_flag(prefix, "land_lights.aux_high_beams", aux_high_beams, out);
+    print_flag(prefix, "land_lights.rear_interior", rear_interior, out);
+    print_flag(prefix, "land_lights.emergency_vehicle", emergency_vehicle, out);
 }

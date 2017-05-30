@@ -53,15 +53,21 @@ namespace vdis
         uint32_t            collision_lights:1;     // Bit 14
         uint32_t            flaming:1;              // Bit 15
         uint32_t            after_burner:1;         // Bit 16
-        uint32_t            unused1:4;              // Bits 17-20
+        uint32_t            lower_collision_light:1;// Bit 17
+        uint32_t            upper_collision_light:1;// Bit 18
+        uint32_t            night_collision:1;      // Bit 19
+        uint32_t            blinking:1;             // Bit 20
         uint32_t            frozen:1;               // Bit 21
         uint32_t            power_plant:1;          // Bit 22
         uint32_t            deactivated:1;          // Bit 23
         uint32_t            formation_lights:1;     // Bit 24
-        uint32_t            unused2:3;              // Bits 25-27
-        uint32_t            spot_lights:1;          // Bit 28
+        uint32_t            landing_gear_extended:1;// Bit 25
+        uint32_t            cargo_doors_open:1;     // Bit 26
+        uint32_t            navigation_brightness:1;// Bit 27
+        uint32_t            spot_light:1;           // Bit 28
         uint32_t            interior_lights:1;      // Bit 29
-        uint32_t            unused3:2;              // Bits 30-31
+        uint32_t            reverse_thrust:1;       // Bit 30
+        uint32_t            weight_on_wheels:1;     // Bit 31
 
         void print(const string_t &prefix, std::ostream &out) const;
     };
@@ -81,7 +87,7 @@ namespace vdis
         uint32_t            brake_lights:1;         // Bit 14
         uint32_t            flaming:1;              // Bit 15
         uint32_t            launcher_raised:1;      // Bit 16
-        uint32_t            unused1:2;              // Bits 17-18
+        uint32_t            camouflage_type:2;      // Bits 17-18
         uint32_t            concealed:1;            // Bit 19
         uint32_t            unused2:1;              // Bit 20
         uint32_t            frozen:1;               // Bit 21
@@ -212,9 +218,6 @@ namespace vdis
 
         inline void print(const string_t &prefix, std::ostream &out) const
         {
-            out << prefix << "value " << to_bin_string(value, true)
-                << std::endl;
-
             bits.print(prefix, out);
         }
 

@@ -454,6 +454,45 @@ namespace vdis
     };
 
     // ------------------------------------------------------------------------
+    struct air_platform_extended_lights_bits_t
+    {
+        uint32_t                formation_intensity:3;      // Bits 0-2
+        uint32_t                formation_flashing:1;       // Bit 3
+        uint32_t                spot_search_2:1;            // Bit 4
+        uint32_t                spot_search_1_nvg:1;        // Bit 5
+        uint32_t                spot_search_2_nvg:1;        // Bit 6
+        uint32_t                spot_search_1_extended:1;   // Bit 7
+        uint32_t                spot_search_2_extended:1;   // Bit 8
+        uint32_t                aft_navigation:1;           // Bit 9
+        uint32_t                landing_extended:1;         // Bit 10
+        uint32_t                ir_collision_flash:3;       // Bit 11-13
+        uint32_t                ir_collision_intensity:3;   // Bit 14-16
+        uint32_t                unused:15;                  // Bits 17-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
+    struct land_platform_extended_lights_bits_t
+    {
+        uint32_t                left_turn_signal:1;     // Bit 0
+        uint32_t                right_turn_signal:1;    // Bit 1
+        uint32_t                high_beams:1;           // Bit 2
+        uint32_t                spot_search_2:1;        // Bit 3
+        uint32_t                running:1;              // Bit 4
+        uint32_t                emergency:1;            // Bit 5
+        uint32_t                fog:1;                  // Bit 6
+        uint32_t                parking:1;              // Bit 7
+        uint32_t                reverse:1;              // Bit 8
+        uint32_t                aux_high_beams:1;       // Bit 9
+        uint32_t                rear_interior:1;        // Bit 10
+        uint32_t                emergency_vehicle:1;    // Bit 11
+        uint32_t                unused:20;              // Bits 12-31
+
+        void print(const string_t &prefix, std::ostream &out) const;
+    };
+
+    // ------------------------------------------------------------------------
     template<typename bits_t>
     union extended_equipment_t
     {
@@ -465,6 +504,39 @@ namespace vdis
             value = 0;
         }
     };
+
+    // ------------------------------------------------------------------------
+    template<typename bits_t>
+    union extended_lights_t
+    {
+        uint32_t                value;
+        bits_t                  bits;
+
+        inline void clear(void)
+        {
+            value = 0;
+        }
+
+        inline void print(const string_t &prefix, std::ostream &out) const
+        {
+            bits.print(prefix, out);
+        }
+
+        inline void read(byte_stream_t &stream)
+        {
+            stream.read(value);
+        }
+
+        inline void write(byte_stream_t &stream)
+        {
+            stream.read(value);
+        }
+    };
+
+    typedef extended_lights_t<air_platform_extended_lights_bits_t>
+        air_extended_lights_t;
+    typedef extended_lights_t<land_platform_extended_lights_bits_t>
+        land_extended_lights_t;
 }
 
 #endif

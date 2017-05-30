@@ -1,5 +1,21 @@
 #include "vdis_appearance.h"
 
+namespace
+{
+    // ------------------------------------------------------------------------
+    void print_flag(
+        const std::string &prefix,
+        const char *name,
+        int value,
+        std::ostream &out)
+    {
+        if (value)
+        {
+            out << prefix << name << " yes" << std::endl;
+        }
+    }
+}
+
 // ----------------------------------------------------------------------------
 void vdis::print_appearance(
     const std::string &prefix,
@@ -41,10 +57,7 @@ void vdis::lifeform_appearance_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (camouflaged)
-    {
-        out << prefix << "camouflaged yes" << std::endl;
-    }
+    print_flag(prefix, "camouflaged", camouflaged, out);
 
     if (health)
     {
@@ -56,30 +69,16 @@ void vdis::lifeform_appearance_bits_t::print(
         out << prefix << "compliance" << (lf_compliance_e)compliance << std::endl;
     }
 
-    if (flash_lights)
-    {
-        out << prefix << "flash_lights yes" << std::endl;
-    }
+    print_flag(prefix, "flash_lights", flash_lights, out);
 
     if (posture)
     {
         out << prefix << "posture " << (lf_posture_e)posture << std::endl;
     }
 
-    if (frozen)
-    {
-        out << prefix << "frozen yes" << std::endl;
-    }
-
-    if (mounted)
-    {
-        out << prefix << "mounted yes" << std::endl;
-    }
-
-    if (deactivated)
-    {
-        out << prefix << "deactivated yes" << std::endl;
-    }
+    print_flag(prefix, "frozen", frozen, out);
+    print_flag(prefix, "mounted", mounted, out);
+    print_flag(prefix, "deactivated", deactivated, out);
 
     if (weapon1)
     {
@@ -96,15 +95,8 @@ void vdis::lifeform_appearance_bits_t::print(
         out << prefix << "camouflage " << (lf_camouflage_type_e)camouflage << std::endl;
     }
 
-    if (concealed_stationary)
-    {
-        out << prefix << "concealed_stationary yes" << std::endl;
-    }
-
-    if (concealed_movement)
-    {
-        out << prefix << "concealed_movement yes" << std::endl;
-    }
+    print_flag(prefix, "concealed_stationary", concealed_stationary, out);
+    print_flag(prefix, "concealed_movement", concealed_movement, out);
 }
 
 // ----------------------------------------------------------------------------
@@ -112,20 +104,9 @@ void vdis::air_platform_appearance_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (camouflaged)
-    {
-        out << prefix << "camouflaged yes" << std::endl;
-    }
-
-    if (propulsion_damage)
-    {
-        out << prefix << "propulsion_damage yes" << std::endl;
-    }
-
-    if (firepower_damage)
-    {
-        out << prefix << "firepower_damage yes" << std::endl;
-    }
+    print_flag(prefix, "camouflaged", camouflaged, out);
+    print_flag(prefix, "propulsion_damage", propulsion_damage, out);
+    print_flag(prefix, "firepower_damage", firepower_damage, out);
 
     if (damage)
     {
@@ -139,68 +120,26 @@ void vdis::air_platform_appearance_bits_t::print(
 
     if (trailing_effects)
     {
-        out << prefix << "trailing_effects " << (int)trailing_effects << std::endl; // TODO: CREATE ENUM
+        // TODO: CREATE ENUM
+        out << prefix << "trailing_effects " << (int)trailing_effects << std::endl;
     }
 
-    if (canopy)
-    {
-        out << prefix << "canopy " << (int)canopy << std::endl; // TODO: CREATE ENUM
-    }
-
-    if (landing_lights)
-    {
-        out << prefix << "landing_lights yes" << std::endl;
-    }
-
-    if (navigation_lights)
-    {
-        out << prefix << "navigation_lights yes" << std::endl;
-    }
-
-    if (collision_lights)
-    {
-        out << prefix << "collision_lights yes" << std::endl;
-    }
-
-    if (flaming)
-    {
-        out << prefix << "flaming yes" << std::endl;
-    }
-
-    if (after_burner)
-    {
-        out << prefix << "after_burner yes" << std::endl;
-    }
-
-    if (frozen)
-    {
-        out << prefix << "frozen yes" << std::endl;
-    }
-
-    if (power_plant)
-    {
-        out << prefix << "power_plant yes" << std::endl;
-    }
-
-    if (deactivated)
-    {
-        out << prefix << "deactivated yes" << std::endl;
-    }
-
-    if (formation_lights)
-    {
-        out << prefix << "formation_lights yes" << std::endl;
-    }
-
-    if (spot_lights)
-    {
-        out << prefix << "spot_lights yes" << std::endl;
-    }
-
-    if (interior_lights)
-    {
-        out << prefix << "interior_lights yes" << std::endl;
-    }
+    print_flag(prefix, "canopy", canopy, out);
+    print_flag(prefix, "landing_lights", landing_lights, out);
+    print_flag(prefix, "navigation_lights", navigation_lights, out);
+    print_flag(prefix, "collision_lights", collision_lights, out);
+    print_flag(prefix, "flaming", flaming, out);
+    print_flag(prefix, "after_burner", after_burner, out);
+    print_flag(prefix, "lower_collision_light", lower_collision_light, out);
+    print_flag(prefix, "upper_collision_light", upper_collision_light, out);
+    print_flag(prefix, "night_collision", night_collision, out);
+    print_flag(prefix, "blinking", blinking, out);
+    print_flag(prefix, "frozen", frozen, out);
+    print_flag(prefix, "power_plant", power_plant, out);
+    print_flag(prefix, "deactivated", deactivated, out);
+    print_flag(prefix, "formation_lights", formation_lights, out);
+    print_flag(prefix, "spot_light", spot_light, out);
+    print_flag(prefix, "interior_lights", interior_lights, out);
 }
 
 // ----------------------------------------------------------------------------
@@ -208,25 +147,9 @@ void vdis::land_platform_appearance_bits_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
-    if (camouflaged)
-    {
-        out << prefix << "camouflaged yes" << std::endl;
-    }
-
-    if (mobility_damage)
-    {
-        out << prefix << "propulsion_damage yes" << std::endl;
-    }
-
-    if (firepower_damage)
-    {
-        out << prefix << "firepower_damage yes" << std::endl;
-    }
-
-    if (damage)
-    {
-        out << prefix << "damage " << (severity_e)damage << std::endl;
-    }
+    print_flag(prefix, "camouflaged", camouflaged, out);
+    print_flag(prefix, "mobility_damage", mobility_damage, out);
+    print_flag(prefix, "firepower_damage", firepower_damage, out);
 
     if (smoke)
     {
@@ -235,98 +158,40 @@ void vdis::land_platform_appearance_bits_t::print(
 
     if (trailing_effects)
     {
-        out << prefix << "trailing_effects " << (int)trailing_effects << std::endl; // TODO: CREATE ENUM
+        // TODO: CREATE ENUM
+        out << prefix << "trailing_effects " << (int)trailing_effects << std::endl;
     }
 
     if (hatch)
     {
-        out << prefix << "hatch " << (int)hatch << std::endl; // TODO: CREATE ENUM
+        // TODO: CREATE ENUM
+        out << prefix << "hatch " << (int)hatch << std::endl;
     }
 
-    if (head_lights)
+    print_flag(prefix, "head_lights", head_lights, out);
+    print_flag(prefix, "tail_lights", tail_lights, out);
+    print_flag(prefix, "brake_lights", brake_lights, out);
+    print_flag(prefix, "flaming", flaming, out);
+    print_flag(prefix, "launcher_raised", launcher_raised, out);
+
+    if (camouflage_type)
     {
-        out << prefix << "landing_lights yes" << std::endl;
+        // TODO: CREATE ENUM
+        out << prefix << "camouflage_type " << (int)camouflage_type << std::endl;
     }
 
-    if (tail_lights)
-    {
-        out << prefix << "navigation_lights yes" << std::endl;
-    }
-
-    if (brake_lights)
-    {
-        out << prefix << "collision_lights yes" << std::endl;
-    }
-
-    if (flaming)
-    {
-        out << prefix << "flaming yes" << std::endl;
-    }
-
-    if (launcher_raised)
-    {
-        out << prefix << "after_burner yes" << std::endl;
-    }
-
-    if (concealed)
-    {
-        out << prefix << "after_burner yes" << std::endl;
-    }
-
-    if (frozen)
-    {
-        out << prefix << "frozen yes" << std::endl;
-    }
-
-    if (power_plant)
-    {
-        out << prefix << "power_plant yes" << std::endl;
-    }
-
-    if (deactivated)
-    {
-        out << prefix << "deactivated yes" << std::endl;
-    }
-
-    if (tent_extended)
-    {
-        out << prefix << "tent_extended yes" << std::endl;
-    }
-
-    if (ramp_down)
-    {
-        out << prefix << "ramp_down yes" << std::endl;
-    }
-
-    if (blackout_lights)
-    {
-        out << prefix << "blackout_lights yes" << std::endl;
-    }
-
-    if (blackout_brake_lights)
-    {
-        out << prefix << "blackout_brake_lights yes" << std::endl;
-    }
-
-    if (spot_lights)
-    {
-        out << prefix << "spot_lights yes" << std::endl;
-    }
-
-    if (interior_lights)
-    {
-        out << prefix << "interior_lights yes" << std::endl;
-    }
-
-    if (surrendered)
-    {
-        out << prefix << "surrendered yes" << std::endl;
-    }
-
-    if (cloaked)
-    {
-        out << prefix << "cloaked yes" << std::endl;
-    }
+    print_flag(prefix, "concealed", concealed, out);
+    print_flag(prefix, "frozen", frozen, out);
+    print_flag(prefix, "power_plant", power_plant, out);
+    print_flag(prefix, "deactivated", deactivated, out);
+    print_flag(prefix, "tent_extended", tent_extended, out);
+    print_flag(prefix, "ramp_down", ramp_down, out);
+    print_flag(prefix, "blackout_lights", blackout_lights, out);
+    print_flag(prefix, "blackout_brake_lights", blackout_brake_lights, out);
+    print_flag(prefix, "spot_lights", spot_lights, out);
+    print_flag(prefix, "interior_lights", interior_lights, out);
+    print_flag(prefix, "surrendered", surrendered, out);
+    print_flag(prefix, "cloaked", cloaked, out);
 }
 
 // ----------------------------------------------------------------------------
