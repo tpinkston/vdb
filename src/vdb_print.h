@@ -4,6 +4,7 @@
 namespace vdis
 {
     struct abstract_siman_pdu_t;
+    struct application_control_pdu_t;
     class pdu_t;
 }
 
@@ -54,6 +55,11 @@ namespace vdb
 
         static void print_datum_record_summary(
             const vdis::abstract_siman_pdu_t &pdu,
+            std::ostream &out
+        );
+
+        static void print_standard_variable_record_summary(
+            const vdis::application_control_pdu_t &pdu,
             std::ostream &out
         );
     };

@@ -5,6 +5,7 @@
 #include "vdis_datum_records.h"
 #include "vdis_logger.h"
 #include "vdis_pdus.h"
+#include "vdis_standard_variable_records.h"
 #include "vdis_string.h"
 #include "vdis_variable_parameter_records.h"
 
@@ -562,7 +563,18 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
         }
         case vdis::PDU_TYPE_APPLICATION_CTRL:
         {
-            // TODO
+            const vdis::application_control_pdu_t *p = SCAST(
+                vdis::application_control_pdu_t,
+                pdu.base());
+
+            if (p)
+            {
+                out << "  " << p->originator << "->" << p->recipient
+                    << std::endl;
+
+                print_standard_variable_record_summary(*p, out);
+            }
+
             break;
         }
         default:
@@ -600,6 +612,24 @@ void vdb::print::print_datum_record_summary(
         if (record_ptr)
         {
             out << "  variable_datum[" << i << "] = "
+                << record_ptr->datum_id_enum() << std::endl;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void vdb::print::print_standard_variable_record_summary(
+    const vdis::application_control_pdu_t &pdu,
+    std::ostream &out)
+{
+    for(uint32_t i = 0; i < pdu.record_count; ++i)
+    {
+        const vdis::standard_variable_record_t
+            *record_ptr = pdu.record(i);
+
+        if (record_ptr)
+        {
+            out << "  standard_variable_record[" << i << "] = "
                 << record_ptr->datum_id_enum() << std::endl;
         }
     }
