@@ -48,6 +48,25 @@ bool vdb::filter::filter_by_metadata(const pdu_data_t &data)
         }
     }
 
+    if (pass and not exclude_hostnames.empty())
+    {
+        const std::string
+            &hostname = data.get_hostname();
+        std::set<std::string>::const_iterator
+            itor = exclude_hostnames.begin();
+
+        while((itor != exclude_hostnames.end()) and pass)
+        {
+            pass = (not vdis::contains(hostname, *itor, true));
+            ++itor;
+        }
+
+        if (not pass)
+        {
+            LOG_VERBOSE("Filtered out PDU from host %s...", hostname.c_str());
+        }
+    }
+
     return pass;
 }
 
