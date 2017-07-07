@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     options.add(OPTION_XFAMILY);
     options.add(OPTION_ID);
     options.add(OPTION_XID);
+    options.add(OPTION_RANGE);
     options.add(OPTION_HELP);
     options.add(OPTION_VERBOSE);
     options.add(OPTION_VERSION);
@@ -224,7 +225,8 @@ bool vdb::playback_t::process_pdu_data(const pdu_data_t &data)
 
     if (filter::filter_by_range(data.get_index(), past_end))
     {
-        if (filter::filter_by_header(data))
+        if (filter::filter_by_header(data) and
+            filter::filter_by_metadata(data))
         {
             const vdis::pdu_t *pdu_ptr = data.generate_pdu();
 
