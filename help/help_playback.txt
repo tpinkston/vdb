@@ -1,6 +1,6 @@
 Plays back saved VDIS traffic in capture file. 
 
-Usage: vdb-playback [OPTIONS] PORT FILE
+Usage: vdb playback [OPTIONS] PORT FILE
 
   -P --pdu=M            Capture file contains contents for a single PDU to be
                         played back at interval of M milliseconds

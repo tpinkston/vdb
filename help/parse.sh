@@ -3,6 +3,7 @@
 SCRIPT_NAME=`basename $0`
 SOURCE_FILE="$1"
 TARGET_FILE="$2"
+TITLE="$3"
 
 if [ -z "$SOURCE_FILE" ] || [ -z "$TARGET_FILE" ]; then
     echo "$SCRIPT_NAME: missing file argument(s)" >&2
@@ -17,7 +18,7 @@ if [ $SOURCE_FILE -nt $TARGET_FILE ]; then
     cat /dev/null > $TARGET_FILE
     echo "// This file is auto-generated..." >> $TARGET_FILE
     echo "//" >> $TARGET_FILE
-    echo "void print_help(void)" >> $TARGET_FILE
+    echo "void print_${TITLE}_help(void)" >> $TARGET_FILE
     echo "{" >> $TARGET_FILE
     while IFS='' read line;
     do

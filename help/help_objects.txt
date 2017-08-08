@@ -1,6 +1,6 @@
 Prints all VDIS standard object type definitions to STDOUT in CSV format.
 
-Usage: vdb-objects [OPTIONS]
+Usage: vdb objects [OPTIONS]
 
   -E --errors           Show errors
   -W --warnings         Show warnings

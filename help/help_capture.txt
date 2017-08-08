@@ -1,7 +1,7 @@
 Captures VDIS traffic (UDP), outputs PDUs and optionally saves PDUs to 
 a capture file (if filename is provided as argument).
 
-Usage: vdb-capture [OPTIONS] PORT [FILE]
+Usage: vdb capture [OPTIONS] PORT [FILE]
 
   -a --address=A        Use IP address, e.g. 192.168.1.123
   -N --interface=I      Use network interface, e.g. 'eth0'

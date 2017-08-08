@@ -1,7 +1,7 @@
 Extracts single PDU from capture file, saves it to file for use with
 the 'vdb-playback' tool with the '-P' or '--pdu' option. 
 
-Usage: vdb-list [OPTIONS] INDEX INPUT OUTPUT
+Usage: vdb list [OPTIONS] INDEX INPUT OUTPUT
 
   -e --extra            Print extra information (if applicable)
   -x --extract          Print full PDU data extraction (overrides -e)

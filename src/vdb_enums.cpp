@@ -13,14 +13,14 @@ namespace
         enums;
 }
 
-bool option_callback(
+bool enums_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success
 );
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int enums_main(int argc, char *argv[])
 {
     vdb::options_t
         options("vdb-enums", argc, argv);
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     options.add(OPTION_VERBOSE);
     options.add(OPTION_HELP);
 
-    options.set_callback(*option_callback);
+    options.set_callback(*enums_option_callback);
 
     if (options.parse())
     {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_enums_help();
             result = 0;
         }
         else
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
+bool enums_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success)

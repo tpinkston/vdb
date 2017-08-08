@@ -1,6 +1,6 @@
 Prints all VDIS standard entity type definitions to STDOUT in CSV format.
 
-Usage: vdb-entities [OPTIONS]
+Usage: vdb entities [OPTIONS]
 
   -E --errors           Show errors
   -W --warnings         Show warnings

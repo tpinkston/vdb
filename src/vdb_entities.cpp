@@ -17,14 +17,14 @@ namespace
         entities;
 }
 
-bool option_callback(
+bool entities_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success
 );
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int entities_main(int argc, char *argv[])
 {
     int result = 1;
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     options_ptr->add(vdb::option_t("country", 't', true));
     options_ptr->add(vdb::option_t("countries", 'T', false));
 
-    options_ptr->set_callback(*option_callback);
+    options_ptr->set_callback(*entities_option_callback);
 
     if (options_ptr->parse())
     {
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_entities_help();
             result = 0;
         }
         else
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
+bool entities_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success)

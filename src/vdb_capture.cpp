@@ -23,20 +23,23 @@ namespace
         capture;
 }
 
-bool option_callback(
+void print_capture_help(void);
+void print_vdb_version(void);
+
+bool capture_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success
 );
 
 // ----------------------------------------------------------------------------
-void signal_handler(int value)
+void capture_signal_handler(int value)
 {
     capture.capturing = false;
 }
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int capture_main(int argc, char *argv[])
 {
     vdb::options_t
         options("vdb-capture", argc, argv);
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
     options.add(vdb::option_t("scan", 'S', true));
     options.add(vdb::option_t("scanall", 'A', false));
 
-    options.set_callback(*option_callback);
+    options.set_callback(*capture_option_callback);
 
     if (options.parse())
     {
@@ -79,7 +82,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_capture_help();
             result = 0;
         }
         else
@@ -92,7 +95,7 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
+bool capture_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success)
@@ -218,7 +221,7 @@ void vdb::capture_t::register_signal(void)
 
     std::memset(&action, 0, sizeof(action));
 
-    action.sa_handler = signal_handler;
+    action.sa_handler = capture_signal_handler;
 
     sigaction(SIGINT, &action, NULL);
 }

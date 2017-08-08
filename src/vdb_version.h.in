@@ -3,8 +3,8 @@
 
 #include "vdb_git.h"
 
-#define VDB_VERSION_MAJOR 2
-#define VDB_VERSION_MINOR 0
+#define VDB_VERSION_MAJOR @VDB_VERSION_MAJOR@
+#define VDB_VERSION_MINOR @VDB_VERSION_MINOR@
 
 // ----------------------------------------------------------------------------
 inline void print_vdb_version(void)

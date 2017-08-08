@@ -21,7 +21,7 @@ namespace
         playback;
 }
 
-bool option_callback(
+bool playback_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success
@@ -34,7 +34,7 @@ void signal_handler(int value)
 }
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int playback_main(int argc, char *argv[])
 {
     vdb::options_t
         options("vdb-playback", argc, argv);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     options.add(OPTION_VERBOSE);
     options.add(OPTION_VERSION);
 
-    options.set_callback(*option_callback);
+    options.set_callback(*playback_option_callback);
 
     if (options.parse())
     {
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_playback_help();
             result = 0;
         }
         else
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
+bool playback_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success)

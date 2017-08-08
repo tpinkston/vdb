@@ -24,7 +24,7 @@ bool option_callback(
 );
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int objects_main(int argc, char *argv[])
 {
     int result = 1;
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_objects_help();
             result = 0;
         }
         else

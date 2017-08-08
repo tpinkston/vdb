@@ -32,14 +32,14 @@ namespace
     }
 }
 
-bool option_callback(
+bool summarize_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success
 );
 
 // ----------------------------------------------------------------------------
-int main(int argc, char *argv[])
+int summarize_main(int argc, char *argv[])
 {
     vdb::options_t
         options("vdb-summarize", argc, argv);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     options.add(vdb::option_t("objects", 'O', false));
     options.add(vdb::option_t("all", 'A', false));
 
-    options.set_callback(*option_callback);
+    options.set_callback(*summarize_option_callback);
 
     if (options.parse())
     {
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         }
         else if (vdb::options::help)
         {
-            print_help();
+            print_summarize_help();
             result = 0;
         }
         else
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
+bool summarize_option_callback(
     const vdb::option_t &option,
     const std::string &value,
     bool &success)

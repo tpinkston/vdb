@@ -1,2 +1,4 @@
 vdb_git.h
 vdb_*_help.h
+vdb_version.h
+

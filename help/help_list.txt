@@ -1,6 +1,6 @@
 Lists saved VDIS traffic in capture file. 
 
-Usage: vdb-list [OPTIONS] FILE
+Usage: vdb list [OPTIONS] FILE
 
   -e --extra            Print extra information (if applicable)
   -x --extract          Print full PDU data extraction (overrides -e)
