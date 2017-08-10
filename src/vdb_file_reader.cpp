@@ -1,3 +1,4 @@
+#include "vdb_common.h"
 #include "vdb_file_reader.h"
 #include "vdb_options.h"
 
@@ -122,15 +123,22 @@ vdb::pdu_reader_t::pdu_reader_t(const string_t &filename, uint64_t interval) :
     interval_milliseconds(interval),
     index(0)
 {
-    if (vdis::network_options::ipv6)
+    if (not stream.read_file(filename))
     {
-        vdis::set_address("::1", 0, address_ipv6);
+        error_condition = true;
     }
     else
     {
-        bool broadcast = false;
+        if (vdis::network_options::ipv6)
+        {
+            vdis::set_address("::1", 0, address_ipv6);
+        }
+        else
+        {
+            bool broadcast = false;
 
-        vdis::set_address("127.0.0.1", 0, address_ipv4, broadcast);
+            vdis::set_address("127.0.0.1", 0, address_ipv4, broadcast);
+        }
     }
 }
 
@@ -143,14 +151,20 @@ vdb::pdu_reader_t::~pdu_reader_t(void)
 // ----------------------------------------------------------------------------
 bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
 {
-    file_stream
-        stream;
-    bool
-        success = false;
+    bool success = false;
 
     data.clear();
 
-    if (stream.read_file(filename))
+    if (debug_enabled(DEBUG_FILE_READER))
+    {
+        CONSOLE_OUT("pdu_reader_t::next_entry(index = %d)", index);
+    }
+
+    if (error_condition)
+    {
+        LOG_FATAL("cannot read file with error condition!");
+    }
+    else
     {
         if (index == 0)
         {

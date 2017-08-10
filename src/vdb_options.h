@@ -157,7 +157,7 @@ namespace vdb
         const int
             count;
         std::vector<std::string>
-            values;
+            arguments;
         std::vector<option_t>
             options;
         command_t

@@ -13,42 +13,32 @@
 #include "vdis_services.h"
 #include "vdis_string.h"
 
-namespace
-{
-    vdb::playback_t
-        playback;
-}
-
-bool playback_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
+std::list<vdb::playback_t *>
+    vdb::playback_t::instances;
 
 // ----------------------------------------------------------------------------
-void signal_handler(int value)
+vdb::playback_t::playback_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    command_t(command, arguments),
+    socket_ptr(0),
+    port(0),
+    bytes_sent(0),
+    pdus_sent(0),
+    pdu_interval(0),
+    capture_start_time(0),
+    playback_start_time(0),
+    playing_back(false)
 {
-    playback.playing_back = false;
-}
-
-// ----------------------------------------------------------------------------
-int playback_main(int argc, char *argv[])
-{
-    vdb::options_t
-        options("vdb-playback", argc, argv);
-    int
-        result = 1;
+    instances.push_back(this);
 
     options.add(vdb::option_t("pdu", 'P', true));
     options.add(OPTION_ADDRESS);
     options.add(OPTION_INTERFACE);
     options.add(OPTION_IPV6);
-    options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_MONO);
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_WARNINGS);
     options.add(OPTION_HOSTNAME);
     options.add(OPTION_XHOSTNAME);
     options.add(OPTION_EXERCISE);
@@ -60,53 +50,18 @@ int playback_main(int argc, char *argv[])
     options.add(OPTION_ID);
     options.add(OPTION_XID);
     options.add(OPTION_RANGE);
-    options.add(OPTION_HELP);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_VERSION);
-
-    options.set_callback(*playback_option_callback);
-
-    if (options.parse())
-    {
-        vdb::print::print_pdu_source_time = false;
-
-        result = playback.run();
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
-bool playback_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success)
+vdb::playback_t::~playback_t(void)
 {
-    uint64_t
-        interval = 0;
-    bool
-        result = true;
+    instances.remove(this);
 
-    if (option.short_option == 'P')
+    if (socket_ptr)
     {
-        success = vdis::to_uint64(value, interval);
-
-        if (success)
-        {
-            playback.set_pdu_interval(interval);
-        }
-        else
-        {
-            std::cerr << "vdb-playback: invalid value for PDU interval: "
-                      << value << std::endl;
-        }
+        delete socket_ptr;
+        socket_ptr = 0;
     }
-    else
-    {
-        result = false;
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -118,20 +73,21 @@ int vdb::playback_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-playback: missing playback arguments" << std::endl;
+        LOG_FATAL("missing arguments");
     }
     else if (options::command_arguments.size() < 2)
     {
-        std::cerr << "vdb-playback: too few arguments" << std::endl;
+        LOG_FATAL("too few arguments");
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb-playback: too many arguments" << std::endl;
+        LOG_FATAL("too many arguments");
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << "vdb-playback: invalid port argument '"
-                  << options::command_arguments[0] << "'" << std::endl;
+        LOG_FATAL(
+            "invalid port: %s",
+            options::command_arguments[0].c_str());
     }
     else
     {
@@ -151,11 +107,7 @@ int vdb::playback_t::run(void)
             reader_ptr = new standard_reader_t(filename);
         }
 
-        if (not reader_ptr->good())
-        {
-            result = 1;
-        }
-        else
+        if (reader_ptr->good())
         {
             vdis::set_byteswapping();
             vdis::enumerations::load();
@@ -184,6 +136,50 @@ int vdb::playback_t::run(void)
 }
 
 // ----------------------------------------------------------------------------
+bool vdb::playback_t::option_callback(
+    const option_t &option,
+    const std::string &value,
+    bool &success)
+{
+    bool result = true;
+
+    if (option.short_option == 'P')
+    {
+        success = vdis::to_uint64(value, pdu_interval);
+
+        if (not success)
+        {
+            LOG_FATAL("invalid PDU interval: %s", value.c_str());
+        }
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::playback_t::signal_handler(int value)
+{
+    std::list<playback_t *>::iterator
+        itor = instances.begin();
+
+    if (debug_enabled())
+    {
+        CONSOLE_OUT("DEBUG: caught signal...");
+    }
+
+    while(itor != instances.end())
+    {
+        (*itor)->playing_back = false;
+
+        ++itor;
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdb::playback_t::open_socket(void)
 {
     const char
@@ -205,8 +201,12 @@ void vdb::playback_t::open_socket(void)
 // ----------------------------------------------------------------------------
 bool vdb::playback_t::process_pdu_data(const pdu_data_t &data)
 {
-    bool
-        past_end = false;
+    bool past_end = false;
+
+    if (debug_enabled())
+    {
+        CONSOLE_OUT("DEBUG: processing PDU #%d...", data.get_index());
+    }
 
     if (filter::filter_by_range(data.get_index(), past_end))
     {
@@ -290,6 +290,11 @@ void vdb::playback_t::register_signal(void)
     action.sa_handler = signal_handler;
 
     sigaction(SIGINT, &action, NULL);
+
+    if (debug_enabled())
+    {
+        CONSOLE_OUT("DEBUG: signal registered...");
+    }
 }
 
 // ----------------------------------------------------------------------------

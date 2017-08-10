@@ -36,7 +36,7 @@ namespace vdb
 
         virtual bool parse_options(void);
 
-        bool option_callback(
+        virtual bool option_callback(
             const option_t &option,
             const std::string &value,
             bool &success

@@ -43,6 +43,9 @@ namespace vdb
 
         bool parse(file_read_callback_t *callback_ptr);
 
+        file_stream
+            stream;
+
       protected:
 
         // Reads the next entry from the file, returns false when there are
@@ -69,8 +72,6 @@ namespace vdb
 
         file_header_t
             header;
-        file_stream
-            stream;
 
       protected:
 

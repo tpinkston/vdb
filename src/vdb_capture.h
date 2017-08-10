@@ -24,24 +24,11 @@ namespace vdb
             const std::vector<std::string> &arguments
         );
 
-        ~capture_t(void)
-        {
-            if (file_ptr)
-            {
-                delete file_ptr;
-                file_ptr = 0;
-            }
+        virtual ~capture_t(void);
 
-            if (socket_ptr)
-            {
-                delete socket_ptr;
-                socket_ptr = 0;
-            }
-        }
+        virtual int run(void);
 
-        int run(void);
-
-        bool option_callback(
+        virtual bool option_callback(
             const option_t &option,
             const std::string &value,
             bool &success
@@ -76,8 +63,8 @@ namespace vdb
             pdus_accepted;
         bool
             capturing;
-        static capture_t
-            *instance_ptr;
+        static std::list<capture_t *>
+            instances;
     };
 }
 

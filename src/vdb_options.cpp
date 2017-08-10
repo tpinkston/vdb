@@ -30,7 +30,7 @@ vdb::options_t::options_t(
 ) :
     command(command),
     count(args.size()),
-    values(args),
+    arguments(args),
     command_ptr(0)
 {
 
@@ -44,7 +44,7 @@ vdb::options_t::options_t(const char *command, int argc, char *argv[]) :
 {
     for(int i = 0; i < argc; ++i)
     {
-        values.push_back(std::string(argv[i]));
+        arguments.push_back(std::string(argv[i]));
     }
 }
 
@@ -87,16 +87,19 @@ bool vdb::options_t::parse(void)
     }
     else for(int i = 0; success and (i < count); ++i)
     {
-        if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+        if (debug_enabled(DEBUG_OPTIONS))
         {
-            CONSOLE_OUT("DEBUG: parse: values[%d]='%s'", i, values[i].c_str());
+            CONSOLE_OUT(
+                "DEBUG: parse: arguments[%d]='%s'",
+                i,
+                arguments[i].c_str());
         }
 
-        if (vdis::starts_with(values[i], "--"))
+        if (vdis::starts_with(arguments[i], "--"))
         {
             success = parse_long_option(i);
         }
-        else if (vdis::starts_with(values[i], "-"))
+        else if (vdis::starts_with(arguments[i], "-"))
         {
             int
                 next = ((i + 1) < count) ? (i + 1) : -1;
@@ -105,7 +108,7 @@ bool vdb::options_t::parse(void)
 
             success = parse_short_options(i, next, advance);
 
-            if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+            if (debug_enabled(DEBUG_OPTIONS))
             {
                 CONSOLE_OUT(
                     "DEBUG: parse: advance: %s",
@@ -119,11 +122,11 @@ bool vdb::options_t::parse(void)
         }
         else
         {
-            options::command_arguments.push_back(values[i]);
+            options::command_arguments.push_back(arguments[i]);
         }
     }
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT("DEBUG: parse: returning: %s", success ? "true" : "false");
     }
@@ -135,7 +138,7 @@ bool vdb::options_t::parse(void)
 bool vdb::options_t::parse_long_option(int current)
 {
     const std::string
-        argument = std::string(values[current]).substr(2);
+        argument = std::string(arguments[current]).substr(2);
     std::string
         name,
         value;
@@ -155,7 +158,7 @@ bool vdb::options_t::parse_long_option(int current)
         value = argument.substr(index + 1);
     }
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT(
             "DEBUG: parse_long_option: --%s=%s",
@@ -173,7 +176,7 @@ bool vdb::options_t::parse_long_option(int current)
         {
             option_found = true;
 
-            if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+            if (debug_enabled(DEBUG_OPTIONS))
             {
                 CONSOLE_OUT(
                     "DEBUG: parse_long_option: found: %s",
@@ -183,14 +186,14 @@ bool vdb::options_t::parse_long_option(int current)
             if (option_ptr->needs_value and value.empty())
             {
                 LOG_FATAL(
-                    "%s: option requires a value: -- %s",
+                    "%s: option requires a value: --%s",
                     command.c_str(),
                     name.c_str());
             }
             else if (not option_ptr->needs_value and not value.empty())
             {
                 LOG_FATAL(
-                    "%s: option does not take a value: -- %s",
+                    "%s: option does not take a value: --%s",
                     command.c_str(),
                     name.c_str());
             }
@@ -204,7 +207,7 @@ bool vdb::options_t::parse_long_option(int current)
     if (not option_found)
     {
         LOG_FATAL(
-            "%s: invalid option: -- %s",
+            "%s: invalid option: --%s",
             command.c_str(),
             name.c_str());
     }
@@ -218,25 +221,25 @@ bool vdb::options_t::parse_long_option(int current)
 bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 {
     std::string
-        argument = values[current].substr(1);
+        argument = arguments[current].substr(1);
     bool
         option_found = false,
         value_usable = false,
         success = true;
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT(
             "DEBUG: parse_short_options: parsing '%s', '%s'",
-            values[current].c_str(),
-            ((next > -1) ? values[next].c_str() : "null"));
+            arguments[current].c_str(),
+            ((next > -1) ? arguments[next].c_str() : "null"));
     }
 
     // Go through short options character by character.
     //
     for(std::string::size_type i = 0; success and (i < argument.length()); ++i)
     {
-        if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+        if (debug_enabled(DEBUG_OPTIONS))
         {
             CONSOLE_OUT(
                 "DEBUG: parse_short_options: searching for '%c'",
@@ -255,7 +258,7 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
             {
                 option_found = true;
 
-                if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+                if (debug_enabled(DEBUG_OPTIONS))
                 {
                     CONSOLE_OUT(
                         "DEBUG: parse_short_options: found: %s",
@@ -280,7 +283,7 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
                 }
                 else if (value_usable)
                 {
-                    success = parse_option(*option_ptr, values[next]);
+                    success = parse_option(*option_ptr, arguments[next]);
                     advance = true;
                 }
                 else
@@ -312,7 +315,7 @@ bool vdb::options_t::parse_option(
 
     if (command_ptr->option_callback(option, value, success))
     {
-        if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+        if (debug_enabled(DEBUG_OPTIONS))
         {
             CONSOLE_OUT(
                 "DEBUG: parse_option: callback returned true, success: %s",
@@ -431,7 +434,7 @@ bool vdb::options_t::parse_string_set(
 
     vdis::tokenize_csv(input, values);
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT("DEBUG: parse_string_set: '%s'", input.c_str());
     }
@@ -462,7 +465,7 @@ bool vdb::options_t::parse_entity_ids(
 
     vdis::tokenize_csv(input, values);
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT("DEBUG: parse_entity_ids: '%s'", input.c_str());
     }
@@ -551,7 +554,7 @@ bool vdb::options_t::parse_entity_id(
 
         output.insert(entity_id);
 
-        if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+        if (debug_enabled(DEBUG_OPTIONS))
         {
             CONSOLE_OUT(
                 "DEBUG: parse_entity_id: '%s' -> %s",
@@ -611,7 +614,7 @@ bool vdb::options_t::parse_integers_in_range(
     bool
         success = true;
 
-    if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+    if (debug_enabled(DEBUG_OPTIONS))
     {
         CONSOLE_OUT(
             "DEBUG: parse_integers_in_range (%d-%d): '%s'",
@@ -624,7 +627,7 @@ bool vdb::options_t::parse_integers_in_range(
 
     for(uint32_t i = 0; success and (i < values.size()); ++i)
     {
-        if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+        if (debug_enabled(DEBUG_OPTIONS))
         {
             CONSOLE_OUT(
                 "DEBUG: parse_integers_in_range: value '%s'",
@@ -647,7 +650,7 @@ bool vdb::options_t::parse_integers_in_range(
             }
             else
             {
-                if (debug_enabled(DEBUG_LOW | DEBUG_OPTIONS))
+                if (debug_enabled(DEBUG_OPTIONS))
                 {
                     CONSOLE_OUT("DEBUG: parse_integers: value %d", value);
                 }

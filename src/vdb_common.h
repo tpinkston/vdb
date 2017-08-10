@@ -4,16 +4,11 @@
 #include "vdb_options.h"
 #include "vdb_system.h"
 
-// Debug masks
+// Debug bit masks (using bits 1 through 31)
 //
-#define DEBUG_OPTIONS           0x00000010U
-#define DEBUG_NETWORK           0x00000020U
-
-// Debug levels
-//
-#define DEBUG_LOW               1
-#define DEBUG_MEDIUM            2
-#define DEBUG_HIGH              3
+#define DEBUG_OPTIONS           0x00000002U
+#define DEBUG_NETWORK           0x00000004U
+#define DEBUG_FILE_READER       0x00010000U
 
 namespace vdb
 {
@@ -28,9 +23,10 @@ namespace vdb
     bool user_confirmation(const char *prompt_ptr = 0);
 
     // ------------------------------------------------------------------------
-    // Get or set debug level and options
+    // Get or set debug options
     //
-    void set_debug(unsigned level);
+    void set_debug(unsigned mask);
+    bool debug_enabled(void);
     bool debug_enabled(unsigned mask);
 }
 

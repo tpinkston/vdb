@@ -14,6 +14,7 @@
 #include "vdb_list_help.h"
 #include "vdb_main.h"
 #include "vdb_objects_help.h"
+#include "vdb_playback.h"
 #include "vdb_playback_help.h"
 #include "vdb_summarize_help.h"
 #include "vdb_version.h"
@@ -120,20 +121,28 @@ int main(int argc, char *argv[])
                     command_ptr = new vdb::capture_t("capture", arguments);
                     break;
                 case vdb::COMMENT:
+                    // TODO
                     break;
                 case vdb::ENTITIES:
+                    // TODO
                     break;
                 case vdb::ENUMS:
+                    // TODO
                     break;
                 case vdb::EXTRACT:
+                    // TODO
                     break;
                 case vdb::LIST:
+                    // TODO
                     break;
                 case vdb::OBJECTS:
+                    // TODO
                     break;
                 case vdb::PLAYBACK:
+                    command_ptr = new vdb::playback_t("playback", arguments);
                     break;
                 case vdb::SUMMARIZE:
+                    // TODO
                     break;
             }
 

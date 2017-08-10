@@ -15,8 +15,8 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-vdb::capture_t
-    *vdb::capture_t::instance_ptr = 0;
+std::list<vdb::capture_t *>
+    vdb::capture_t::instances;
 
 // ----------------------------------------------------------------------------
 vdb::capture_t::capture_t(
@@ -33,13 +33,7 @@ vdb::capture_t::capture_t(
     pdus_accepted(0),
     capturing(false)
 {
-    if (instance_ptr)
-    {
-        std::cerr << "vdb capture: already instantiated (FATAL)!" << std::endl;
-        exit(1);
-    }
-
-    instance_ptr = this;
+    instances.push_back(this);
 
     options.add(OPTION_ADDRESS);
     options.add(OPTION_INTERFACE);
@@ -61,6 +55,24 @@ vdb::capture_t::capture_t(
 }
 
 // ----------------------------------------------------------------------------
+vdb::capture_t::~capture_t(void)
+{
+    instances.remove(this);
+
+    if (file_ptr)
+    {
+        delete file_ptr;
+        file_ptr = 0;
+    }
+
+    if (socket_ptr)
+    {
+        delete socket_ptr;
+        socket_ptr = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
 int vdb::capture_t::run(void)
 {
     int result = 1;
@@ -69,16 +81,17 @@ int vdb::capture_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb capture: missing port argument" << std::endl;
+        LOG_FATAL("missing port argument");
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb capture: too many arguments" << std::endl;
+        LOG_FATAL("too many arguments");
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << "vdb capture: invalid port argument '"
-                  << options::command_arguments[0] << "'" << std::endl;
+        LOG_FATAL(
+            "invalid port argument '%s'",
+            options::command_arguments[0].c_str());
     }
     else
     {
@@ -132,7 +145,7 @@ int vdb::capture_t::run(void)
 
 // ----------------------------------------------------------------------------
 bool vdb::capture_t::option_callback(
-    const vdb::option_t &option,
+    const option_t &option,
     const std::string &value,
     bool &success)
 {
@@ -148,8 +161,7 @@ bool vdb::capture_t::option_callback(
 
         if (not success)
         {
-            std::cerr << "vdb capture: invalid scan parameters: "
-                      << value << std::endl;
+            LOG_FATAL("invalid scan parameters '%s'", value.c_str());
         }
     }
     else
@@ -163,15 +175,19 @@ bool vdb::capture_t::option_callback(
 // ----------------------------------------------------------------------------
 void vdb::capture_t::signal_handler(int value)
 {
-    if (instance_ptr)
-    {
-        if (debug_enabled(DEBUG_LOW))
-        {
-            // TODO: add color
-            std::cout << "DEBUG: capture signal caught..." << std::endl;
-        }
+    std::list<capture_t *>::iterator
+        itor = instances.begin();
 
-        instance_ptr->capturing = false;
+    if (debug_enabled())
+    {
+        CONSOLE_OUT("DEBUG: caught signal...");
+    }
+
+    while(itor != instances.end())
+    {
+        (*itor)->capturing = false;
+
+        ++itor;
     }
 }
 

@@ -7,7 +7,7 @@
 namespace
 {
     unsigned
-        debug_value = 0;
+        debug_mask = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -44,40 +44,40 @@ bool vdb::user_confirmation(const char *prompt_ptr)
 }
 
 // ----------------------------------------------------------------------------
-void vdb::set_debug(unsigned value)
+void vdb::set_debug(unsigned mask)
 {
     CONSOLE_OUT(
         "DEBUG: setting debug mask: %d [%s]",
-        value,
-        vdis::to_bin_string(value, true).c_str());
+        mask,
+        vdis::to_bin_string(mask, true).c_str());
 
-    debug_value = value;
+    debug_mask = mask;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::debug_enabled(void)
+{
+    // True if bit 0 is set.
+    //
+    return ((debug_mask & 0x00000001U) > 0);
 }
 
 // ----------------------------------------------------------------------------
 bool vdb::debug_enabled(unsigned mask)
 {
-    const unsigned
-        current_level = (debug_value & 0x0000000FU),
-        requested_level = (mask & 0x0000000FU);
-
-//    CONSOLE_OUT(
-//        "current_level = %d, requested_level = %d",
-//        current_level,
-//        requested_level);
-
-    if ((requested_level > 0) and (requested_level <= current_level))
+    if (debug_enabled())
     {
         const unsigned
-            current_options = (debug_value & 0xFFFFFFF0U),
-            requested_options = (mask & 0xFFFFFFF0U);
+            current_mask = (debug_mask & 0xFFFFFFFEU),
+            requested_mask = (mask & 0xFFFFFFFEU);
 
 //        CONSOLE_OUT(
-//            "current_options = %d, requested_options = %d",
-//            current_options,
-//            requested_options);
+//            "current_mask=%d & requested_mask=%d = %d",
+//            current_mask,
+//            requested_mask,
+//            (current_mask & requested_mask));
 
-        return ((current_options & requested_options) == requested_options);
+        return ((unsigned)(current_mask & requested_mask) == requested_mask);
     }
 
     return false;

@@ -1,6 +1,7 @@
 #ifndef VDB_PLAYBACK_H
 #define VDB_PLAYBACK_H
 
+#include "vdb_command.h"
 #include "vdb_file_reader.h"
 
 namespace vdis
@@ -11,46 +12,34 @@ namespace vdis
 
 namespace vdb
 {
-    class playback_t : file_read_callback_t
+    class playback_t : public command_t, public file_read_callback_t
     {
       public:
 
-        playback_t(void) :
-            playing_back(false),
-            socket_ptr(0),
-            port(0),
-            bytes_sent(0),
-            pdus_sent(0),
-            pdu_interval(0),
-            capture_start_time(0),
-            playback_start_time(0)
-        {
+        playback_t(
+            const std::string &command,
+            const std::vector<std::string> &arguments
+        );
 
-        }
+        virtual ~playback_t(void);
 
-        ~playback_t(void)
-        {
-            if (socket_ptr)
-            {
-                delete socket_ptr;
-                socket_ptr = 0;
-            }
-        }
+        virtual int run(void);
 
-        void set_pdu_interval(uint64_t value)
-        {
-            pdu_interval = value;
-        }
+        virtual bool option_callback(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
 
-        int run(void);
+      protected:
 
-        bool playing_back;
+        static void signal_handler(int value);
 
       private:
 
         void open_socket(void);
 
-        bool process_pdu_data(const pdu_data_t &);
+        virtual bool process_pdu_data(const pdu_data_t &);
 
         void send_pdu(const pdu_data_t &, const vdis::pdu_t &);
 
@@ -69,6 +58,10 @@ namespace vdb
             pdu_interval,           // milliseconds
             capture_start_time,     // milliseconds
             playback_start_time;    // milliseconds
+        bool
+            playing_back;
+        static std::list<playback_t *>
+            instances;
     };
 }
 
