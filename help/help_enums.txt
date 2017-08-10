@@ -2,6 +2,4 @@ Prints all VDIS standard enumerations to STDOUT in CSV format.
 
 Usage: vdb enums
 
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -v --verbose          Verbose (-vv for extra verbose)
+Use 'vdb --help' to see applicable global options.

@@ -11,8 +11,5 @@ Usage: vdb summarize [OPTIONS] FILE
   -O --objects          Show object states (point, linear, areal)
   -A --all              Show all the above
 
-  -e --extra            Print extra information (if applicable)
-  -c --color            Suppress colored output
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -v --verbose          Verbose (-vv for extra verbose)
+Use 'vdb --help' to see applicable global options.
+  

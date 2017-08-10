@@ -8,6 +8,7 @@ ${SRC_PATH}/vdb_comment_help.h \
 ${SRC_PATH}/vdb_entities_help.h \
 ${SRC_PATH}/vdb_enums_help.h \
 ${SRC_PATH}/vdb_extract_help.h \
+${SRC_PATH}/vdb_global_help.h \
 ${SRC_PATH}/vdb_list_help.h \
 ${SRC_PATH}/vdb_objects_help.h \
 ${SRC_PATH}/vdb_playback_help.h \
@@ -16,13 +17,17 @@ ${SRC_PATH}/vdb_summarize_help.h
 GIT_BRANCH=$(shell BRANCH=`git rev-parse --abbrev-ref HEAD`; echo $${BRANCH})
 GIT_COMMIT=$(shell COMMIT=`git rev-parse HEAD`; echo $${COMMIT:0:7})
 
-build: data version ${HELP_FILES} builder
+VDB_BRANCH=$(shell BRANCH=`[ -e ${SRC_PATH}/vdb_git.h ] && grep VDB_GIT_BRANCH ${SRC_PATH}/vdb_git.h | cut -d' ' -f3 | sed 's/"//g'`; echo $${BRANCH})
+VDB_COMMIT=$(shell COMMIT=`[ -e ${SRC_PATH}/vdb_git.h ] && grep VDB_GIT_COMMIT ${SRC_PATH}/vdb_git.h | cut -d' ' -f3 | sed 's/"//g'`; echo $${COMMIT})
+
+build: ${HELP_FILES} data version builder
 	@echo
 	@echo "build:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile
 .PHONY : build
 
-all: data version ${HELP_FILES} builder
+
+all: ${HELP_FILES} data version builder
 	@echo
 	@echo "all:"
 	@cd ${BUILD_PATH}; $(MAKE) --no-print-directory -f Makefile all
@@ -39,11 +44,13 @@ data:
 version:
 	@echo
 	@echo "version:"
-	@echo "${GIT_BRANCH}-${GIT_COMMIT}"
-	@cp ${SRC_PATH}/vdb_git.h.in ${SRC_PATH}/vdb_git.h
-	@sed -i 's/VDB_GIT_BRANCH.*/VDB_GIT_BRANCH "${GIT_BRANCH}"/' ${SRC_PATH}/vdb_git.h
-	@sed -i 's/VDB_GIT_COMMIT.*/VDB_GIT_COMMIT "${GIT_COMMIT}"/' ${SRC_PATH}/vdb_git.h
-.PHONY : version 
+	@if [ "${GIT_BRANCH}" != "${VDB_BRANCH}" ] || [ "${GIT_COMMIT}" != "${VDB_COMMIT}" ]; then \
+		echo "Updating git fields: ${GIT_BRANCH}-${GIT_COMMIT}"; \
+		cp ${SRC_PATH}/vdb_git.h.in ${SRC_PATH}/vdb_git.h; \
+		sed -i 's/VDB_GIT_BRANCH.*/VDB_GIT_BRANCH "${GIT_BRANCH}"/' ${SRC_PATH}/vdb_git.h; \
+		sed -i 's/VDB_GIT_COMMIT.*/VDB_GIT_COMMIT "${GIT_COMMIT}"/' ${SRC_PATH}/vdb_git.h; \
+	fi
+.PHONY : version
 
 
 builder: ${BUILD_PATH}/CMakeLists.txt
@@ -94,6 +101,8 @@ ${SRC_PATH}/vdb_enums_help.h: $(HELP_PATH)/help_enums.txt
 	@$(HELP_PATH)/parse.sh $< $@ enums
 ${SRC_PATH}/vdb_extract_help.h: $(HELP_PATH)/help_extract.txt
 	@$(HELP_PATH)/parse.sh $< $@ extract
+${SRC_PATH}/vdb_global_help.h: $(HELP_PATH)/help_global.txt
+	@$(HELP_PATH)/parse.sh $< $@ global
 ${SRC_PATH}/vdb_list_help.h: $(HELP_PATH)/help_list.txt
 	@$(HELP_PATH)/parse.sh $< $@ list
 ${SRC_PATH}/vdb_objects_help.h: $(HELP_PATH)/help_objects.txt

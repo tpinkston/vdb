@@ -2,11 +2,6 @@ Prints all VDIS standard entity type definitions to STDOUT in CSV format.
 
 Usage: vdb entities [OPTIONS]
 
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -c --color            Suppress colored output
-  -v --verbose          Verbose (-vv for extra verbose)
-  
   -k --kind=K1,K2,...   List of entity types with specified kinds, numeric: 
                         0 = other
                         1 = platform
@@ -31,4 +26,5 @@ Usage: vdb entities [OPTIONS]
                         numeric, too many to list here.  Use -C to list
                         them.
   -T --countries        List country names and numeric values
-                        
+
+Use 'vdb --help' to see applicable global options.

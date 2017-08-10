@@ -1,7 +1,5 @@
 #include "vdb_enums.h"
-#include "vdb_enums_help.h"
 #include "vdb_options.h"
-#include "vdb_version.h"
 
 #include "vdis_enums.h"
 #include "vdis_logger.h"
@@ -28,28 +26,16 @@ int enums_main(int argc, char *argv[])
         result = 1;
 
     options.add(OPTION_ERRORS);
-    options.add(OPTION_WARNINGS);
-    options.add(OPTION_VERBOSE);
     options.add(OPTION_HELP);
+    options.add(OPTION_MONO);
+    options.add(OPTION_VERBOSE);
+    options.add(OPTION_WARNINGS);
 
     options.set_callback(*enums_option_callback);
 
     if (options.parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_enums_help();
-            result = 0;
-        }
-        else
-        {
-            result = enums.run();
-        }
+        result = enums.run();
     }
 
     return result;

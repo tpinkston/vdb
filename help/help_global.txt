@@ -1,0 +1,39 @@
+Captures VDIS traffic (UDP) over a network port/interface with capability
+to save captured traffic to a file to be examined or played back afterwards.
+
+Usage:
+  vdb --version
+  vdb --help|-h
+  vdb COMMAND [OPTIONS] [ARG1] [ARG2] ... 
+  vdb COMMAND --help|-h
+
+Commands:
+  capture    Captures VDIS traffic, optionally stores PDUs in a file
+  playback   Plays back VDIS traffic in specified capture file
+  list       Lists PDUs in a capture file, requires a file argument
+  summarize  Summarizes a capture file's contents
+  comment    Add or comment comments to a capture file
+  extract    Extracts a single PDU from a capture file and writes to file.
+  enums      Prints all known VDIS enumerations in CSV form
+  entities   Prints all known VDIS entity types in CSV form
+  objects    Prints all known VDIS object types in CSV form
+
+  Try 'vdb COMMAND --help' for specifics about the command.
+
+Global options for all commands:
+  -m --mono               Suppress colored output (enabled by default)
+  -q --quiet              Print as little as possible (opposite of -v)
+  -v --verbose            Print more than usual (-vv extra verbose)
+  -E --errors             Show errors (suppressed by default)
+  -W --warnings           Show warnings (suppressed by default)
+  -e --extra              Print extra output information (if applicable)
+
+Debugging:
+  Export the 'VDB_DEBUG' environment variable with an unsigned integer
+  value as follows to specify debug output.
+  
+  |<          FL          >| |< LV >|
+  00000000-00000000-00000000-00000000
+  
+  FL = Bit flags for specific areas of code (24 available)
+  LV = Debug level, 0 through 255 (default zero for none)

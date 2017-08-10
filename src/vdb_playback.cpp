@@ -3,9 +3,7 @@
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_playback.h"
-#include "vdb_playback_help.h"
 #include "vdb_print.h"
-#include "vdb_version.h"
 
 #include "vdis_entity_types.h"
 #include "vdis_logger.h"
@@ -48,7 +46,7 @@ int playback_main(int argc, char *argv[])
     options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_COLOR);
+    options.add(OPTION_MONO);
     options.add(OPTION_ERRORS);
     options.add(OPTION_WARNINGS);
     options.add(OPTION_HOSTNAME);
@@ -70,22 +68,9 @@ int playback_main(int argc, char *argv[])
 
     if (options.parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_playback_help();
-            result = 0;
-        }
-        else
-        {
-            vdb::print::print_pdu_source_time = false;
+        vdb::print::print_pdu_source_time = false;
 
-            result = playback.run();
-        }
+        result = playback.run();
     }
 
     return result;

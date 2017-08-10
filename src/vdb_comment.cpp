@@ -1,9 +1,7 @@
 #include "vdb_comment.h"
-#include "vdb_comment_help.h"
 #include "vdb_common.h"
 #include "vdb_file_reader.h"
 #include "vdb_options.h"
-#include "vdb_version.h"
 
 #include "vdis_logger.h"
 #include "vdis_services.h"
@@ -31,11 +29,11 @@ int comment_main(int argc, char *argv[])
     int
         result = 1;
 
-    options.add(OPTION_COLOR);
     options.add(OPTION_ERRORS);
     options.add(OPTION_HELP);
-    options.add(OPTION_WARNINGS);
+    options.add(OPTION_MONO);
     options.add(OPTION_VERBOSE);
+    options.add(OPTION_WARNINGS);
     options.add(vdb::option_t("add", 'A', false));
     options.add(vdb::option_t("remove", 'R', true));
 
@@ -43,20 +41,7 @@ int comment_main(int argc, char *argv[])
 
     if (options.parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_comment_help();
-            result = 0;
-        }
-        else
-        {
-            result = comment.run();
-        }
+        result = comment.run();
     }
 
     return result;

@@ -18,7 +18,7 @@ if [ $SOURCE_FILE -nt $TARGET_FILE ]; then
     cat /dev/null > $TARGET_FILE
     echo "// This file is auto-generated..." >> $TARGET_FILE
     echo "//" >> $TARGET_FILE
-    echo "void print_${TITLE}_help(void)" >> $TARGET_FILE
+    echo "inline void print_${TITLE}_help(void)" >> $TARGET_FILE
     echo "{" >> $TARGET_FILE
     while IFS='' read line;
     do

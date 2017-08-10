@@ -1,5 +1,4 @@
 #include "vdb_capture.h"
-#include "vdb_capture_help.h"
 #include "vdb_common.h"
 #include "vdb_entities.h"
 #include "vdb_file_stream.h"
@@ -9,7 +8,6 @@
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 #include "vdb_scan.h"
-#include "vdb_version.h"
 
 #include "vdis_entity_types.h"
 #include "vdis_logger.h"
@@ -17,44 +15,37 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-namespace
-{
-    vdb::capture_t
-        capture;
-}
-
-void print_capture_help(void);
-void print_vdb_version(void);
-
-bool capture_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
+vdb::capture_t
+    *vdb::capture_t::instance_ptr = 0;
 
 // ----------------------------------------------------------------------------
-void capture_signal_handler(int value)
+vdb::capture_t::capture_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    command_t(command, arguments),
+    file_ptr(0),
+    socket_ptr(0),
+    port(0),
+    bytes_received(0),
+    bytes_accepted(0),
+    pdus_received(0),
+    pdus_accepted(0),
+    capturing(false)
 {
-    capture.capturing = false;
-}
+    if (instance_ptr)
+    {
+        std::cerr << "vdb capture: already instantiated (FATAL)!" << std::endl;
+        exit(1);
+    }
 
-// ----------------------------------------------------------------------------
-int capture_main(int argc, char *argv[])
-{
-    vdb::options_t
-        options("vdb-capture", argc, argv);
-    int
-        result = 1;
+    instance_ptr = this;
 
     options.add(OPTION_ADDRESS);
     options.add(OPTION_INTERFACE);
     options.add(OPTION_IPV6);
-    options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_COLOR);
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_WARNINGS);
     options.add(OPTION_HOSTNAME);
     options.add(OPTION_XHOSTNAME);
     options.add(OPTION_EXERCISE);
@@ -65,63 +56,8 @@ int capture_main(int argc, char *argv[])
     options.add(OPTION_XFAMILY);
     options.add(OPTION_ID);
     options.add(OPTION_XID);
-    options.add(OPTION_HELP);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_VERSION);
     options.add(vdb::option_t("scan", 'S', true));
     options.add(vdb::option_t("scanall", 'A', false));
-
-    options.set_callback(*capture_option_callback);
-
-    if (options.parse())
-    {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_capture_help();
-            result = 0;
-        }
-        else
-        {
-            result = capture.run();
-        }
-    }
-
-    return result;
-}
-
-// ----------------------------------------------------------------------------
-bool capture_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success)
-{
-    bool result = true;
-
-    if (option.short_option == 'A')
-    {
-        vdb::scan::scan_all();
-    }
-    else if (option.short_option == 'S')
-    {
-        success = vdb::scan::parse(value);
-
-        if (not success)
-        {
-            std::cerr << "vdb-capture: invalid scan parameters: "
-                      << value << std::endl;
-        }
-    }
-    else
-    {
-        result = false;
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -133,15 +69,15 @@ int vdb::capture_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-capture: missing port argument" << std::endl;
+        std::cerr << "vdb capture: missing port argument" << std::endl;
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb-capture: too many arguments" << std::endl;
+        std::cerr << "vdb capture: too many arguments" << std::endl;
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
-        std::cerr << "vdb-capture: invalid port argument '"
+        std::cerr << "vdb capture: invalid port argument '"
                   << options::command_arguments[0] << "'" << std::endl;
     }
     else
@@ -195,6 +131,51 @@ int vdb::capture_t::run(void)
 }
 
 // ----------------------------------------------------------------------------
+bool vdb::capture_t::option_callback(
+    const vdb::option_t &option,
+    const std::string &value,
+    bool &success)
+{
+    bool result = true;
+
+    if (option.short_option == 'A')
+    {
+        vdb::scan::scan_all();
+    }
+    else if (option.short_option == 'S')
+    {
+        success = vdb::scan::parse(value);
+
+        if (not success)
+        {
+            std::cerr << "vdb capture: invalid scan parameters: "
+                      << value << std::endl;
+        }
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+void vdb::capture_t::signal_handler(int value)
+{
+    if (instance_ptr)
+    {
+        if (debug_enabled(DEBUG_LOW))
+        {
+            // TODO: add color
+            std::cout << "DEBUG: capture signal caught..." << std::endl;
+        }
+
+        instance_ptr->capturing = false;
+    }
+}
+
+// ----------------------------------------------------------------------------
 void vdb::capture_t::open_socket(void)
 {
     const char
@@ -221,7 +202,7 @@ void vdb::capture_t::register_signal(void)
 
     std::memset(&action, 0, sizeof(action));
 
-    action.sa_handler = capture_signal_handler;
+    action.sa_handler = signal_handler;
 
     sigaction(SIGINT, &action, NULL);
 }

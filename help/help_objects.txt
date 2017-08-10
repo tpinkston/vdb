@@ -2,11 +2,6 @@ Prints all VDIS standard object type definitions to STDOUT in CSV format.
 
 Usage: vdb objects [OPTIONS]
 
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -c --color            Suppress colored output
-  -v --verbose          Verbose (-vv for extra verbose)
-    
   -g --geometry=G1,...  List of object types with specified geometry, numeric: 
                         0 = unknown
                         1 = point
@@ -30,4 +25,3 @@ Usage: vdb objects [OPTIONS]
                         5 = tactical smoke
                         6 = obstacle marker
                         7 = obstacle breach
-                        

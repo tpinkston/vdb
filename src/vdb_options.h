@@ -9,7 +9,6 @@
 // on the command line:
 //
 #define O_ADDRESS       'a'
-#define O_COLOR         'c'
 #define O_DUMP          'd'
 #define O_ERRORS        'E'
 #define O_EXERCISE      (char)-10
@@ -19,6 +18,7 @@
 #define O_HELP          'h'
 #define O_HOSTS         (char)-15
 #define O_ID            'i'
+#define O_MONO          'm'
 #define O_INTERFACE     'N'
 #define O_IPV6          '6'
 #define O_RANGE         'r'
@@ -33,7 +33,6 @@
 #define O_XTYPE         'T'
 
 #define OPTION_ADDRESS      vdb::option_t("address",     O_ADDRESS,     true)
-#define OPTION_COLOR        vdb::option_t("color",       O_COLOR,       false)
 #define OPTION_DUMP         vdb::option_t("dump",        O_DUMP,        false)
 #define OPTION_ERRORS       vdb::option_t("errors",      O_ERRORS,      false)
 #define OPTION_EXERCISE     vdb::option_t("exercise",    O_EXERCISE,    true)
@@ -45,6 +44,7 @@
 #define OPTION_ID           vdb::option_t("id",          O_ID,          true)
 #define OPTION_INTERFACE    vdb::option_t("interface",   O_INTERFACE,   true)
 #define OPTION_IPV6         vdb::option_t("ipv6",        O_IPV6,        false)
+#define OPTION_MONO         vdb::option_t("mono",        O_MONO,        false)
 #define OPTION_RANGE        vdb::option_t("range",       O_RANGE,       true)
 #define OPTION_TYPE         vdb::option_t("type",        O_TYPE,        true)
 #define OPTION_VERBOSE      vdb::option_t("verbose",     O_VERBOSE,     false)
@@ -58,6 +58,8 @@
 
 namespace vdb
 {
+    class command_t;
+
     // ------------------------------------------------------------------------
     struct option_t
 	{
@@ -73,9 +75,12 @@ namespace vdb
 
         }
 
-    	std::string     long_option;
-        char            short_option;
-    	bool            needs_value;
+    	std::string
+    	    long_option;
+        char
+            short_option;
+    	bool
+    	    needs_value;
 	};
 
     // ------------------------------------------------------------------------
@@ -83,6 +88,12 @@ namespace vdb
     {
       public:
 
+        options_t(
+            const std::string &command,
+            const std::vector<std::string> &args
+        );
+
+        // TODO: remove
         options_t(const char *command, int argc, char *argv[]);
 
         // Adds usable option for provided command.
@@ -94,15 +105,13 @@ namespace vdb
         //
         bool parse(void);
 
-        // Sets callback used to for special command options that may or
-        // or may not override default options defined above in macros.
+        // TODO: remove
         //
         inline void set_callback(bool (*function)(
             const option_t &option,
             const std::string &value,
             bool &success))
         {
-            callback = function;
         }
 
         bool parse_string_set(
@@ -132,10 +141,10 @@ namespace vdb
             std::set<uint32_t> &set
         );
 
-        bool parse_uint64(
-            const std::string &input,
-            uint64_t &output
-        );
+        inline void set_command(command_t *c_ptr)
+        {
+            command_ptr = c_ptr;
+        }
 
       private:
 
@@ -151,14 +160,8 @@ namespace vdb
             values;
         std::vector<option_t>
             options;
-
-        // Callback function will return true if the option was processed.
-        //
-        bool (*callback)(
-            const option_t &option,
-            const std::string &value,
-            bool &success
-        );
+        command_t
+            *command_ptr;
     };
 
     // ------------------------------------------------------------------------

@@ -1,7 +1,5 @@
 #include "vdb_objects.h"
-#include "vdb_objects_help.h"
 #include "vdb_options.h"
-#include "vdb_version.h"
 
 #include "vdis_object_types.h"
 #include "vdis_integer.h"
@@ -29,7 +27,7 @@ int objects_main(int argc, char *argv[])
     int result = 1;
 
     options_ptr = new vdb::options_t("vdb-objects", argc, argv);
-    options_ptr->add(OPTION_COLOR);
+    options_ptr->add(OPTION_MONO);
     options_ptr->add(OPTION_EXTRA);
     options_ptr->add(OPTION_ERRORS);
     options_ptr->add(OPTION_WARNINGS);
@@ -43,20 +41,7 @@ int objects_main(int argc, char *argv[])
 
     if (options_ptr->parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_objects_help();
-            result = 0;
-        }
-        else
-        {
-            result = objects.run();
-        }
+        result = objects.run();
     }
 
     return result;

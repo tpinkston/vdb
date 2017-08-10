@@ -1,6 +1,7 @@
 #ifndef VDB_CAPTURE_H
 #define VDB_CAPTURE_H
 
+#include "vdb_command.h"
 #include "vdb_file_writer.h"
 
 #include "vdis_network.h"
@@ -14,22 +15,14 @@ namespace vdb
 {
     class pdu_data_t;
 
-    class capture_t
+    class capture_t : public command_t
     {
       public:
 
-        capture_t(void) :
-            capturing(false),
-            file_ptr(0),
-            socket_ptr(0),
-            port(0),
-            bytes_received(0),
-            bytes_accepted(0),
-            pdus_received(0),
-            pdus_accepted(0)
-        {
-
-        }
+        capture_t(
+            const std::string &command,
+            const std::vector<std::string> &arguments
+        );
 
         ~capture_t(void)
         {
@@ -48,7 +41,15 @@ namespace vdb
 
         int run(void);
 
-        bool capturing;
+        bool option_callback(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
+
+      protected:
+
+        static void signal_handler(int value);
 
       private:
 
@@ -73,6 +74,10 @@ namespace vdb
             bytes_accepted,
             pdus_received,
             pdus_accepted;
+        bool
+            capturing;
+        static capture_t
+            *instance_ptr;
     };
 }
 

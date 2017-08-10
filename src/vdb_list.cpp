@@ -3,12 +3,10 @@
 #include "vdb_file_writer.h"
 #include "vdb_filter.h"
 #include "vdb_list.h"
-#include "vdb_list_help.h"
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_print.h"
 #include "vdb_scan.h"
-#include "vdb_version.h"
 
 #include "vdis_entity_types.h"
 #include "vdis_enums.h"
@@ -39,10 +37,10 @@ int list_main(int argc, char *argv[])
     options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_COLOR);
     options.add(OPTION_ERRORS);
-    options.add(OPTION_WARNINGS);
+    options.add(OPTION_MONO);
     options.add(OPTION_VERBOSE);
+    options.add(OPTION_WARNINGS);
     options.add(vdb::option_t("output", 'o', true));
     options.add(OPTION_HOSTNAME);
     options.add(OPTION_XHOSTNAME);
@@ -64,20 +62,7 @@ int list_main(int argc, char *argv[])
 
     if (options.parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_list_help();
-            result = 0;
-        }
-        else
-        {
-            result = list.run();
-        }
+        result = list.run();
     }
 
     return result;

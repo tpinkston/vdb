@@ -4,16 +4,11 @@ Usage: vdb playback [OPTIONS] PORT FILE
 
   -P --pdu=M            Capture file contains contents for a single PDU to be
                         played back at interval of M milliseconds
-  -a --address=A        Use IP address, e.g. 192.168.1.123
+  -a --address=A        Use IP address, e.g. 192.168.1.255
   -N --interface=I      Use network interface, e.g. 'eth0'
   -6 --ipv6             Use IPv6
-  -e --extra            Print extra information (if applicable)
   -x --extract          Print full PDU data extraction (overrides -e)
   -d --dump             Print PDU hex dump (overrides -e and -x)
-  -c --color            Suppress colored output
-  -E --errors           Show errors
-  -W --warnings         Show warnings
-  -v --verbose          Verbose (-vv for extra verbose)
 
      --hostname=H1,...  Include PDUs from specified host(s)
      --xhostname=H1,... Exclude PDUs from specified host(s)
@@ -25,3 +20,6 @@ Usage: vdb playback [OPTIONS] PORT FILE
   -F --xfamily=F1,...   Exclude PDUs with PDU family(s) (numeric)
   -i --id=I1,...        Include PDUs containing specified entity ID(s)
   -I --xid=I1,...       Exclude PDUs containing specified entity ID(s)
+
+Use 'vdb --help' to see applicable global options.
+  

@@ -3,8 +3,6 @@
 #include "vdb_options.h"
 #include "vdb_pdu_data.h"
 #include "vdb_summarize.h"
-#include "vdb_summarize_help.h"
-#include "vdb_version.h"
 
 #include "vdis_entity_types.h"
 #include "vdis_enums.h"
@@ -49,7 +47,7 @@ int summarize_main(int argc, char *argv[])
     options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_COLOR);
+    options.add(OPTION_MONO);
     options.add(OPTION_ERRORS);
     options.add(OPTION_WARNINGS);
     options.add(OPTION_VERBOSE);
@@ -67,20 +65,7 @@ int summarize_main(int argc, char *argv[])
 
     if (options.parse())
     {
-        if (vdb::options::version)
-        {
-            print_vdb_version();
-            result = 0;
-        }
-        else if (vdb::options::help)
-        {
-            print_summarize_help();
-            result = 0;
-        }
-        else
-        {
-            result = summarize.run();
-        }
+        result = summarize.run();
     }
 
     return result;
