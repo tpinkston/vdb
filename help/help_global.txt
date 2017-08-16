@@ -12,7 +12,7 @@ Commands:
   playback   Plays back VDIS traffic in specified capture file
   list       Lists PDUs in a capture file, requires a file argument
   summarize  Summarizes a capture file's contents
-  comment    Add or comment comments to a capture file
+  comment    Adds or removes comment(s) to or from a capture file
   extract    Extracts a single PDU from a capture file and writes to file.
   enums      Prints all known VDIS enumerations in CSV form
   entities   Prints all known VDIS entity types in CSV form

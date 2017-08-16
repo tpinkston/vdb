@@ -46,7 +46,7 @@ bool vdb::entities_t::option_callback(
         if (not success)
         {
             LOG_FATAL(
-                "invalid value for entity kind: %s",
+                "Invalid value for entity kind: %s",
                 value.c_str());
         }
     }
@@ -61,7 +61,7 @@ bool vdb::entities_t::option_callback(
         if (not success)
         {
             LOG_FATAL(
-                "invalid value for entity domain: %s",
+                "Invalid value for entity domain: %s",
                 value.c_str());
         }
     }
@@ -76,7 +76,7 @@ bool vdb::entities_t::option_callback(
         if (not success)
         {
             LOG_FATAL(
-                "invalid value for entity country: %s",
+                "Invalid value for entity country: %s",
                 value.c_str());
         }
     }

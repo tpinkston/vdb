@@ -52,7 +52,7 @@ void vdb::options_t::add(option_t option)
 
     if (option_found)
     {
-        LOG_FATAL(
+        LOG_ERROR(
             "%s: duplicate option added: %s",
             command.c_str(),
             vdis::to_string(option).c_str());
@@ -70,7 +70,7 @@ bool vdb::options_t::parse(void)
 
     if (not command_ptr)
     {
-        LOG_FATAL("%s: Missing command pointer!", command.c_str());
+        LOG_ERROR("%s: Missing command pointer!", command.c_str());
         success = false;
     }
     else for(int i = 0; success and (i < count); ++i)
@@ -173,14 +173,14 @@ bool vdb::options_t::parse_long_option(int current)
 
             if (option_ptr->needs_value and value.empty())
             {
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: option requires a value: --%s",
                     command.c_str(),
                     name.c_str());
             }
             else if (not option_ptr->needs_value and not value.empty())
             {
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: option does not take a value: --%s",
                     command.c_str(),
                     name.c_str());
@@ -194,7 +194,7 @@ bool vdb::options_t::parse_long_option(int current)
 
     if (not option_found)
     {
-        LOG_FATAL(
+        LOG_ERROR(
             "%s: invalid option: --%s",
             command.c_str(),
             name.c_str());
@@ -263,7 +263,7 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
                 if (option_ptr->needs_value and not value_usable)
                 {
-                    LOG_FATAL(
+                    LOG_ERROR(
                         "%s: option requires a value: -%c",
                         command.c_str(),
                         argument[i]);
@@ -283,7 +283,7 @@ bool vdb::options_t::parse_short_options(int current, int next, bool &advance)
 
         if (not option_found)
         {
-            LOG_FATAL(
+            LOG_ERROR(
                 "%s: invalid option: -%c",
                 command.c_str(),
                 argument[i]);
@@ -399,7 +399,7 @@ bool vdb::options_t::parse_option(
                 success = parse_integers(value, filter::exclude_types);
                 break;
             default:
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: unexpected option: -%c/--%s",
                     command.c_str(),
                     option.short_option,
@@ -489,7 +489,7 @@ bool vdb::options_t::parse_entity_id(
 
     if (vdis::tokenize(swapped, tokens) != 3)
     {
-        LOG_FATAL(
+        LOG_ERROR(
             "%s: expected entity ID fomat is '1.2.3' not '%s'",
             command.c_str(),
             input.c_str());
@@ -518,7 +518,7 @@ bool vdb::options_t::parse_entity_id(
             }
             else
             {
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: value out of range in '%s'",
                     command.c_str(),
                     input.c_str());
@@ -526,7 +526,7 @@ bool vdb::options_t::parse_entity_id(
         }
         else
         {
-            LOG_FATAL(
+            LOG_ERROR(
                 "%s: invalid value in '%s'",
                 command.c_str(),
                 input.c_str());
@@ -552,7 +552,7 @@ bool vdb::options_t::parse_entity_id(
     }
     else
     {
-        LOG_FATAL(
+        LOG_ERROR(
             "%s: invalid entity ID '%s'",
             command.c_str(),
             input.c_str());
@@ -630,7 +630,7 @@ bool vdb::options_t::parse_integers_in_range(
 
             if (not vdis::to_int64(values[i], value))
             {
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: not a valid number: %s",
                     command.c_str(),
                     values[i].c_str());
@@ -649,7 +649,7 @@ bool vdb::options_t::parse_integers_in_range(
                 }
                 else
                 {
-                    LOG_FATAL(
+                    LOG_ERROR(
                         "%s: value out of range: %s (%d-%d)",
                         command.c_str(),
                         values[i].c_str(),
@@ -672,7 +672,7 @@ bool vdb::options_t::parse_integers_in_range(
 
             if (not success)
             {
-                LOG_FATAL(
+                LOG_ERROR(
                     "%s: not a valid format for range: %s",
                     command.c_str(),
                     values[i].c_str());
@@ -691,7 +691,7 @@ bool vdb::options_t::parse_integers_in_range(
                 {
                     if ((value0 < min) or (value0 > max))
                     {
-                        LOG_FATAL(
+                        LOG_ERROR(
                             "%s: value out of range: %d (%d-%d)",
                             command.c_str(),
                             value0,
@@ -700,7 +700,7 @@ bool vdb::options_t::parse_integers_in_range(
                     }
                     else if ((value1 < min) or (value1 > max))
                     {
-                        LOG_FATAL(
+                        LOG_ERROR(
                             "%s: value out of range: %d (%d-%d)",
                             command.c_str(),
                             value1,
@@ -709,7 +709,7 @@ bool vdb::options_t::parse_integers_in_range(
                     }
                     else if (value0 >= value1)
                     {
-                        LOG_FATAL(
+                        LOG_ERROR(
                             "%s: invalid range: %d-%d",
                             command.c_str(),
                             value0,
