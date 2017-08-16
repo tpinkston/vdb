@@ -1,7 +1,7 @@
 #ifndef VDB_SUMMARIZE_H
 #define VDB_SUMMARIZE_H
 
-#include "vdb_file_reader.h"
+#include "vdb_command.h"
 
 #include "vdis_pdus.h"
 
@@ -110,6 +110,10 @@ namespace vdb
             designations;
         std::map<vdis::id_t, warfare_data_node_t>
             fires;
+        bool
+            print_collisions,
+            print_lasers,
+            print_fires;
     };
 
     // ------------------------------------------------------------------------
@@ -148,46 +152,29 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
-    class summarize_t : file_read_callback_t
+    class summarize_t : public file_read_command_t
     {
       public:
 
-        summarize_t(void) :
-            collisions(false),
-            emissions(false),
-            fires(false),
-            lasers(false),
-            objects(false),
-            radios(false),
-            reader_ptr(0),
-            first_pdu_time(0),
-            last_pdu_time(0)
-        {
+        summarize_t(
+            const std::string &command,
+            const std::vector<std::string> &arguments
+        );
 
-        }
+        virtual ~summarize_t(void);
 
-        ~summarize_t(void)
-        {
-            if (reader_ptr)
-            {
-                delete reader_ptr;
-                reader_ptr = 0;
-            }
-        }
+        virtual int run(void);
 
-        int run(void);
+        virtual bool option_callback(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
 
-        bool
-            collisions,
-            emissions,
-            fires,
-            lasers,
-            objects,
-            radios;
+        virtual bool process_pdu_data(const pdu_data_t &);
 
       protected:
 
-        bool process_pdu_data(const pdu_data_t &);
         bool process_pdu_data(const pdu_data_t &, const vdis::pdu_t &);
 
         void process_pdu(
@@ -212,22 +199,29 @@ namespace vdb
             std::ostream &
         );
 
-        standard_reader_t
-            *reader_ptr;
-        std::string
-            filename,
-            current_source;
-        uint64_t
-            first_pdu_time,
-            last_pdu_time;
-        source_data_node_t
-            all_sources;
         std::map<std::string, source_data_node_t>
             source_data;
         std::map<vdis::id_t, entity_data_node_t>
             entity_data;
         std::map<vdis::id_t, object_data_node_t>
             object_data;
+        std::string
+            filename,
+            current_source;
+        standard_reader_t
+            *reader_ptr;
+        uint64_t
+            first_pdu_time,
+            last_pdu_time;
+        source_data_node_t
+            all_sources;
+        bool
+            collisions,
+            emissions,
+            fires,
+            lasers,
+            objects,
+            radios;
     };
 }
 
@@ -325,7 +319,10 @@ inline vdb::warfare_data_node_t::~warfare_data_node_t(void)
 
 // ----------------------------------------------------------------------------
 inline vdb::entity_data_node_t::entity_data_node_t(void) :
-    force_id(vdis::FORCE_ID_OTHER)
+    force_id(vdis::FORCE_ID_OTHER),
+    print_collisions(false),
+    print_lasers(false),
+    print_fires(false)
 {
 
 }
@@ -341,7 +338,10 @@ inline vdb::entity_data_node_t::entity_data_node_t(
     source(copy.source),
     collisions(copy.collisions),
     designations(copy.designations),
-    fires(copy.fires)
+    fires(copy.fires),
+    print_collisions(copy.print_collisions),
+    print_lasers(copy.print_lasers),
+    print_fires(copy.print_fires)
 {
 
 }

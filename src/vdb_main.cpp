@@ -4,18 +4,25 @@
 #include "vdb_capture.h"
 #include "vdb_capture_help.h"
 #include "vdb_command.h"
+#include "vdb_comment.h"
 #include "vdb_comment_help.h"
 #include "vdb_common.h"
+#include "vdb_entities.h"
 #include "vdb_entities_help.h"
+#include "vdb_enums.h"
 #include "vdb_enums_help.h"
+#include "vdb_extract.h"
 #include "vdb_extract_help.h"
 #include "vdb_git.h"
 #include "vdb_global_help.h"
+#include "vdb_list.h"
 #include "vdb_list_help.h"
 #include "vdb_main.h"
+#include "vdb_objects.h"
 #include "vdb_objects_help.h"
 #include "vdb_playback.h"
 #include "vdb_playback_help.h"
+#include "vdb_summarize.h"
 #include "vdb_summarize_help.h"
 #include "vdb_version.h"
 
@@ -55,8 +62,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            std::cerr << "vdb: invalid debug level = '" << level << "'"
-                      << std::endl;
+            LOG_ERROR("Invalid debug level '%s'", debug_level_ptr);
         }
     }
 
@@ -66,7 +72,7 @@ int main(int argc, char *argv[])
     //
     if (argc < 2)
     {
-        std::cerr << "vdb: missing command, try --help" << std::endl;
+        LOG_ERROR("Missing command, try --help");
         result = 1;
     }
     else
@@ -121,28 +127,28 @@ int main(int argc, char *argv[])
                     command_ptr = new vdb::capture_t("capture", arguments);
                     break;
                 case vdb::COMMENT:
-                    // TODO
+                    command_ptr = new vdb::comment_t("comment", arguments);
                     break;
                 case vdb::ENTITIES:
-                    // TODO
+                    command_ptr = new vdb::entities_t("entities", arguments);
                     break;
                 case vdb::ENUMS:
-                    // TODO
+                    command_ptr = new vdb::enums_t("enums", arguments);
                     break;
                 case vdb::EXTRACT:
-                    // TODO
+                    command_ptr = new vdb::extract_t("extract", arguments);
                     break;
                 case vdb::LIST:
-                    // TODO
+                    command_ptr = new vdb::list_t("list", arguments);
                     break;
                 case vdb::OBJECTS:
-                    // TODO
+                    command_ptr = new vdb::objects_t("objects", arguments);
                     break;
                 case vdb::PLAYBACK:
                     command_ptr = new vdb::playback_t("playback", arguments);
                     break;
                 case vdb::SUMMARIZE:
-                    // TODO
+                    command_ptr = new vdb::summarize_t("summarize", arguments);
                     break;
             }
 
@@ -150,7 +156,14 @@ int main(int argc, char *argv[])
             {
                 if (command_ptr->parse_options())
                 {
-                    result = command_ptr->run();
+                    if (vdb::options::version)
+                    {
+                        vdb::print_version();
+                    }
+                    else
+                    {
+                        result = command_ptr->run();
+                    }
                 }
                 else
                 {
@@ -164,8 +177,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                std::cerr << "vdb: command not available: " << argv[1]
-                          << std::endl;
+                LOG_ERROR("Command not available: %s", argv[1]);
             }
         }
     }
@@ -233,9 +245,7 @@ int vdb::get_command(
     }
     else
     {
-        std::cerr << "vdb: invalid command: '" << argument
-                  << "', try --help" << std::endl;
-
+        LOG_ERROR("Invalid command '%s' (try --help)", argument.c_str());
         result = 1;
     }
 

@@ -14,34 +14,19 @@
 #include "vdis_pdus.h"
 #include "vdis_object_types.h"
 
-namespace
-{
-    vdb::list_t
-        list;
-}
-
-bool list_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
-
 // ----------------------------------------------------------------------------
-int list_main(int argc, char *argv[])
+vdb::list_t::list_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    file_read_command_t(command, arguments),
+    file_ptr(0),
+    output_index(0),
+    pdus_listed(0),
+    pdus_filtered_out(0)
 {
-    vdb::options_t
-        options("vdb-list", argc, argv);
-    int
-        result = 1;
-
-    options.add(OPTION_EXTRA);
     options.add(OPTION_EXTRACT);
     options.add(OPTION_DUMP);
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_MONO);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_WARNINGS);
-    options.add(vdb::option_t("output", 'o', true));
     options.add(OPTION_HOSTNAME);
     options.add(OPTION_XHOSTNAME);
     options.add(OPTION_EXERCISE);
@@ -53,53 +38,19 @@ int list_main(int argc, char *argv[])
     options.add(OPTION_ID);
     options.add(OPTION_XID);
     options.add(OPTION_RANGE);
-    options.add(OPTION_HELP);
-    options.add(OPTION_VERSION);
+    options.add(vdb::option_t("output", 'o', true));
     options.add(vdb::option_t("scan", 'S', true));
     options.add(vdb::option_t("scanall", 'A', false));
-
-    options.set_callback(*list_option_callback);
-
-    if (options.parse())
-    {
-        result = list.run();
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
-bool list_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success)
+vdb::list_t::~list_t(void)
 {
-    bool result = true;
-
-    if (option.short_option == 'o')
+    if (file_ptr)
     {
-        list.output_file = value;
+        delete file_ptr;
+        file_ptr = 0;
     }
-    else if (option.short_option == 'A')
-    {
-        vdb::scan::scan_all();
-    }
-    else if (option.short_option == 'S')
-    {
-        success = vdb::scan::parse(value);
-
-        if (not success)
-        {
-            std::cerr << "vdb-list: invalid scan parameters: "
-                      << option << std::endl;
-        }
-    }
-    else
-    {
-        result = false;
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -116,11 +67,11 @@ int vdb::list_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-list: missing file argument" << std::endl;
+        LOG_FATAL("Missing file argument");
     }
     else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb-list: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments");
     }
     else
     {
@@ -177,6 +128,39 @@ int vdb::list_t::run(void)
 
         delete reader_ptr;
         reader_ptr = 0;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::list_t::option_callback(
+    const option_t &option,
+    const std::string &value,
+    bool &success)
+{
+    bool result = true;
+
+    if (option.short_option == 'o')
+    {
+        output_file = value;
+    }
+    else if (option.short_option == 'A')
+    {
+        vdb::scan::scan_all();
+    }
+    else if (option.short_option == 'S')
+    {
+        success = vdb::scan::parse(value);
+
+        if (not success)
+        {
+            LOG_FATAL("Invalid scan parameters: %s", value.c_str());
+        }
+    }
+    else
+    {
+        result = false;
     }
 
     return result;

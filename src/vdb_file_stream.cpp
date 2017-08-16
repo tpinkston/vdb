@@ -41,7 +41,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
     if (stream.fail())
     {
-        std::cerr << "vdb: failed to open file: " << filename << std::endl;
+        LOG_ERROR("Failed to open file '%s'", filename.c_str());
     }
     else
     {
@@ -53,7 +53,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
         if (stream.fail())
         {
-            std::cerr << "vdb: failed to read file: " << filename << std::endl;
+            LOG_ERROR("Failed to read file '%s'", filename.c_str());
         }
         else
         {
@@ -68,8 +68,7 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
             if (stream.fail())
             {
-                std::cerr << "vdb: failed to read file: " << filename
-                          << std::endl;
+                LOG_ERROR("Failed to read file '%s'", filename.c_str());
             }
             else
             {
@@ -77,9 +76,11 @@ bool vdb::file_stream::read_file(const string_t &filename)
 
                 if (bytes_read != data_length)
                 {
-                    std::cerr << "vdb: failed to read (" << bytes_read
-                              << " of " << data_length << " bytes) from file: "
-                              << filename << std::endl;
+                    LOG_ERROR(
+                        "Failed to read (%d of %d bytes) from file '%s'",
+                        bytes_read,
+                        data_length,
+                        filename.c_str());
                 }
                 else
                 {
@@ -113,7 +114,7 @@ void vdb::file_stream::write_file(const string_t &filename)
 
     if (stream.fail())
     {
-        std::cerr << "vdb: failed to open file: " << filename << std::endl;
+        LOG_ERROR("Failed to open file '%s'", filename.c_str());
         file_error = true;
     }
     else if (data_buffer and (data_length > 0))
@@ -122,8 +123,7 @@ void vdb::file_stream::write_file(const string_t &filename)
 
         if (stream.fail())
         {
-            std::cerr << "vdb: failed to write to file: " << filename
-                      << std::endl;
+            LOG_ERROR("Failed to write to file '%s'", filename.c_str());
             file_error = true;
         }
         else
@@ -132,9 +132,12 @@ void vdb::file_stream::write_file(const string_t &filename)
 
             if (bytes_written != data_length)
             {
-                std::cerr << "vdb: failed to write (" << bytes_written
-                          << " of " << data_length << " bytes) from file: "
-                          << filename << std::endl;
+                LOG_ERROR(
+                    "Failed to write bytes (%d of %s) to file '%s'",
+                    bytes_written,
+                    data_length,
+                    filename.c_str());
+
                 file_error = true;
             }
         }

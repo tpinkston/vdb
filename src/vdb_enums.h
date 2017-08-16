@@ -1,18 +1,22 @@
 #ifndef VDB_ENUMS_H
 #define VDB_ENUMS_H
 
-#include "vdb_system.h"
+#include "vdb_command.h"
 
 namespace vdb
 {
-    class enums_t
+    class enums_t : public command_t
     {
       public:
 
-        enums_t(void) { }
-        ~enums_t(void) { }
+        enums_t(
+            const std::string &name,
+            const std::vector<std::string> &arguments
+        );
 
-        int run(void);
+        virtual ~enums_t(void);
+
+        virtual int run(void);
     };
 }
 

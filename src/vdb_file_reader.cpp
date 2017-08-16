@@ -1,3 +1,4 @@
+#include "vdb_command.h"
 #include "vdb_common.h"
 #include "vdb_file_reader.h"
 #include "vdb_options.h"
@@ -26,7 +27,7 @@ vdb::file_reader_t::~file_reader_t(void)
 //
 // This method returns true if no errors occurred during parsing.
 //
-bool vdb::file_reader_t::parse(file_read_callback_t *callback_ptr)
+bool vdb::file_reader_t::parse(file_read_command_t *callback_ptr)
 {
     if (callback_ptr)
     {
@@ -74,9 +75,7 @@ vdb::standard_reader_t::standard_reader_t(const string_t &filename) :
 
         if (header.invalid_title() or stream.error())
         {
-            std::cerr << "vdb: invalid capture file: " << filename
-                      << std::endl;
-
+            LOG_ERROR("invalid capture file: %s", filename.c_str());
             error_condition = true;
         }
     }
@@ -162,7 +161,7 @@ bool vdb::pdu_reader_t::next_entry(pdu_data_t &data)
 
     if (error_condition)
     {
-        LOG_FATAL("cannot read file with error condition!");
+        LOG_FATAL("Cannot read file with error condition!");
     }
     else
     {

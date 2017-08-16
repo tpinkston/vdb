@@ -523,42 +523,42 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
         }
         case vdis::PDU_TYPE_TRANSMITTER:
         {
-            // TODO
+            // TODO: print PDU_TYPE_TRANSMITTER
             break;
         }
         case vdis::PDU_TYPE_SIGNAL:
         {
-            // TODO
+            // TODO: print PDU_TYPE_SIGNAL
             break;
         }
         case vdis::PDU_TYPE_RECEIVER:
         {
-            // TODO
+            // TODO: print PDU_TYPE_RECEIVER
             break;
         }
         case vdis::PDU_TYPE_IFF:
         {
-            // TODO
+            // TODO: print PDU_TYPE_IFF
             break;
         }
         case vdis::PDU_TYPE_ENVIRONMENTAL_PROCESS:
         {
-            // TODO
+            // TODO: print PDU_TYPE_ENVIRONMENTAL_PROCESS
             break;
         }
         case vdis::PDU_TYPE_POINT_OBJECT_STATE:
         {
-            // TODO
+            // TODO: print PDU_TYPE_POINT_OBJECT_STATE
             break;
         }
         case vdis::PDU_TYPE_LINEAR_OBJECT_STATE:
         {
-            // TODO
+            // TODO: print PDU_TYPE_LINEAR_OBJECT_STATE
             break;
         }
         case vdis::PDU_TYPE_AREAL_OBJECT_STATE:
         {
-            // TODO
+            // TODO: print PDU_TYPE_AREAL_OBJECT_STATE
             break;
         }
         case vdis::PDU_TYPE_APPLICATION_CTRL:

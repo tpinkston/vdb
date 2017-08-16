@@ -6,6 +6,7 @@
 
 // Debug bit masks (using bits 1 through 31)
 //
+#define DEBUG_COMMON            0x00000001U
 #define DEBUG_OPTIONS           0x00000002U
 #define DEBUG_NETWORK           0x00000004U
 #define DEBUG_FILE_READER       0x00010000U
@@ -25,9 +26,8 @@ namespace vdb
     // ------------------------------------------------------------------------
     // Get or set debug options
     //
-    void set_debug(unsigned mask);
-    bool debug_enabled(void);
-    bool debug_enabled(unsigned mask);
+    void set_debug(unsigned);
+    bool debug_enabled(unsigned mask = DEBUG_COMMON);
 }
 
 #endif

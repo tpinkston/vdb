@@ -12,54 +12,24 @@
 #include "vdis_pdus.h"
 #include "vdis_string.h"
 
-namespace
-{
-    vdb::extract_t
-        extract;
-}
-
-bool extract_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
 
 // ----------------------------------------------------------------------------
-int extract_main(int argc, char *argv[])
+vdb::extract_t::extract_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    file_read_command_t(command, arguments),
+    index(-1),
+    pdu_found(false)
 {
-    vdb::options_t
-        options("vdb-extract", argc, argv);
-    int
-        result = 1;
-
-    options.add(OPTION_HELP);
-    options.add(OPTION_EXTRA);
-    options.add(OPTION_EXTRACT);
-    options.add(OPTION_DUMP);
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_MONO);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_WARNINGS);
     options.add(vdb::option_t("output", 'o', true));
     options.add(vdb::option_t("index", 'i', true));
-
-    options.set_callback(*extract_option_callback);
-
-    if (options.parse())
-    {
-        result = extract.run();
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
-bool extract_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success)
+vdb::extract_t::~extract_t(void)
 {
-    return false;
+
 }
 
 // ----------------------------------------------------------------------------
@@ -128,19 +98,19 @@ bool vdb::extract_t::verify_command_arguments(void)
 
     if (arguments.size() < 3)
     {
-        CONSOLE_ERR("Too few arguments");
+        LOG_FATAL("Too few arguments");
     }
     else if (arguments.size() > 3)
     {
-        CONSOLE_ERR("Too many arguments");
+        LOG_FATAL("Too many arguments");
     }
     else if (not vdis::to_int64(arguments[0], index))
     {
-        CONSOLE_ERR("Invalid index: %s", arguments[0].c_str());
+        LOG_FATAL("Invalid PDU index: %s", arguments[0].c_str());
     }
     else if (index < 0)
     {
-        CONSOLE_ERR("Negative index: %d", index);
+        LOG_FATAL("Negative index not allowed: %d", index);
     }
     else
     {

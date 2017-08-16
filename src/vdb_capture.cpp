@@ -81,16 +81,16 @@ int vdb::capture_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        LOG_FATAL("missing port argument");
+        LOG_FATAL("Missing port argument");
     }
     else if (options::command_arguments.size() > 2)
     {
-        LOG_FATAL("too many arguments");
+        LOG_FATAL("Too many arguments");
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
         LOG_FATAL(
-            "invalid port argument '%s'",
+            "Invalid port argument '%s'",
             options::command_arguments[0].c_str());
     }
     else
@@ -161,7 +161,7 @@ bool vdb::capture_t::option_callback(
 
         if (not success)
         {
-            LOG_FATAL("invalid scan parameters '%s'", value.c_str());
+            LOG_FATAL("Invalid scan parameters '%s'", value.c_str());
         }
     }
     else

@@ -16,6 +16,7 @@ vdb::command_t::command_t(
     options.add(OPTION_EXTRA);
     options.add(OPTION_MONO);
     options.add(OPTION_VERBOSE);
+    options.add(OPTION_VERSION);
     options.add(OPTION_WARNINGS);
 }
 
@@ -41,4 +42,20 @@ bool vdb::command_t::option_callback(
     // classes should override as needed.
     //
     return false;
+}
+
+// ----------------------------------------------------------------------------
+vdb::file_read_command_t::file_read_command_t(
+    const std::string &name,
+    const std::vector<std::string> &arguments
+) :
+    command_t(name, arguments)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+vdb::file_read_command_t::~file_read_command_t(void)
+{
+
 }

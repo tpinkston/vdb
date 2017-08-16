@@ -37,18 +37,6 @@ vdb::options_t::options_t(
 }
 
 // ----------------------------------------------------------------------------
-vdb::options_t::options_t(const char *command, int argc, char *argv[]) :
-    command(command),
-    count(argc),
-    command_ptr(0)
-{
-    for(int i = 0; i < argc; ++i)
-    {
-        arguments.push_back(std::string(argv[i]));
-    }
-}
-
-// ----------------------------------------------------------------------------
 void vdb::options_t::add(option_t option)
 {
     bool option_found = false;
@@ -336,7 +324,7 @@ bool vdb::options_t::parse_option(
                 options::dump = true;
                 break;
             case O_ERRORS:
-                logger::set_enabled(logger::ERROR, true);
+                logger::set_enabled(logger::ERROR, false);
                 break;
             case O_EXERCISE:
                 success = parse_integers(value, filter::include_exercises);

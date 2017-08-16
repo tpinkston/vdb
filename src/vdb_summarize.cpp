@@ -15,8 +15,6 @@ namespace
 {
     const std::string
         separator = "----------------------------------------------------";
-    vdb::summarize_t
-        summarize;
 
     // ------------------------------------------------------------------------
     void increment(std::map<uint8_t, uint32_t> &counters, uint8_t value)
@@ -28,96 +26,6 @@ namespace
 
         counters[value] += 1;
     }
-}
-
-bool summarize_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
-
-// ----------------------------------------------------------------------------
-int summarize_main(int argc, char *argv[])
-{
-    vdb::options_t
-        options("vdb-summarize", argc, argv);
-    int
-        result = 1;
-
-    options.add(OPTION_EXTRA);
-    options.add(OPTION_EXTRACT);
-    options.add(OPTION_DUMP);
-    options.add(OPTION_MONO);
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_WARNINGS);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_HELP);
-    options.add(OPTION_VERSION);
-    options.add(vdb::option_t("collisions", 'C', false));
-    options.add(vdb::option_t("emissions", 'M', false));
-    options.add(vdb::option_t("fires", 'F', false));
-    options.add(vdb::option_t("lasers", 'L', false));
-    options.add(vdb::option_t("radios", 'R', false));
-    options.add(vdb::option_t("objects", 'O', false));
-    options.add(vdb::option_t("all", 'A', false));
-
-    options.set_callback(*summarize_option_callback);
-
-    if (options.parse())
-    {
-        result = summarize.run();
-    }
-
-    return result;
-}
-
-// ----------------------------------------------------------------------------
-bool summarize_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success)
-{
-    bool result = true;
-
-    if (option.short_option == 'A')
-    {
-        summarize.collisions = true;
-        summarize.emissions = true;
-        summarize.fires = true;
-        summarize.lasers = true;
-        summarize.objects = true;
-        summarize.radios = true;
-    }
-    else if (option.short_option == 'C')
-    {
-        summarize.collisions = true;
-    }
-    else if (option.short_option == 'M')
-    {
-        summarize.emissions = true;
-    }
-    else if (option.short_option == 'F')
-    {
-        summarize.fires = true;
-    }
-    else if (option.short_option == 'L')
-    {
-        summarize.lasers = true;
-    }
-    else if (option.short_option == 'O')
-    {
-        summarize.objects = true;
-    }
-    else if (option.short_option == 'R')
-    {
-        summarize.radios = true;
-    }
-    else
-    {
-        result = false;
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -306,7 +214,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
                << color::none << std::endl;
     }
 
-    if (summarize.collisions and not collisions.empty())
+    if (print_collisions and not collisions.empty())
     {
         out << "    Collisions(" << collisions.size() << "):" << std::endl;
 
@@ -320,7 +228,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (summarize.lasers and not designations.empty())
+    if (print_lasers and not designations.empty())
     {
         std::map<uint8_t, designator_node_t>::const_iterator
             laser_itor = designations.begin();
@@ -338,7 +246,7 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
         out << "      " << separator << std::endl;
     }
 
-    if (summarize.fires and not fires.empty())
+    if (print_fires and not fires.empty())
     {
         std::map<vdis::id_t, warfare_data_node_t>::const_iterator
             fire_itor = fires.begin();
@@ -358,6 +266,92 @@ void vdb::entity_data_node_t::print(std::ostream &out) const
 }
 
 // ----------------------------------------------------------------------------
+vdb::summarize_t::summarize_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    file_read_command_t(command, arguments),
+    reader_ptr(0),
+    first_pdu_time(0),
+    last_pdu_time(0),
+    collisions(false),
+    emissions(false),
+    fires(false),
+    lasers(false),
+    objects(false),
+    radios(false)
+{
+    options.add(OPTION_EXTRACT);
+    options.add(OPTION_DUMP);
+    options.add(vdb::option_t("collisions", 'C', false));
+    options.add(vdb::option_t("emissions", 'M', false));
+    options.add(vdb::option_t("fires", 'F', false));
+    options.add(vdb::option_t("lasers", 'L', false));
+    options.add(vdb::option_t("radios", 'R', false));
+    options.add(vdb::option_t("objects", 'O', false));
+    options.add(vdb::option_t("all", 'A', false));
+}
+
+// ----------------------------------------------------------------------------
+vdb::summarize_t::~summarize_t(void)
+{
+    if (reader_ptr)
+    {
+        delete reader_ptr;
+        reader_ptr = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::summarize_t::option_callback(
+    const option_t &option,
+    const std::string &value,
+    bool &success)
+{
+    bool result = true;
+
+    if (option.short_option == 'A')
+    {
+        collisions = true;
+        emissions = true;
+        fires = true;
+        lasers = true;
+        objects = true;
+        radios = true;
+    }
+    else if (option.short_option == 'C')
+    {
+        collisions = true;
+    }
+    else if (option.short_option == 'M')
+    {
+        emissions = true;
+    }
+    else if (option.short_option == 'F')
+    {
+        fires = true;
+    }
+    else if (option.short_option == 'L')
+    {
+        lasers = true;
+    }
+    else if (option.short_option == 'O')
+    {
+        objects = true;
+    }
+    else if (option.short_option == 'R')
+    {
+        radios = true;
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+// ----------------------------------------------------------------------------
 int vdb::summarize_t::run(void)
 {
     int result = 1;
@@ -366,11 +360,11 @@ int vdb::summarize_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-summarize: missing file argument" << std::endl;
+        LOG_FATAL("Missing file argument");
     }
     else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb-summarize: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments");
     }
     else
     {
@@ -534,6 +528,9 @@ void vdb::summarize_t::process(const vdis::entity_state_pdu_t &pdu)
     node.force_id = (vdis::force_id_e)pdu.force;
     node.type = pdu.type;
     node.source = current_source;
+    node.print_collisions = collisions;
+    node.print_lasers = lasers;
+    node.print_fires = fires;
 }
 
 // ----------------------------------------------------------------------------

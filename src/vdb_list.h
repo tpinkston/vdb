@@ -1,7 +1,7 @@
 #ifndef VDB_LIST_H
 #define VDB_LIST_H
 
-#include "vdb_file_reader.h"
+#include "vdb_command.h"
 
 namespace vdb
 {
@@ -11,38 +11,33 @@ namespace vdb
     // Lists PDUs in a capture file and optionally outputs PDUs to a separate
     // capture file which is useful when filtering.
     //
-    class list_t : file_read_callback_t
+    class list_t : public file_read_command_t
     {
       public:
 
-        list_t(void) :
-            file_ptr(0),
-            output_index(0),
-            pdus_listed(0),
-            pdus_filtered_out(0)
-        {
+        list_t(
+            const std::string &command,
+            const std::vector<std::string> &arguments
+        );
 
-        }
+        ~list_t(void);
 
-        ~list_t(void)
-        {
-            if (file_ptr)
-            {
-                delete file_ptr;
-                file_ptr = 0;
-            }
-        }
+        virtual int run(void);
 
-        int run(void);
+        virtual bool option_callback(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
 
-        std::string output_file;
+        virtual bool process_pdu_data(const pdu_data_t &data);
 
       protected:
 
-        bool process_pdu_data(const pdu_data_t &data);
-
         file_writer_t
             *file_ptr;
+        std::string
+            output_file;
         uint32_t
             output_index,
             pdus_listed,

@@ -5,6 +5,8 @@
 
 namespace vdb
 {
+    class pdu_data_t;
+
     // ------------------------------------------------------------------------
     typedef enum
     {
@@ -51,6 +53,21 @@ namespace vdb
 
       private:
 
+    };
+
+    // ------------------------------------------------------------------------
+    class file_read_command_t : public command_t
+    {
+      public:
+
+        file_read_command_t(
+            const std::string &name,
+            const std::vector<std::string> &arguments
+        );
+
+        virtual ~file_read_command_t(void);
+
+        virtual bool process_pdu_data(const pdu_data_t &) = 0;
     };
 }
 

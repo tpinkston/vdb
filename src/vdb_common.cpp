@@ -47,7 +47,7 @@ bool vdb::user_confirmation(const char *prompt_ptr)
 void vdb::set_debug(unsigned mask)
 {
     CONSOLE_OUT(
-        "DEBUG: setting debug mask: %d [%s]",
+        "DEBUG: debug mask is %d [%s]",
         mask,
         vdis::to_bin_string(mask, true).c_str());
 
@@ -55,30 +55,13 @@ void vdb::set_debug(unsigned mask)
 }
 
 // ----------------------------------------------------------------------------
-bool vdb::debug_enabled(void)
-{
-    // True if bit 0 is set.
-    //
-    return ((debug_mask & 0x00000001U) > 0);
-}
-
-// ----------------------------------------------------------------------------
 bool vdb::debug_enabled(unsigned mask)
 {
-    if (debug_enabled())
-    {
-        const unsigned
-            current_mask = (debug_mask & 0xFFFFFFFEU),
-            requested_mask = (mask & 0xFFFFFFFEU);
+//    CONSOLE_OUT(
+//        "DEBUG: debug_mask is %d, requested mask is %d [%d]",
+//        debug_mask,
+//        mask,
+//        (debug_mask & mask));
 
-//        CONSOLE_OUT(
-//            "current_mask=%d & requested_mask=%d = %d",
-//            current_mask,
-//            requested_mask,
-//            (current_mask & requested_mask));
-
-        return ((unsigned)(current_mask & requested_mask) == requested_mask);
-    }
-
-    return false;
+    return ((unsigned)(debug_mask & mask) == mask);
 }

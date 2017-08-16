@@ -168,7 +168,7 @@ void vdis::variable_parameter_record_t::read(byte_stream_t &stream)
 // ----------------------------------------------------------------------------
 void vdis::variable_parameter_record_t::write(byte_stream_t &stream)
 {
-    // TODO
+    // TODO: variable_parameter_record_t::write()
 }
 
 // ----------------------------------------------------------------------------
@@ -388,6 +388,7 @@ void vdis::legacy_extended_lifeform_appearance_t::print(
     const string_t &prefix,
     std::ostream &out) const
 {
+    // TODO: elaborate on equipment, status, attributes
     out << prefix << "legacy_ext_lifeform_app.paint_scheme "
         << cloth_scheme_enum() << std::endl
         << prefix << "legacy_ext_lifeform_app.primary_color "
@@ -395,13 +396,13 @@ void vdis::legacy_extended_lifeform_appearance_t::print(
         << prefix << "legacy_ext_lifeform_app.secondary_color "
         << color_secondary_enum() << std::endl
         << prefix << "legacy_ext_lifeform_app.equipment "
-        << (int)equipment << std::endl // TODO
+        << (int)equipment << std::endl
         << prefix << "legacy_ext_lifeform_app.status "
-        << (int)status << std::endl // TODO
+        << (int)status << std::endl
         << prefix << "legacy_ext_lifeform_app.unused1 "
         << to_hex_string(unused1) << std::endl
         << prefix << "legacy_ext_lifeform_app.attributes "
-        << (int)attributes << std::endl // TODO
+        << (int)attributes << std::endl
         << prefix << "legacy_ext_lifeform_app.unused2 "
         << to_hex_string(unused2) << std::endl;
 }

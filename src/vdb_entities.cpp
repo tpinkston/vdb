@@ -7,104 +7,82 @@
 #include "vdis_pdus.h"
 #include "vdis_services.h"
 
-namespace
-{
-    vdb::options_t
-        *options_ptr = 0;
-    vdb::entities_t
-        entities;
-}
-
-bool entities_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
-
 // ----------------------------------------------------------------------------
-int entities_main(int argc, char *argv[])
+vdb::entities_t::entities_t(
+    const std::string &name,
+    const std::vector<std::string> &arguments
+) :
+    command_t(name, arguments),
+    print_countries(false)
 {
-    int result = 1;
-
-    options_ptr = new vdb::options_t("vdb-entities", argc, argv);
-    options_ptr->add(OPTION_HELP);
-    options_ptr->add(OPTION_EXTRA);
-    options_ptr->add(OPTION_ERRORS);
-    options_ptr->add(OPTION_MONO);
-    options_ptr->add(OPTION_VERBOSE);
-    options_ptr->add(OPTION_WARNINGS);
-    options_ptr->add(vdb::option_t("kind", 'k', true));
-    options_ptr->add(vdb::option_t("domain", 'd', true));
-    options_ptr->add(vdb::option_t("country", 't', true));
-    options_ptr->add(vdb::option_t("countries", 'T', false));
-
-    options_ptr->set_callback(*entities_option_callback);
-
-    if (options_ptr->parse())
-    {
-        result = entities.run();
-    }
-
-    return result;
+    options.add(vdb::option_t("kind", 'k', true));
+    options.add(vdb::option_t("domain", 'd', true));
+    options.add(vdb::option_t("country", 't', true));
+    options.add(vdb::option_t("countries", 'T', false));
 }
 
 // ----------------------------------------------------------------------------
-bool entities_option_callback(
-    const vdb::option_t &option,
+vdb::entities_t::~entities_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::entities_t::option_callback(
+    const option_t &option,
     const std::string &value,
     bool &success)
 {
     bool result = true;
 
-    if (not options_ptr)
+    if (option.short_option == 'k')
     {
-        LOG_ERROR("Options parser not available!");
-    }
-    else if (option.short_option == 'k')
-    {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::ent_kind_e::ENT_KIND_END - 1),
-            entities.kinds);
+            kinds);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity kind: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "invalid value for entity kind: %s",
+                value.c_str());
         }
     }
     else if (option.short_option == 'd')
     {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::domain_e::DOMAIN_END - 1),
-            entities.domains);
+            domains);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity domain: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "invalid value for entity domain: %s",
+                value.c_str());
         }
     }
     else if (option.short_option == 't')
     {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::country_e::COUNTRY_END - 1),
-            entities.countries);
+            countries);
 
         if (not success)
         {
-            std::cerr << "vdb-entities: invalid value for entity country: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "invalid value for entity country: %s",
+                value.c_str());
         }
     }
     else if (option.short_option == 'T')
     {
-        entities.print_countries = true;
+        print_countries = true;
     }
     else
     {
@@ -117,13 +95,12 @@ bool entities_option_callback(
 // ----------------------------------------------------------------------------
 int vdb::entities_t::run(void)
 {
-    int result = 1;
+    int result = 0;
 
-    // File argument required
-    //
     if (options::command_arguments.size() > 0)
     {
-        std::cerr << "vdb-entities: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments (try --help)");
+        result = 1;
     }
     else
     {
@@ -191,8 +168,6 @@ int vdb::entities_t::run(void)
                 ++itor;
             }
         }
-
-        result = 0;
     }
 
     return result;

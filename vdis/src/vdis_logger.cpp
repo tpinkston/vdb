@@ -19,7 +19,7 @@ void logger::initialize(void)
     if (levels.empty())
     {
         levels[FATAL] = true;
-        levels[ERROR] = false;
+        levels[ERROR] = true;
         levels[WARNING] = false;
         levels[VERBOSE] = false;
         levels[EXTRA_VERBOSE] = false;

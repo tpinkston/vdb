@@ -21,7 +21,7 @@ vdb::playback_t::playback_t(
     const std::string &command,
     const std::vector<std::string> &arguments
 ) :
-    command_t(command, arguments),
+    file_read_command_t(command, arguments),
     socket_ptr(0),
     port(0),
     bytes_sent(0),
@@ -73,20 +73,20 @@ int vdb::playback_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        LOG_FATAL("missing arguments");
+        LOG_FATAL("Missing arguments");
     }
     else if (options::command_arguments.size() < 2)
     {
-        LOG_FATAL("too few arguments");
+        LOG_FATAL("Too few arguments");
     }
     else if (options::command_arguments.size() > 2)
     {
-        LOG_FATAL("too many arguments");
+        LOG_FATAL("Too many arguments");
     }
     else if (not vdis::to_int32(options::command_arguments[0], port))
     {
         LOG_FATAL(
-            "invalid port: %s",
+            "Invalid port: %s",
             options::command_arguments[0].c_str());
     }
     else
@@ -149,7 +149,7 @@ bool vdb::playback_t::option_callback(
 
         if (not success)
         {
-            LOG_FATAL("invalid PDU interval: %s", value.c_str());
+            LOG_FATAL("Invalid PDU interval: %s", value.c_str());
         }
     }
     else
@@ -158,6 +158,39 @@ bool vdb::playback_t::option_callback(
     }
 
     return result;
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::playback_t::process_pdu_data(const pdu_data_t &data)
+{
+    bool past_end = false;
+
+    if (debug_enabled())
+    {
+        CONSOLE_OUT("DEBUG: processing PDU #%d...", data.get_index());
+    }
+
+    if (filter::filter_by_range(data.get_index(), past_end))
+    {
+        if (filter::filter_by_header(data) and
+            filter::filter_by_metadata(data))
+        {
+            const vdis::pdu_t *pdu_ptr = data.generate_pdu();
+
+            if (pdu_ptr)
+            {
+                if (filter::filter_by_content(*pdu_ptr))
+                {
+                    send_pdu(data, *pdu_ptr);
+                }
+
+                delete pdu_ptr;
+                pdu_ptr = 0;
+            }
+        }
+    }
+
+    return (playing_back and not past_end);
 }
 
 // ----------------------------------------------------------------------------
@@ -196,39 +229,6 @@ void vdb::playback_t::open_socket(void)
         vdis::network_options::ipv6,
         port,
         address_ptr);
-}
-
-// ----------------------------------------------------------------------------
-bool vdb::playback_t::process_pdu_data(const pdu_data_t &data)
-{
-    bool past_end = false;
-
-    if (debug_enabled())
-    {
-        CONSOLE_OUT("DEBUG: processing PDU #%d...", data.get_index());
-    }
-
-    if (filter::filter_by_range(data.get_index(), past_end))
-    {
-        if (filter::filter_by_header(data) and
-            filter::filter_by_metadata(data))
-        {
-            const vdis::pdu_t *pdu_ptr = data.generate_pdu();
-
-            if (pdu_ptr)
-            {
-                if (filter::filter_by_content(*pdu_ptr))
-                {
-                    send_pdu(data, *pdu_ptr);
-                }
-
-                delete pdu_ptr;
-                pdu_ptr = 0;
-            }
-        }
-    }
-
-    return (playing_back and not past_end);
 }
 
 // ----------------------------------------------------------------------------

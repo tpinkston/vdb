@@ -11,45 +11,30 @@ namespace
 {
     const uint32_t
         COPY_BUFFER_LENGTH = 0x1000;
-    vdb::comment_t
-        comment;
 }
 
-bool comment_option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
-
 // ----------------------------------------------------------------------------
-int comment_main(int argc, char *argv[])
+vdb::comment_t::comment_t(
+    const std::string &command,
+    const std::vector<std::string> &arguments
+) :
+    command_t(command, arguments),
+    action(PRINT),
+    deletion(0)
 {
-    vdb::options_t
-        options("vdb-comment", argc, argv);
-    int
-        result = 1;
-
-    options.add(OPTION_ERRORS);
-    options.add(OPTION_HELP);
-    options.add(OPTION_MONO);
-    options.add(OPTION_VERBOSE);
-    options.add(OPTION_WARNINGS);
     options.add(vdb::option_t("add", 'A', false));
     options.add(vdb::option_t("remove", 'R', true));
-
-    options.set_callback(*comment_option_callback);
-
-    if (options.parse())
-    {
-        result = comment.run();
-    }
-
-    return result;
 }
 
 // ----------------------------------------------------------------------------
-bool comment_option_callback(
-    const vdb::option_t &option,
+vdb::comment_t::~comment_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::comment_t::option_callback(
+    const option_t &option,
     const std::string &value,
     bool &success)
 {
@@ -57,20 +42,19 @@ bool comment_option_callback(
 
     if (option.short_option == 'A')
     {
-        comment.action = vdb::comment_t::ADD;
+        action = vdb::comment_t::ADD;
     }
     else if (option.short_option == 'R')
     {
-        comment.action = vdb::comment_t::REMOVE;
+        action = vdb::comment_t::REMOVE;
 
         if (value != "all")
         {
-            success = vdis::to_uint32(value, comment.deletion);
+            success = vdis::to_uint32(value, deletion);
 
             if (not success)
             {
-                std::cerr << "vdb-comment: invalid comment index: "
-                          << value << std::endl;
+                LOG_FATAL("Invalid comment index: %s", value.c_str());
             }
         }
     }
@@ -91,7 +75,7 @@ int vdb::comment_t::run(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-comment: missing file argument" << std::endl;
+        LOG_FATAL("Missing file argument");
     }
     switch(action)
     {
@@ -105,7 +89,7 @@ int vdb::comment_t::run(void)
             result = print();
             break;
         default:
-            std::cerr << "vdb-comment: unexpected action" << std::endl;
+            LOG_FATAL("Unexpected action: %d", (int)action);
     }
 
     return result;
@@ -120,11 +104,11 @@ int vdb::comment_t::add(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-comment: missing file argument" << std::endl;
+        LOG_FATAL("Missing file argument");
     }
     else if (options::command_arguments.size() > 2)
     {
-        std::cerr << "vdb-comment: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments");
     }
     else
     {
@@ -244,11 +228,11 @@ int vdb::comment_t::remove(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-comment: missing file argument" << std::endl;
+        LOG_FATAL("Missing file argument");
     }
     else if (options::command_arguments.size() > 1)
     {
-        std::cerr << "vdb-comment: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments");
     }
     else
     {
@@ -285,9 +269,10 @@ int vdb::comment_t::remove(void)
                 }
                 else
                 {
-                    std::cerr << "vdb-comment: comment number out of range: "
-                              << (deletion + 1) << ", range is 1.."
-                              << reader.header.comments.size() << std::endl;
+                    LOG_FATAL(
+                        "Comment number out of range: %d, range is 1..%d",
+                        (deletion + 1),
+                        reader.header.comments.size());
                 }
             }
         }
@@ -467,7 +452,7 @@ int vdb::comment_t::print(void)
     //
     if (options::command_arguments.empty())
     {
-        std::cerr << "vdb-comment: missing file argument(s)" << std::endl;
+        LOG_FATAL("Missing file argument(s)");
     }
     else for(uint32_t i = 0; i < files.size(); ++i)
     {

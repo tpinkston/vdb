@@ -7,98 +7,75 @@
 #include "vdis_pdus.h"
 #include "vdis_services.h"
 
-namespace
-{
-    vdb::options_t
-        *options_ptr = 0;
-    vdb::objects_t
-        objects;
-}
-
-bool option_callback(
-    const vdb::option_t &option,
-    const std::string &value,
-    bool &success
-);
-
 // ----------------------------------------------------------------------------
-int objects_main(int argc, char *argv[])
+vdb::objects_t::objects_t(
+    const std::string &name,
+    const std::vector<std::string> &arguments
+) :
+    command_t(name, arguments)
 {
-    int result = 1;
-
-    options_ptr = new vdb::options_t("vdb-objects", argc, argv);
-    options_ptr->add(OPTION_MONO);
-    options_ptr->add(OPTION_EXTRA);
-    options_ptr->add(OPTION_ERRORS);
-    options_ptr->add(OPTION_WARNINGS);
-    options_ptr->add(OPTION_VERBOSE);
-    options_ptr->add(OPTION_HELP);
-    options_ptr->add(vdb::option_t("geometry", 'g', true));
-    options_ptr->add(vdb::option_t("domain", 'd', true));
-    options_ptr->add(vdb::option_t("kind", 'k', true));
-
-    options_ptr->set_callback(*option_callback);
-
-    if (options_ptr->parse())
-    {
-        result = objects.run();
-    }
-
-    return result;
+    options.add(vdb::option_t("geometry", 'g', true));
+    options.add(vdb::option_t("domain", 'd', true));
+    options.add(vdb::option_t("kind", 'k', true));
 }
 
 // ----------------------------------------------------------------------------
-bool option_callback(
-    const vdb::option_t &option,
+vdb::objects_t::~objects_t(void)
+{
+
+}
+
+// ----------------------------------------------------------------------------
+bool vdb::objects_t::option_callback(
+    const option_t &option,
     const std::string &value,
     bool &success)
 {
     bool result = true;
 
-    if (not options_ptr)
+    if (option.short_option == 'g')
     {
-        LOG_ERROR("Options parser not available!");
-    }
-    else if (option.short_option == 'g')
-    {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::object_geometry_e::OBJECT_GEOMETRY_END - 1),
-            objects.geometries);
+            geometries);
 
         if (not success)
         {
-            std::cerr << "vdb-objects: invalid value for object geometry: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "Invalid value for object geometry: %s",
+                value.c_str());
         }
     }
     else if (option.short_option == 'd')
     {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::domain_e::DOMAIN_END - 1),
-            objects.domains);
+            domains);
 
         if (not success)
         {
-            std::cerr << "vdb-objects: invalid value for object domain: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "Invalid value for object domain: %s",
+                value.c_str());
         }
     }
     else if (option.short_option == 'k')
     {
-        success = options_ptr->parse_integers_in_range(
+        success = options.parse_integers_in_range(
             value,
             0,
             (vdis::object_kind_e::OBJECT_KIND_END - 1),
-            objects.kinds);
+            kinds);
 
         if (not success)
         {
-            std::cerr << "vdb-objects: invalid value for object kind: "
-                      << value << std::endl;
+            LOG_FATAL(
+                "Invalid value for object kind: %s",
+                value.c_str());
         }
     }
     else
@@ -112,13 +89,12 @@ bool option_callback(
 // ----------------------------------------------------------------------------
 int vdb::objects_t::run(void)
 {
-    int result = 1;
+    int result = 0;
 
-    // File argument required
-    //
     if (options::command_arguments.size() > 0)
     {
-        std::cerr << "vdb-objects: too many arguments" << std::endl;
+        LOG_FATAL("Too many arguments");
+        result = 1;
     }
     else
     {
@@ -184,8 +160,6 @@ int vdb::objects_t::run(void)
 
             ++geometry_itor;
         }
-
-        result = 0;
     }
 
     return result;

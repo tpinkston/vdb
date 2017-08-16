@@ -1,7 +1,7 @@
 #ifndef VDB_ENTITIES_H
 #define VDB_ENTITIES_H
 
-#include "vdb_system.h"
+#include "vdb_command.h"
 
 namespace vdis
 {
@@ -11,25 +11,35 @@ namespace vdis
 namespace vdb
 {
     // ------------------------------------------------------------------------
-    class entities_t
+    class entities_t : public command_t
     {
       public:
 
-        entities_t(void) : print_countries(false) { }
-        ~entities_t(void) { }
+        entities_t(
+            const std::string &name,
+            const std::vector<std::string> &arguments
+        );
 
-        int run(void);
+        virtual ~entities_t(void);
 
-        bool
-            print_countries;
+        virtual int run(void);
+
+        virtual bool option_callback(
+            const option_t &option,
+            const std::string &value,
+            bool &success
+        );
+
+      protected:
+
+        bool list_type(const vdis::entity_type_t &type);
+
         std::set<uint32_t>
             kinds,
             domains,
             countries;
-
-      private:
-
-        bool list_type(const vdis::entity_type_t &type);
+        bool
+            print_countries;
     };
 }
 

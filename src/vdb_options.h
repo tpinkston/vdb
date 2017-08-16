@@ -93,9 +93,6 @@ namespace vdb
             const std::vector<std::string> &args
         );
 
-        // TODO: remove
-        options_t(const char *command, int argc, char *argv[]);
-
         // Adds usable option for provided command.
         //
         void add(option_t option);
@@ -104,15 +101,6 @@ namespace vdb
         // are valid.
         //
         bool parse(void);
-
-        // TODO: remove
-        //
-        inline void set_callback(bool (*function)(
-            const option_t &option,
-            const std::string &value,
-            bool &success))
-        {
-        }
 
         bool parse_string_set(
             const std::string &input,
@@ -165,6 +153,7 @@ namespace vdb
     };
 
     // ------------------------------------------------------------------------
+    // TODO: REMOVE
     class options
     {
       public:

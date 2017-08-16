@@ -12,7 +12,7 @@ namespace vdis
 
 namespace vdb
 {
-    class playback_t : public command_t, public file_read_callback_t
+    class playback_t : public file_read_command_t
     {
       public:
 
@@ -31,15 +31,13 @@ namespace vdb
             bool &success
         );
 
+        virtual bool process_pdu_data(const pdu_data_t &);
+
       protected:
 
         static void signal_handler(int value);
 
-      private:
-
         void open_socket(void);
-
-        virtual bool process_pdu_data(const pdu_data_t &);
 
         void send_pdu(const pdu_data_t &, const vdis::pdu_t &);
 
