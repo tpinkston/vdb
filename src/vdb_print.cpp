@@ -569,8 +569,12 @@ void vdb::print::print_pdu_summary(const vdis::pdu_t &pdu, std::ostream &out)
 
             if (p)
             {
-                out << "  " << p->originator << "->" << p->recipient
-                    << std::endl;
+                out << "  " << p->originator
+                    << " " << p->originator_type_enum()
+                    << "->" << p->recipient
+                    << " " << p->recipient_type_enum()
+                    << std::endl
+                    << "  " << p->control_type_enum() << std::endl;
 
                 print_standard_variable_record_summary(*p, out);
             }
