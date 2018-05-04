@@ -108,7 +108,7 @@ namespace vdis
             *socket_address_ptr;
 
         const static uint32_t
-            BUFFER_LENGTH = 0x600,
+            BUFFER_LENGTH = 0x1800,
             ERROR_OPEN = 0x10,
             ERROR_OPTION = 0x20,
             ERROR_BIND = 0x30,
