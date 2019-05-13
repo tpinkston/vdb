@@ -67,7 +67,16 @@ bool vdb::file_header_t::invalid_title(void) const
 // ----------------------------------------------------------------------------
 void vdb::file_header_t::clear(void)
 {
-    title = { 'v', 'd', 'b', 'c', 'a', 'p', 't', 'u', 'r', 'e' };
+    title[0] = 'v';
+    title[1] = 'd';
+    title[2] = 'b';
+    title[3] = 'c';
+    title[4] = 'a';
+    title[5] = 'p';
+    title[6] = 't';
+    title[7] = 'u';
+    title[8] = 'r';
+    title[9] = 'e';
     major_version = 0;
     minor_version = 0;
     status = 0;

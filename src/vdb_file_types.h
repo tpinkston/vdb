@@ -129,14 +129,22 @@ namespace vdb
 
 // ----------------------------------------------------------------------------
 inline vdb::file_header_t::file_header_t(void) :
-    title({ 'v', 'd', 'b', 'c', 'a', 'p', 't', 'u', 'r', 'e' }),
     major_version(0),
     minor_version(0),
     status(0),
     time_created(0),
     padding(0)
 {
-
+    title[0] = 'v';
+    title[1] = 'd';
+    title[2] = 'b';
+    title[3] = 'c';
+    title[4] = 'a';
+    title[5] = 'p';
+    title[6] = 't';
+    title[7] = 'u';
+    title[8] = 'r';
+    title[9] = 'e';
 }
 
 // ----------------------------------------------------------------------------

@@ -234,7 +234,7 @@ inline vdb::collision_node_t::collision_node_t(void) :
 
 // ----------------------------------------------------------------------------
 inline vdb::collision_node_t::collision_node_t(
-    const vdb::collision_node_t::collision_node_t &copy
+    const collision_node_t &copy
 ) :
     colliding_entity(copy.colliding_entity),
     event(copy.event),
@@ -264,7 +264,7 @@ inline vdb::designator_node_t::designator_node_t(void) :
 
 // ----------------------------------------------------------------------------
 inline vdb::designator_node_t::designator_node_t(
-    const vdb::designator_node_t::designator_node_t &copy
+    const designator_node_t &copy
 ) :
     system_number(copy.system_number),
     total_count(copy.total_count),
